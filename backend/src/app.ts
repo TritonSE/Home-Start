@@ -11,5 +11,5 @@ app.use(json());
 
 // Tell app to listen on our port environment variable
 app.listen(port, () => {
-  console.log(`> Listening on port ${port}`);
+  console.info(`> Listening on port ${port}`);
 });

@@ -55,7 +55,7 @@ export class CustomError extends Error {
     }
 
     return `Error: Type ${this.constructor.name}, Code ${this.code.toString()}, Context: ${
-      this.context.length ? "\n" + this.context.join("\n\n") : ""
+      this.context.length ? `\n${this.context.join("\n\n")}` : ""
     }`;
   }
 }

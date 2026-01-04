@@ -33,6 +33,7 @@ jobs:
           echo "DATABASE_URL=$MONGO_URL" >> .env
           echo "BACKEND_FIREBASE_SERVICE_ACCOUNT=$FIREBASE_SERVICE" >> .env
           npm ci
+          npm run lint-check
       - uses: FirebaseExtended/action-hosting-deploy@v0
         env:
           BACKEND_FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VETERAN_SISTERS }}

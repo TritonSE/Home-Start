@@ -1,15 +1,33 @@
-import { json } from "body-parser";
+import dotenv from "dotenv";
 import express from "express";
+import mongoose from "mongoose";
 
-import { port } from "./config";
+dotenv.config({ quiet: true });
 
-// Initialize Express App
 const app = express();
+const PORT = 4000;
 
-// Provide json body-parser middleware
-app.use(json());
+async function startServer() {
+  const mongoString = process.env.DATABASE_URL;
 
-// Tell app to listen on our port environment variable
-app.listen(port, () => {
-  console.info(`> Listening on port ${port}`);
+  if (!mongoString) {
+    throw new Error("DATABASE_URL is not defined in .env");
+  }
+
+  try {
+    await mongoose.connect(mongoString);
+    console.info("Database Connected");
+
+    app.listen(PORT, () => {
+      console.info(`Listening on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+}
+
+startServer().catch((err) => {
+  console.error("Unhandled startup error:", err);
+  process.exit(1);
 });

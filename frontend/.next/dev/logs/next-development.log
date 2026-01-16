@@ -1,0 +1,239 @@
+[00:00:03.686] Server  LOG     ✓ Ready in 3.4s
+[00:00:08.551] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:08.969] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:09.381] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:50:22.435] Browser ERROR   uncaughtError: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check the render method of `Page`.
+[01:51:36.978] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[02:11:46.516] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[02:12:22.748] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.749] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.750] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.750] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.756] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.757] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.758] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.759] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.760] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.760] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.762] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.762] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.763] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.763] Server  ERROR   ⨯ ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[02:12:22.787] Server  LOG     ✓ Compiled in 90ms
+[02:12:23.435] Browser ERROR   ./src/app/page.tsx:2:1
+Module not found: Can't resolve './VolunteerTable.module.css'
+  1 | import VolunteerTable from "@/components/VolunteerTable";
+> 2 | import styles from "./VolunteerTable.module.css";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export default function Page() {
+  5 |   return ( 
+
+https://nextjs.org/docs/messages/module-not-found
+[02:13:43.025] Server  LOG     ✓ Compiled in 25ms
+[02:13:43.142] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[02:14:01.835] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[02:15:08.234] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[02:15:12.126] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[02:15:13.793] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[02:42:00.511] Server  LOG     ✓ Compiled in 24ms
+[02:42:04.320] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[02:43:37.031] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[02:43:43.180] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[02:53:25.467] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[02:58:46.130] Browser ERROR   You are mounting a new %s component when a previous one has not first unmounted. It is an error to render more than one %s component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <%s> and if you need to mount a new one, ensure any previous ones have unmounted first. body body body
+[02:59:34.378] Server  LOG     ✓ Compiled in 25ms
+[02:59:37.154] Server  ERROR   ⨯ Error: The `<body>` tag may only be rendered once.
+[02:59:37.339] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[02:59:38.164] Browser ERROR   You are mounting a new %s component when a previous one has not first unmounted. It is an error to render more than one %s component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <%s> and if you need to mount a new one, ensure any previous ones have unmounted first. body body body
+[03:01:54.635] Server  LOG     ✓ Compiled in 33ms
+[03:02:25.175] Server  LOG     ✓ Compiled in 2ms
+[03:09:12.322] Server  LOG     ✓ Compiled in 8ms
+[03:17:44.756] Server  LOG     ✓ Compiled in 6ms
+[03:19:01.323] Server  LOG     ✓ Compiled in 3ms
+[04:02:35.698] Server  ERROR   ⨯ Error: The `<body>` tag may only be rendered once.
+[04:02:38.958] Browser ERROR   You are mounting a new %s component when a previous one has not first unmounted. It is an error to render more than one %s component at a time and attributes and children of these components will likely fail in unpredictable ways. Please only render a single instance of <%s> and if you need to mount a new one, ensure any previous ones have unmounted first. body body body

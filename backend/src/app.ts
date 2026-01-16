@@ -15,6 +15,7 @@ async function startServer() {
   }
 
   try {
+    // eslint-disable-next-line ts/no-unsafe-call, ts/no-unsafe-member-access
     await mongoose.connect(mongoString);
     console.info("Database Connected");
 

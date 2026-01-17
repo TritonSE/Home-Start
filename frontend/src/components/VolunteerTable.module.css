@@ -25,4 +25,9 @@
 
 .volunteerTable tbody tr {
   border-bottom: 1px solid #b4b4b4;
+  background-color: #ffffff;
+}
+
+.volunteerTable tbody td {
+  background-color: #ffffff;
 }

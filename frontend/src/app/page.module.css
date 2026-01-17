@@ -21,7 +21,7 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
-  max-width: 800px;
+  max-width: 1400px;
   flex-direction: column;
   align-items: flex-start;
   justify-content: space-between;
@@ -122,3 +122,22 @@ a.secondary {
     letter-spacing: -1.92px;
   }
 }
+/*Dark mode disabled
+@media (prefers-color-scheme: dark) {
+  .logo {
+    filter: invert();
+  }
+
+  .page {
+    --background: #000;
+    --foreground: #000;
+
+    --text-primary: #ededed;
+    --text-secondary: #999;
+
+    --button-primary-hover: #ccc;
+    --button-secondary-hover: #1a1a1a;
+    --button-secondary-border: #1a1a1a;
+  }
+}
+*/

@@ -4,24 +4,68 @@ export default function VolunteerTable() {
     <table className={styles.volunteerTable}>
       <thead>
         <tr>
-          <th>Volunteer</th>
-          <th>Phone Number</th>
-          <th>Email</th>
-          <th>Tags</th>
+          <th>
+            <div className={styles.headerContent}>
+              Volunteer
+              <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+            </div>
+          </th>
+          <th>
+            <div className={styles.headerContent}>
+              Phone Number
+              <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+            </div>
+          </th>
+          <th>
+            <div className={styles.headerContent}>
+              Email
+              <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+            </div>
+          </th>
+          <th>
+            <div className={styles.headerContent}>
+              Tags
+              <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+            </div>
+          </th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>Koji Nakazawa</td>
-          <td>555-555-5555</td>
-          <td>koji@example.com</td>
-          <td>Tag 1, Tag 2</td>
+          <td>First Name, Last Initial</td>
+          <td>XXX-XXX-XXXX</td>
+          <td>email@email.com</td>
+          <td>Intern, Outside Volunteer, 2+ More, Intern</td>
         </tr>
         <tr>
-          <td>John Doe</td>
-          <td>888-888-8888</td>
-          <td>john.doe@example.com</td>
-          <td>Tag 3, Tag 4</td>
+          <td>First Name, Last Initial</td>
+          <td>XXX-XXX-XXXX</td>
+          <td>email@email.com</td>
+          <td>Intern, Outside Volunteer, 2+ More, Intern</td>
+        </tr>
+        <tr>
+          <td>First Name, Last Initial</td>
+          <td>XXX-XXX-XXXX</td>
+          <td>email@email.com</td>
+          <td>Intern, Outside Volunteer, 2+ More, Intern</td>
+        </tr>
+        <tr>
+          <td>First Name, Last Initial</td>
+          <td>XXX-XXX-XXXX</td>
+          <td>email@email.com</td>
+          <td>Intern, Outside Volunteer, 2+ More, Intern</td>
+        </tr>
+        <tr>
+          <td>First Name, Last Initial</td>
+          <td>XXX-XXX-XXXX</td>
+          <td>email@email.com</td>
+          <td>Intern, Outside Volunteer, 2+ More, Intern</td>
+        </tr>
+        <tr>
+          <td>First Name, Last Initial</td>
+          <td>XXX-XXX-XXXX</td>
+          <td>email@email.com</td>
+          <td>Intern, Outside Volunteer, 2+ More, Intern</td>
         </tr>
       </tbody>
     </table>

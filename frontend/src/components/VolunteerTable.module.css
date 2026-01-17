@@ -9,18 +9,25 @@
 .volunteerTable th,
 .volunteerTable td {
   border: none;
-  padding: 12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-top: 16px;
+  padding-bottom: 16px;
   text-align: left;
   font-family: var(--font-open-sans);
 }
-/*Only header cells should have a grey background and be bold*/
+
 .volunteerTable th {
   background-color: #ecf3f3;
-  font-weight: normal;
+  font-weight: 400;
+  font-style: regular;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0.5px;
 }
 
 .volunteerTable tbody tr:hover {
-  background-color: #f5f5f5;
+  background-color: #ffffffa9;
 }
 
 .volunteerTable tbody tr {
@@ -30,4 +37,16 @@
 
 .volunteerTable tbody td {
   background-color: #ffffff;
+  font-size: 14px;
+}
+
+.sortIcon {
+  margin-left: auto;
+  width: 10px;
+  height: 16.67px;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
 }

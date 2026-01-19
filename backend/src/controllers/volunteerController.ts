@@ -6,7 +6,7 @@ import validationErrorParser from "../util/validationErrorParser";
 import type { RequestHandler } from "express";
 
 export const getVolunteer: RequestHandler = async (req, res, next) => {
-  const { volunteerId } = req.params;
+  const volunteerId = req.params.id;
 
   try {
     const volunteer = await VolunteerModel.findById(volunteerId);
@@ -66,7 +66,7 @@ export const getVolunteerPhoneNumber: RequestHandler = async (req, res, next) =>
 };
 
 export const getTagsAssignedToVolunteer: RequestHandler = async (req, res, next) => {
-  const { volunteerId } = req.params;
+  const volunteerId = req.params.id;
 
   try {
     const volunteer = await VolunteerModel.findById(volunteerId);
@@ -113,7 +113,7 @@ type UpdateVolunteerContactBody = {
 
 export const updateVolunteerContact: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);
-  const { volunteerId } = req.params;
+  const volunteerId = req.params.id;
   const { email, phoneNumber } = req.body as UpdateVolunteerContactBody;
 
   try {
@@ -140,7 +140,7 @@ type AssignTagsBody = {
 
 export const assignTagsToVolunteer: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);
-  const { volunteerId } = req.params;
+  const volunteerId = req.params.id;
 
   try {
     validationErrorParser(errors);
@@ -161,7 +161,7 @@ export const assignTagsToVolunteer: RequestHandler = async (req, res, next) => {
 };
 
 export const deleteVolunteer: RequestHandler = async (req, res, next) => {
-  const { volunteerId } = req.params;
+  const volunteerId = req.params.id;
 
   try {
     const volunteer = await VolunteerModel.findByIdAndDelete(volunteerId);

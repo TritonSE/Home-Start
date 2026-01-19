@@ -8,15 +8,28 @@ import mongoose from "mongoose";
 import app from "./app";
 import env from "./util/validateEnv";
 
-const PORT = env.PORT;
-const MONGODB_URI = env.MONGODB_URI;
+async function startServer() {
+  const PORT = env.PORT || 4000;
+  const MONGODB_URI = env.MONGODB_URI;
 
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => {
-    console.info("Mongoose connected!");
+  if (!MONGODB_URI) {
+    throw new Error("DATABASE_URL is not defined in .env");
+  }
+
+  try {
+    await mongoose.connect(MONGODB_URI);
+    console.info("Database Connected");
+
     app.listen(PORT, () => {
-      console.info(`Server running on ${PORT}.`);
+      console.info(`Listening on port ${PORT}`);
     });
-  })
-  .catch(console.error);
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+}
+
+startServer().catch((err) => {
+  console.error("Unhandled startup error:", err);
+  process.exit(1);
+});

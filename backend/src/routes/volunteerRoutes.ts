@@ -16,8 +16,13 @@ router.put(
   volunteer.updateVolunteerContact,
 );
 router.put(
-  "/tags/:id",
+  "/tags/assign/:id",
   VolunteerValidator.assignVolunteerTagsValidator,
   volunteer.assignTagsToVolunteer,
+);
+router.put(
+  "/tags/remove/:id",
+  VolunteerValidator.removeVolunteerTagsValidator,
+  volunteer.removeTagsFromVolunteer,
 );
 export default router;

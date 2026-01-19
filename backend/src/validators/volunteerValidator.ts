@@ -73,3 +73,5 @@ export const updateVolunteerContactValidator = [
 ];
 
 export const assignVolunteerTagsValidator = [makeParamIDValidator(), tagsValidator()];
+
+export const removeVolunteerTagsValidator = [makeParamIDValidator(), tagsValidator()];

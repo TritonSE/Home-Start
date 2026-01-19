@@ -160,6 +160,32 @@ export const assignTagsToVolunteer: RequestHandler = async (req, res, next) => {
   }
 };
 
+type RemoveTagsFromVolunteerBody = {
+  tags: string[];
+};
+
+export const removeTagsFromVolunteer: RequestHandler = async (req, res, next) => {
+  const errors = validationResult(req);
+  const volunteerId = req.params.id;
+
+  try {
+    validationErrorParser(errors);
+
+    const { tags } = req.body as RemoveTagsFromVolunteerBody;
+    const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
+      $pullAll: { tags },
+    });
+
+    if (!volunteer) {
+      return res.status(404).json({ error: "Could not find volunteer" });
+    }
+
+    res.status(200).json(volunteer);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const deleteVolunteer: RequestHandler = async (req, res, next) => {
   const volunteerId = req.params.id;
 

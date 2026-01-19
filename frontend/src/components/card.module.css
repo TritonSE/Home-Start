@@ -1,0 +1,79 @@
+.card {
+  display: flex;
+  width: 318px;
+  height: 209px;
+  padding: 0 20px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  flex-shrink: 0;
+
+  border-radius: 16px;
+  border: 1px solid var(--Lofi-Gray-4, #676767);
+  background: var(--Surface-page, #fbffff);
+}
+
+.frame1 {
+  display: flex;
+  width: 288px;
+  height: 89px;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.iconFrame {
+  display: flex;
+  padding: 15px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  border-radius: 100px;
+  background: var(--Surface-information, #e6f2f3);
+}
+
+.arrowFrame {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.frame2 {
+  display: flex;
+  padding: 10px 0;
+  align-items: center;
+  gap: 10px;
+  align-self: stretch;
+}
+
+.headersH5 {
+  color: #000;
+
+  /* Headers/h5 */
+  font-family: var(--Font-family-Headings, Viga);
+  font-size: var(--h5-font-size, 24px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--h5-font-size, 24px); /* 100% */
+  letter-spacing: var(--h5-letter-spacing, 1.2px);
+}
+
+.frame3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bodyMd {
+  color: #000;
+
+  /* Body/md */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-md-font-size, 16px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-md-line-height, 20px); /* 125% */
+  letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
+}

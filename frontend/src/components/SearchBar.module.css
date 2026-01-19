@@ -2,14 +2,16 @@
   gap: 12px;
   height: 92px;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .searchField {
   gap: 8px;
   height: 48px;
   width: 100%;
-  border: 1px solid #e8e8e8;
-  border-radius: 4px;
+  display: flex;
+  flex-direction: row;
 }
 
 .inputField {
@@ -17,11 +19,93 @@
   padding: 12px;
   height: 48px;
   width: 100%;
-  font-family: var(--font-open-sans);
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: row;
 }
 
 .textField {
   width: 100%;
   height: 24px;
-  justify-content: space-between;
+  justify-content: space-around;
+  display: flex;
+  flex-direction: column;
+}
+
+.textField input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-weight: 400;
+  font-family: var(--font-open-sans);
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 1px;
+  font-style: regular;
+  color: #676767; 
+}
+
+.ic_search{
+  width: 24px;
+  height: 24px;
+  justify-content: space-around;
+  display: flex;
+  flex-direction: column;
+}
+
+.union{
+  width: 16px;
+  height: 16px;
+  top: 4px;
+  left: 4px;
+}
+
+.tagsContainer{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 32px;
+  gap: 12px;
+}
+
+.pillTag{
+  display: flex;
+  flex-direction: column;
+  height: 32px;
+  border-radius: 64px;
+  border: 1px solid #1D3A6B;
+  padding-top: 8px;
+  padding-right: 12px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  gap: 16px;
+  background: transparent;
+}
+
+.pillTagAll{
+  composes: pillTag;
+  width: 35px; 
+}
+.pillTagType{
+  composes: pillTag;
+  width: 111px; 
+}
+.pillTagAdded{
+  composes: pillTag;
+  width: 79px; 
+}
+
+.pillTagText{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-open-sans);
+  font-weight: 400;
+  font-style: regular;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0%;
 }

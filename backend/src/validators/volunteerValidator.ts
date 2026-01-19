@@ -8,13 +8,13 @@ const makeParamIDValidator = () =>
     .isMongoId()
     .withMessage("_id must be a MongoDB object ID");
 
-const makeBodyIDValidator = () =>
-  body("_id")
-    .exists()
-    .withMessage("_id is required")
-    .bail()
-    .isMongoId()
-    .withMessage("_id must be a MongoDB object ID");
+// const makeBodyIDValidator = () =>
+//   body("_id")
+//     .exists()
+//     .withMessage("_id is required")
+//     .bail()
+//     .isMongoId()
+//     .withMessage("_id must be a MongoDB object ID");
 
 const makeFirstNameValidator = () =>
   body("firstName")
@@ -59,7 +59,6 @@ const makePhoneValidator = () =>
 const tagsValidator = () => body("tags").optional().isArray();
 
 export const createVolunteerValidator = [
-  makeBodyIDValidator(),
   makeFirstNameValidator(),
   makeLastNameValidator(),
   makeEmailValidator(),

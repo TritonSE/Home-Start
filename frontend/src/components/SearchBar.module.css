@@ -43,10 +43,10 @@
   line-height: 20px;
   letter-spacing: 1px;
   font-style: regular;
-  color: #676767; 
+  color: #676767;
 }
 
-.ic_search{
+.ic_search {
   width: 24px;
   height: 24px;
   justify-content: space-around;
@@ -54,14 +54,14 @@
   flex-direction: column;
 }
 
-.union{
+.union {
   width: 16px;
   height: 16px;
   top: 4px;
   left: 4px;
 }
 
-.tagsContainer{
+.tagsContainer {
   display: flex;
   flex-direction: row;
   width: 100%;
@@ -69,12 +69,12 @@
   gap: 12px;
 }
 
-.pillTag{
+.pillTag {
   display: flex;
   flex-direction: column;
   height: 32px;
   border-radius: 64px;
-  border: 1px solid #1D3A6B;
+  border: 1px solid #1d3a6b;
   padding-top: 8px;
   padding-right: 12px;
   padding-bottom: 8px;
@@ -83,20 +83,20 @@
   background: transparent;
 }
 
-.pillTagAll{
+.pillTagAll {
   composes: pillTag;
-  width: 35px; 
+  width: 35px;
 }
-.pillTagType{
+.pillTagType {
   composes: pillTag;
-  width: 111px; 
+  width: 111px;
 }
-.pillTagAdded{
+.pillTagAdded {
   composes: pillTag;
-  width: 79px; 
+  width: 79px;
 }
 
-.pillTagText{
+.pillTagText {
   display: flex;
   align-items: center;
   justify-content: center;

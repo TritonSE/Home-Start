@@ -93,14 +93,19 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
   try {
     validationErrorParser(errors);
 
-    const volunteer = await VolunteerModel.create({
+    const volunteer = await VolunteerModel.findOne({ email });
+    if (volunteer) {
+      return res.status(409).json({ error: "Volunteer with this email already exists" });
+    }
+
+    const newVolunteer = await VolunteerModel.create({
       firstName,
       lastName,
       email,
       phoneNumber,
       tags,
     });
-    res.status(201).json(volunteer);
+    res.status(201).json(newVolunteer);
   } catch (err) {
     next(err);
   }

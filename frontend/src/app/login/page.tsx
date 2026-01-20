@@ -6,8 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useState } from "react";
 
 import { auth } from "@/firebase/firebase";
-// import ErrorMessage from "../components/ErrorMessage";
-// import SuccessNotification from "../components/SuccessNotification";
+import ErrorMessage from "../components/ErrorMessage";
+import SuccessNotification from "../components/SuccessNotification";
 
 import styles from "./page.module.css";
 
@@ -24,11 +24,11 @@ function LoginFormContent() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // useEffect(() => {
-  //   if (searchParams.get("success") === "true") {
-  //     setShowSuccess(true);
-  //   }
-  // }, [searchParams]);
+  useEffect(() => {
+    if (searchParams.get("success") === "true") {
+      setShowSuccess(true);
+    }
+  }, [searchParams]);
 
   const handleLogin = async () => {
     try {
@@ -170,12 +170,12 @@ function LoginFormContent() {
           </div>
         )}
       </div>
-      {/* {showSuccess && <SuccessNotification message="User Created Successfully" />} */}
-      {/* {showLoggedin && <SuccessNotification message="User Logged In Successfully" />} */}
-      {/* {showResetPasswordSuccess && ( */}
-      {/* // <SuccessNotification message="Email sent! Check your spam folder if you didn't receive it." /> */}
-      {/* )} */}
-      {/* {error && <ErrorMessage message={error} />} */}
+      {showSuccess && <SuccessNotification message="User Created Successfully" />}
+      {showLoggedin && <SuccessNotification message="User Logged In Successfully" />}
+      {showResetPasswordSuccess && (
+        <SuccessNotification message="Email sent! Check your spam folder if you didn't receive it." />
+      )}
+      {error && <ErrorMessage message={error} />}
     </main>
   );
 }

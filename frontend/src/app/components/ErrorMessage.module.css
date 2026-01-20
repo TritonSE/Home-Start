@@ -1,0 +1,19 @@
+.error {
+  position: fixed;
+  left: 50%;
+  top: 75px;
+  transform: translate(-50%, 0%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--Spacing-s, 8px);
+  border: 1px solid rgba(184, 0, 55, 0.3);
+  background: #f8e6eb;
+  box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.1);
+  padding: var(--Spacing-s, 8px) var(--Spacing-sm, 16px);
+  color: #b80037;
+  gap: 5px;
+  z-index: 1000;
+  font-size: 16px;
+  font-weight: 500;
+}

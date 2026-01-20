@@ -85,15 +85,15 @@
 
 .pillTagAll {
   composes: pillTag;
-  width: 35px;
+  width: 38px;
 }
 .pillTagType {
   composes: pillTag;
-  width: 111px;
+  width: 114px;
 }
 .pillTagAdded {
   composes: pillTag;
-  width: 79px;
+  width: 83px;
 }
 
 .pillTagText {

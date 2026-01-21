@@ -22,17 +22,12 @@ export default function Sidebar() {
   return (
     <aside className={`${styles.sidebar} ${openSans.className}`}>
       <div className={styles.logoWrap}>
-        <img
-          src="/Main Vertical USE 1.svg"
-          alt="Home Start"
-          className={styles.logo}
-        />
+        <img src="/Main Vertical USE 1.svg" alt="Home Start" className={styles.logo} />
       </div>
 
       <nav className={styles.nav}>
         {NAV.map((item) => {
-          const active =
-            pathname === item.href || pathname.startsWith(item.href + "/");
+          const active = pathname === item.href || pathname.startsWith(item.href + "/");
 
           return (
             <Link
@@ -41,12 +36,7 @@ export default function Sidebar() {
               className={`${styles.item} ${active ? styles.active : ""}`}
               aria-current={active ? "page" : undefined}
             >
-              <img
-                src={item.icon}
-                alt=""
-                className={styles.icon}
-                aria-hidden="true"
-              />
+              <img src={item.icon} alt="" className={styles.icon} aria-hidden="true" />
               <span className={styles.label}>{item.label}</span>
             </Link>
           );

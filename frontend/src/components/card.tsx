@@ -2,16 +2,18 @@ import type { StaticImageData } from "next/image";
 import styles from "./card.module.css";
 import Image from "next/image";
 import icCaretRight from "../../public/ic_caretright.png";
+import { useState } from "react";
 
 type CardProps = {
   icon: StaticImageData;
   majorText: string;
   minorText: string;
+  onClick: () => void;
 };
 
-export default function Card({ icon, majorText, minorText }: CardProps) {
+export default function Card({ icon, majorText, minorText, onClick }: CardProps) {
   return (
-    <div className={styles.card}>
+    <button className={styles.card} onClick={onClick}>
       <div className={styles.frame1}>
         <div className={styles.iconFrame}>
           <Image src={icon} alt="" />
@@ -26,6 +28,6 @@ export default function Card({ icon, majorText, minorText }: CardProps) {
       <div className={styles.frame3}>
         <p className={styles.bodyMd}>{minorText}</p>
       </div>
-    </div>
+    </button>
   );
 }

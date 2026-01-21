@@ -13,6 +13,14 @@
   background: var(--Surface-page, #fbffff);
 }
 
+.card:hover {
+  background: var(--Surface-default, #ecf3f3);
+}
+
+.card:active {
+  background: var(--Surface-action-hover-light, #a1acc1);
+}
+
 .frame1 {
   display: flex;
   width: 288px;

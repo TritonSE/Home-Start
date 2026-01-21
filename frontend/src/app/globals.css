@@ -15,7 +15,7 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   height: 100%;
-  background: #fbffff; 
+  background: #fbffff;
   overscroll-behavior: none;
 }
 
@@ -26,7 +26,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  overscroll-behavior: none; 
+  overscroll-behavior: none;
 }
 
 * {

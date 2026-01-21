@@ -9,7 +9,7 @@
   gap: 28px;
 
   width: 100%;
-  min-width: 0; 
+  min-width: 0;
   background: var(--Surface-page, #fbffff);
 }
 
@@ -51,13 +51,13 @@
   min-width: 0;
 }
 
-@media (max-width: 1250px) {
+@media (max-width: 1386px) {
   .cards {
     grid-template-columns: repeat(2, 318px);
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1043px) {
   .cards {
     grid-template-columns: 318px;
   }
@@ -69,7 +69,7 @@
   font-size: var(--h2-font-size, 48px);
   font-style: normal;
   font-weight: 400;
-  line-height: var(--h2-line-height, 56px); 
+  line-height: var(--h2-line-height, 56px);
   letter-spacing: var(--h2-letter-spacing, 1.2px);
 }
 
@@ -79,7 +79,7 @@
   font-size: var(--h4-font-size, 32px);
   font-style: normal;
   font-weight: 400;
-  line-height: var(--h4-line-height, 40px); 
+  line-height: var(--h4-line-height, 40px);
   letter-spacing: var(--h4-letter-spacing, 1.2px);
 }
 
@@ -89,6 +89,6 @@
   font-size: var(--paragraph-md-font-size, 16px);
   font-style: normal;
   font-weight: 400;
-  line-height: var(--paragraph-md-line-height, 20px); 
+  line-height: var(--paragraph-md-line-height, 20px);
   letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
 }

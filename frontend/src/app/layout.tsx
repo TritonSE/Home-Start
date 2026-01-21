@@ -18,9 +18,7 @@ export const metadata: Metadata = {
   description: "Home Start dashboard",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
       <body
@@ -39,18 +37,18 @@ export default function RootLayout({
               overflowX: "hidden",
             }}
           >
-          <div
-            style={{
-            maxWidth: "1320px",
-            margin: "0 auto",
-            padding: "28px 32px",
-            width: "100%",
-            boxSizing: "border-box",
-           }}
-          >
-            {children}
-          </div>
-        </main>
+            <div
+              style={{
+                maxWidth: "1320px",
+                margin: "0 auto",
+                padding: "28px 32px",
+                width: "100%",
+                boxSizing: "border-box",
+              }}
+            >
+              {children}
+            </div>
+          </main>
         </div>
       </body>
     </html>

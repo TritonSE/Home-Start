@@ -33,6 +33,10 @@
   background-color: #ffffff;
 }
 
+.volunteerTable tbody tr:hover {
+  background-color: #e8e8e8;
+}
+
 .volunteerTable td {
   border: none;
   padding-left: 12px;
@@ -44,6 +48,10 @@
   font-family: var(--font-open-sans);
   background-color: #ffffff;
   font-size: 15px;
+}
+
+.volunteerTable tbody tr:hover td {
+  background-color: inherit;
 }
 
 .sortIcon {
@@ -83,14 +91,29 @@
   color: #007a8a;
 }
 
+.bluePillTag:hover {
+  background-color: #007a8ada;
+  color: #ffffff;
+}
+
 .orangePillTag {
   background-color: #f9efe6;
   color: #c46200;
 }
 
+.orangePillTag:hover {
+  background-color: #c46200ce;
+  color: #ffffff;
+}
+
 .greenPillTag {
   background-color: #e6f2ec;
   color: #007f3f;
+}
+
+.greenPillTag:hover {
+  background-color: #007f3fcb;
+  color: #ffffff;
 }
 
 .tableWrapper {

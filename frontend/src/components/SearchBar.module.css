@@ -87,6 +87,14 @@
   composes: pillTag;
   width: 38px;
 }
+
+.pillTagAll:hover,
+.pillTagType:hover,
+.pillTagAdded:hover {
+  background-color: #10203b;
+  color: #ffffff;
+  cursor: pointer;
+}
 .pillTagType {
   composes: pillTag;
   width: 114px;

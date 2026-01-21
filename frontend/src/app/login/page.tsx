@@ -3,10 +3,10 @@
 import { FirebaseError } from "firebase/app";
 import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { Suspense, useEffect, useState } from "react";
+import Image from "next/image";
+import React, { Suspense, useState } from "react";
 
 import { auth } from "@/firebase/firebase";
-import ErrorMessage from "../components/ErrorMessage";
 import SuccessNotification from "../components/SuccessNotification";
 
 import styles from "./page.module.css";
@@ -17,18 +17,14 @@ function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams(); // Search for query parameters
   const [showResetPassword, setShowResetPassword] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false); // If user successfully signed up and was redirected
+  const [showSuccess, setShowSuccess] = useState(searchParams.get("success") === "true"); // If user successfully signed up and was redirected
   const [showLoggedin, setShowLoggedin] = useState(false); // Once user logs in
   const [showResetPasswordSuccess, setShowResetPasswordSuccess] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (searchParams.get("success") === "true") {
-      setShowSuccess(true);
-    }
-  }, [searchParams]);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     try {
@@ -47,7 +43,7 @@ function LoginFormContent() {
           case "auth/invalid-credential":
           case "auth/wrong-password":
           case "auth/user-not-found":
-            setError("Invalid username and/or password");
+            setError("Password invalid. Try again!");
             break;
           case "auth/network-request-failed":
             setError("Request failed, check your Internet connection and try again");
@@ -89,8 +85,23 @@ function LoginFormContent() {
   return (
     <main className={styles.page}>
       <div className={styles.form}>
+        <div className={styles.logoContainer}>
+          <Image
+            src="/homestart_logo.svg"
+            alt="Home Start Logo"
+            width={120}
+            height={120}
+            priority
+          />
+        </div>
         <div className={styles.subtitle}>
-          {showResetPassword ? "Reset your password" : "Log in to your account"}
+          {showResetPassword ? (
+            "Reset your password"
+          ) : (
+            <>
+              Strengthening <br /> Families Protects <br /> Children.
+            </>
+          )}
         </div>
         <form className={styles.innerForm} id="contactForm" onSubmit={handleSubmit}>
           {showResetPassword ? (
@@ -98,14 +109,11 @@ function LoginFormContent() {
               We&apos;ll email you with a link to reset your password!
             </p>
           ) : null}
-          <label htmlFor="email" className={styles.formEntry}>
-            Email
-          </label>
-          <a style={{ color: "#B80037" }}> *</a>
           <input
             type="email"
             id="email"
             className={styles.input}
+            placeholder="Enter Email"
             required
             value={email}
             onChange={(e) => {
@@ -114,35 +122,59 @@ function LoginFormContent() {
           ></input>
           {showResetPassword ? null : (
             <>
-              {" "}
-              <label htmlFor="password" className={styles.formEntry}>
-                Password
-                <a style={{ color: "#B80037" }}> *</a>
-                <a
-                  className={styles.linkText}
-                  onClick={() => {
-                    setShowResetPassword(true);
+              <div className={styles.passwordField}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  className={`${styles.input} ${error ? styles.inputError : ""}`}
+                  placeholder="Enter Password"
+                  required
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
                   }}
+                ></input>
+                <button
+                  type="button"
+                  className={styles.eyeIcon}
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {" "}
-                  Forgot your password?
-                </a>
-              </label>
-              <input
-                type="password"
-                id="password"
-                className={styles.input}
-                required
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                }}
-              ></input>
+                  {showPassword ? (
+                    <Image src="/ic_hide.svg" alt="Hide password" width={20} height={20} />
+                  ) : (
+                    <Image src="/ic_show.svg" alt="Show password" width={20} height={20} />
+                  )}
+                </button>
+              </div>
+              {error && <div className={styles.passwordError}>{error}</div>}
             </>
           )}
 
+          <div className={styles.rememberMeContainer}>
+            <label className={styles.rememberMeLabel}>
+              <input
+                type="checkbox"
+                className={styles.checkbox}
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              Keep me logged in
+            </label>
+            {!showResetPassword && (
+              <a
+                className={styles.linkText}
+                onClick={() => {
+                  setShowResetPassword(true);
+                }}
+              >
+                Forgot Password?
+              </a>
+            )}
+          </div>
+
           <button className={styles.signInButton} type="submit">
-            Continue
+            Log In
           </button>
         </form>
         {showResetPassword ? (
@@ -159,23 +191,13 @@ function LoginFormContent() {
               </div>
             </div>
           </div>
-        ) : (
-          <div className={styles.subtitle2}>
-            <div>
-              Don&apos;t have an account?
-              <a className={styles.linkText} href="/signup">
-                &nbsp;Sign up.
-              </a>
-            </div>
-          </div>
-        )}
+        ) : null}
       </div>
       {showSuccess && <SuccessNotification message="User Created Successfully" />}
       {showLoggedin && <SuccessNotification message="User Logged In Successfully" />}
       {showResetPasswordSuccess && (
         <SuccessNotification message="Email sent! Check your spam folder if you didn't receive it." />
       )}
-      {error && <ErrorMessage message={error} />}
     </main>
   );
 }

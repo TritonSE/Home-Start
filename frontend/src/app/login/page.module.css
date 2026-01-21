@@ -1,4 +1,5 @@
 .page {
+  background-color: white;
   background-image: url("/signUpBackground.svg");
   background-size: cover;
   background-repeat: no-repeat;
@@ -15,37 +16,74 @@
   background-color: white;
   width: 542px;
   height: auto;
-  border: 1px solid #d0d7de;
   padding: 48px 64px;
-  border-radius: 8px;
-  box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.15);
-  color: #3a3c3d;
   font-size: 14px;
 }
 
+.logoContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 16px;
+}
+
 .subtitle {
-  color: #3a3c3d;
-  font-family: "Albert Sans";
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 24px;
+  color: #000;
+  font-family:
+    var(--font-geist-sans),
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-size: 21px;
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 32px;
 }
 
 .input {
   width: 100%;
-  height: 33px;
-  padding: 15px;
-  margin: 10px 0 16px;
+  height: 44px;
+  padding: 12px 14px;
+  margin: 8px 0 20px;
   display: inline-block;
-  background-color: white;
+  background-color: #f5f5f5;
   border: 1px solid #d0d7de;
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--Text-2, #4d5358);
   font-family: "Albert Sans";
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
   line-height: normal;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #1f4e78;
+  background-color: white;
+}
+
+.input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.inputError {
+  border-color: #a40026 !important;
+  color: #a40026;
+}
+
+.passwordError {
+  color: #a40026;
+  font-family: "Albert Sans";
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: -16px;
+  margin-bottom: 16px;
+  padding-left: 2px;
 }
 
 .subtitle2 {
@@ -65,50 +103,70 @@
 .signInButton {
   width: 100%;
   display: flex;
-  padding: 12px 24px;
+  padding: 14px 24px;
   justify-content: center;
   align-items: center;
   gap: 10px;
   align-self: stretch;
-  margin-top: 8px;
-  background: var(--Primary, #057e6f);
+  margin-top: 24px;
+  background: #1d3a6b;
   color: var(--Neutral-Base-White, #fafafa);
   border: none;
-  font-family: "Albert Sans";
+  font-family:
+    var(--font-geist-sans),
+    system-ui,
+    -apple-system,
+    sans-serif;
   font-size: 16px;
   font-style: medium;
-  font-weight: 500;
-  border-radius: 8px;
+  font-weight: 400;
+  border-radius: 6px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.signInButton:hover {
+  background-color: #1a3a5a;
+}
+
+.signInButton:active {
+  background-color: #152d47;
 }
 
 .rememberMeContainer {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   margin-top: 16px;
   margin-bottom: 24px;
 }
 
 .checkbox {
-  width: 21.333px;
-  height: 21.333px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
   appearance: none;
   border: 2px solid #d0d7de;
-  border-radius: 2px;
+  border-radius: 3px;
+  cursor: pointer;
+  background-color: white;
+  transition: all 0.2s ease;
 }
 
 .checkbox:checked {
-  background-color: #057e6f;
-  border: 2px solid #057e6f;
+  background-color: #1f4e78;
+  border: 2px solid #1f4e78;
 }
 
-.checkbox:checked::before {
-  background-color: #057e6f;
-  border: 2px solid #057e6f;
-  content: "✔";
+.checkbox:checked::after {
+  content: "✓";
+  display: flex;
+  justify-content: center;
+  align-items: center;
   color: white;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .rememberMeLabel {
@@ -117,6 +175,9 @@
   font-size: 14px;
   font-weight: 500;
   line-height: normal;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .formEntry {
@@ -129,9 +190,36 @@
 }
 
 .linkText {
-  float: right;
-  color: var(--Primary, #057e6f);
+  color: #9ca3af;
   cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.linkText:hover {
+  color: #1f4e78;
+}
+
+.passwordField {
+  position: relative;
+}
+
+.eyeIcon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-75%);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 18px;
+  margin-top: 0;
 }
 
 .error {
@@ -146,4 +234,8 @@
   margin-top: 12px;
   color: var(--Primary, #057e6f);
   font-size: 14px;
+}
+
+.innerForm {
+  width: 100%;
 }

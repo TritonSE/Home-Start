@@ -1,0 +1,91 @@
+.sidebar {
+    width: 270px;
+    height: 100vh;
+    flex-shrink: 0;
+  
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  
+    background: #ffffff;
+    border-right: 1px solid #979797;
+  
+    padding: 24px 0; 
+    box-sizing: border-box;
+}
+  
+.logoWrap {
+    display: flex;
+    justify-content: center;
+  
+    margin-top: 4px;
+    margin-bottom: 34px; 
+}
+  
+.logo {
+    width: 115px; 
+    height: auto;
+    display: block;
+}
+  
+.nav {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  
+    gap: 0px;      
+    padding: 0 20px; 
+  
+    box-sizing: border-box;
+}
+  
+.item {
+    display: flex;
+    align-items: center;
+    gap: 12px; 
+  
+    padding: 10px 14px;  
+    border-radius: 10px;
+  
+    color: #1a1a1a;
+    text-decoration: none;
+  
+    font-size: 15px;     
+    font-weight: 400;
+  
+    transition: background 120ms ease, transform 120ms ease;
+}
+  
+.item:hover {
+    background: rgba(161, 172, 193, 0.35);
+}
+  
+.item:active {
+    transform: scale(0.99);
+}
+  
+/*.item:focus-visible {
+    outline: 2px solid #1a1a1a;
+    outline-offset: 2px;
+}
+*/
+
+
+.item:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px #1a1a1a; 
+}
+  
+.active {
+    background: #a1acc1;
+}
+  
+.icon {
+    width: 22px;
+    height: 22px;
+    display: block;
+}
+  
+.label {
+    line-height: 1;
+}

@@ -7,7 +7,6 @@ import volunteerRoutes from "./routes/volunteerRoutes";
 
 import type { NextFunction, Request, Response } from "express";
 
-// Initialize Express App
 const app = express();
 
 // Provide json body-parser middleware

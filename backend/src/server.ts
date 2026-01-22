@@ -10,14 +10,14 @@ import env from "./util/validateEnv";
 
 async function startServer() {
   const PORT = env.PORT || 4000;
-  const MONGODB_URI = env.MONGODB_URI;
+  const DATABASE_URL = env.DATABASE_URL;
 
-  if (!MONGODB_URI) {
+  if (!DATABASE_URL) {
     throw new Error("DATABASE_URL is not defined in .env");
   }
 
   try {
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(DATABASE_URL);
     console.info("Database Connected");
 
     app.listen(PORT, () => {

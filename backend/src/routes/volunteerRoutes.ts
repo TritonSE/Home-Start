@@ -1,7 +1,24 @@
+import path from "node:path";
+
 import express from "express";
+import multer from "multer";
 
 import * as volunteer from "../controllers/volunteerController";
 import * as VolunteerValidator from "../validators/volunteerValidator";
+
+import type { Multer } from "multer";
+
+const storage = multer.memoryStorage();
+const upload: Multer = multer({
+  storage,
+  limits: { fileSize: 1024 * 1024 * 5 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype !== "text/csv" || path.extname(file.originalname).toLowerCase() !== ".csv") {
+      return cb(new Error("Only CSV files are allowed"));
+    }
+    cb(null, true);
+  },
+});
 
 const router = express.Router();
 
@@ -25,4 +42,7 @@ router.put(
   VolunteerValidator.removeVolunteerTagsValidator,
   volunteer.removeTagsFromVolunteer,
 );
+
+router.post("/csv", upload.single("csv"), volunteer.uploadVolunteersCsv);
+
 export default router;

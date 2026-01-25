@@ -1,7 +1,7 @@
 .searchBar {
   gap: 12px;
   height: 92px;
-  width: 100%;
+  width: 1050px;
   display: flex;
   flex-direction: column;
 }

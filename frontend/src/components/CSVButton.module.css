@@ -1,0 +1,58 @@
+.csvButton {
+  display: flex;
+  flex-direction: row;
+  width: 129px;
+  height: 40px;
+  border-radius: 4px;
+  border: #1d3a6b solid 1px;
+  padding-top: 8px;
+  padding-left: 12px;
+  padding-bottom: 8px;
+  padding-right: 12px;
+  gap: 16px;
+}
+
+.exportButton {
+  composes: csvButton;
+  background-color: #ffffff;
+}
+
+.importButton {
+  composes: csvButton;
+  background-color: #1d3a6b;
+}
+
+.ic_container {
+  height: 24px;
+  width: 24px;
+}
+
+.iconUpload {
+  height: 17;
+  width: 16;
+  top: 3px;
+  left: 4px;
+}
+
+.buttonText {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-open-sans);
+  font-weight: 400;
+  font-style: regular;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0%;
+}
+
+.exportText {
+  composes: buttonText;
+  color: #1d3a6b;
+}
+.importText {
+  composes: buttonText;
+  color: #ffffff;
+}

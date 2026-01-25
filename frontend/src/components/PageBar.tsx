@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "./ActionBar.module.css";
+import styles from "./PageBar.module.css";
 import { useState } from "react";
 import { useEffect } from "react";
 
@@ -44,31 +44,36 @@ export default function PageBar({ totalItems }: PageBarProps) {
   };
 
   return (
-    <div className={styles.pagination}>
-      <div className={styles.previous}>
-        <div onClick={() => setPage(Math.max(1, currentPage - 1))} className={styles.ic_container}>
-          <img src="/caret.svg" alt="Upload logo" className={styles.caretIconLeft} />
-        </div>
-      </div>
-
-      <div className={styles.paginationPages}>
-        {getPageNumbers().map((page, index) => (
-          <button
-            key={index}
-            className={page === currentPage ? styles.pressedPageButton : styles.pageButton}
-            onClick={() => typeof page === "number" && setPage(page)}
+    <div className={styles.paginationContainer}>
+      <div className={styles.pagination}>
+        <div className={styles.previous}>
+          <div
+            onClick={() => setPage(Math.max(1, currentPage - 1))}
+            className={styles.ic_container}
           >
-            <div className={styles.pageNumber}>{page}</div>
-          </button>
-        ))}
-      </div>
+            <img src="/caret.svg" alt="Upload logo" className={styles.caretIconLeft} />
+          </div>
+        </div>
 
-      <div className={styles.next}>
-        <div
-          onClick={() => setPage(Math.min(currentPage + 1, totalPages))}
-          className={styles.ic_container}
-        >
-          <img src="/caret.svg" alt="Upload logo" className={styles.caretIconRight} />
+        <div className={styles.paginationPages}>
+          {getPageNumbers().map((page, index) => (
+            <button
+              key={index}
+              className={page === currentPage ? styles.pressedPageButton : styles.pageButton}
+              onClick={() => typeof page === "number" && setPage(page)}
+            >
+              <div className={styles.pageNumber}>{page}</div>
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.next}>
+          <div
+            onClick={() => setPage(Math.min(currentPage + 1, totalPages))}
+            className={styles.ic_container}
+          >
+            <img src="/caret.svg" alt="Upload logo" className={styles.caretIconRight} />
+          </div>
         </div>
       </div>
     </div>

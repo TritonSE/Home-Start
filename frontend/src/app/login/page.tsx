@@ -31,6 +31,13 @@ function LoginFormContent() {
       await signInWithEmailAndPassword(auth, email, password);
       setShowLoggedin(true);
 
+      // Add cookie to confirm the user is logged in
+      const user = auth.currentUser;
+      if (user) {
+        const token = await user.getIdToken();
+        document.cookie = `firebaseAuthToken=${token}; path=/`;
+      }
+
       if (window.location.pathname === "/") {
         window.location.reload();
       } else {

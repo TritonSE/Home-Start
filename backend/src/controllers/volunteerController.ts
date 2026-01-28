@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import { PassThrough } from "node:stream";
 
 import csvParser from "csv-parser";
@@ -214,7 +213,7 @@ type CSVRawEntry = {
   lastName: string;
   email: string;
   phoneNumber: string;
-  tagsUnparsed: string;
+  tags: string;
 };
 
 export const uploadVolunteersCsv: RequestHandler = async (req, res, next) => {
@@ -230,31 +229,28 @@ export const uploadVolunteersCsv: RequestHandler = async (req, res, next) => {
     const bufferStream = new PassThrough();
     bufferStream.end(req.file.buffer);
 
-    await new Promise<void>((reject, resolve) => {
+    await new Promise<void>((resolve, reject) => {
       bufferStream
         .pipe(csvParser())
         .on("data", (data: Record<string, string>) => {
-          // console.log(data);
-          if ((data as CSVRawEntry).email in existingEmails) {
-            return;
-          }
+          if (existingEmails.includes((data as CSVRawEntry).email)) return;
 
-          const { tagsUnparsed, ...otherData } = data;
+          const { tags, ...otherData } = data;
           const creationBody = {
             ...otherData,
-            tags: tagsUnparsed.split(" "),
+            tags: tags.split(" "),
           } as CreateVolunteerBody;
 
-          // console.log(creationBody);
-          console.log("creationBody ", creationBody);
-          console.log("rawData ", data as CSVRawEntry);
+          // console.log("-----------------------------------------------");
+          // console.log("creationBody ", creationBody);
+          // console.log("rawData ", data as CSVRawEntry);
           volunteerCreationBodies.push(creationBody);
         })
         .on("end", resolve)
         .on("error", reject);
     });
 
-    await Promise.all(
+    const createdVolunteers = await Promise.all(
       volunteerCreationBodies.map(async (body) =>
         VolunteerModel.create({
           firstName: body.firstName,
@@ -266,10 +262,10 @@ export const uploadVolunteersCsv: RequestHandler = async (req, res, next) => {
       ),
     );
 
-    // const result = await VolunteerModel.create(volunteerCreationBodies);
-    // console.log(result);
-
-    res.status(201).json({ message: "Volunteers created successfully" });
+    res.status(201).json({
+      message: "Volunteers created successfully",
+      created: createdVolunteers,
+    });
   } catch (err) {
     next(err);
   }

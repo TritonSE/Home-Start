@@ -230,9 +230,9 @@ export const uploadVolunteersCsv: RequestHandler = async (req, res, next) => {
     const bufferStream = new PassThrough();
     bufferStream.end(req.file.buffer);
 
-    await new Promise<void>((reject, resolve) => {
-      bufferStream
-        .pipe(csvParser())
+
+    await new Promise<void>((reject, resolve) =>  {
+      bufferStream.pipe(csvParser())
         .on("data", (data: Record<string, string>) => {
           // console.log(data);
           if ((data as CSVRawEntry).email in existingEmails) {
@@ -266,10 +266,11 @@ export const uploadVolunteersCsv: RequestHandler = async (req, res, next) => {
       ),
     );
 
-    // const result = await VolunteerModel.create(volunteerCreationBodies);
-    // console.log(result);
+      // const result = await VolunteerModel.create(volunteerCreationBodies);
+      // console.log(result);
 
-    res.status(201).json({ message: "Volunteers created successfully" });
+      res.status(201).json({ message: "Volunteers created successfully" });
+    });
   } catch (err) {
     next(err);
   }

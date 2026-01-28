@@ -1,7 +1,3 @@
-import fs from "node:fs";
-import { PassThrough } from "node:stream";
-
-import csvParser from "csv-parser";
 import { validationResult } from "express-validator";
 
 import VolunteerModel from "../models/volunteerModel";
@@ -204,73 +200,6 @@ export const deleteVolunteer: RequestHandler = async (req, res, next) => {
       return res.status(404).json({ error: "Could not find volunteer" });
     }
     res.status(200).json({ message: "Volunteer deleted successfully" });
-  } catch (err) {
-    next(err);
-  }
-};
-
-type CSVRawEntry = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  tagsUnparsed: string;
-};
-
-export const uploadVolunteersCsv: RequestHandler = async (req, res, next) => {
-  try {
-    if (req.file === undefined) {
-      return res.status(400).json({ error: "No CSV file attached" });
-    }
-
-    const existingVolunteers = await VolunteerModel.find();
-    const existingEmails = existingVolunteers.map((volunteer) => volunteer.email);
-
-    const volunteerCreationBodies: CreateVolunteerBody[] = [] as CreateVolunteerBody[];
-    const bufferStream = new PassThrough();
-    bufferStream.end(req.file.buffer);
-
-
-    await new Promise<void>((reject, resolve) =>  {
-      bufferStream.pipe(csvParser())
-        .on("data", (data: Record<string, string>) => {
-          // console.log(data);
-          if ((data as CSVRawEntry).email in existingEmails) {
-            return;
-          }
-
-          const { tagsUnparsed, ...otherData } = data;
-          const creationBody = {
-            ...otherData,
-            tags: tagsUnparsed.split(" "),
-          } as CreateVolunteerBody;
-
-          // console.log(creationBody);
-          console.log("creationBody ", creationBody);
-          console.log("rawData ", data as CSVRawEntry);
-          volunteerCreationBodies.push(creationBody);
-        })
-        .on("end", resolve)
-        .on("error", reject);
-    });
-
-    await Promise.all(
-      volunteerCreationBodies.map(async (body) =>
-        VolunteerModel.create({
-          firstName: body.firstName,
-          lastName: body.lastName,
-          email: body.email,
-          phoneNumber: body.phoneNumber,
-          tags: body.tags,
-        }),
-      ),
-    );
-
-      // const result = await VolunteerModel.create(volunteerCreationBodies);
-      // console.log(result);
-
-      res.status(201).json({ message: "Volunteers created successfully" });
-    });
   } catch (err) {
     next(err);
   }

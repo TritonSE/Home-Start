@@ -116,7 +116,17 @@
   color: #ffffff;
 }
 
+/*
 .tableWrapper {
   max-width: 1050px;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+*/
+
+.tableWrapper {
+  max-width: 1050px;
+  overflow-x: auto;
+  overflow-y: visible;
+  min-height: 400px;
 }

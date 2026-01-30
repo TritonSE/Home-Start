@@ -1,58 +1,25 @@
+"use client";
+import { Volunteer } from "../types/volunteer";
 import styles from "./VolunteerTable.module.css";
-import type { Volunteer } from "@/types/volunteer";
-
-export const mockVolunteers: Volunteer[] = [
-  {
-    id: "1",
-    firstName: "First Name",
-    lastInital: "Last Initial",
-    phoneNumber: "XXX-XXX-XXXX",
-    email: "email@email.com",
-    tags: ["Intern", "Outside Volunteer", "2+ More"],
-  },
-  {
-    id: "2",
-    firstName: "First Name",
-    lastInital: "Last Initial",
-    phoneNumber: "XXX-XXX-XXXX",
-    email: "email@email.com",
-    tags: ["Intern", "Outside Volunteer", "2+ More"],
-  },
-  {
-    id: "3",
-    firstName: "First Name",
-    lastInital: "Last Initial",
-    phoneNumber: "XXX-XXX-XXXX",
-    email: "email@email.com",
-    tags: ["Intern", "Outside Volunteer", "2+ More"],
-  },
-  {
-    id: "4",
-    firstName: "First Name",
-    lastInital: "Last Initial",
-    phoneNumber: "XXX-XXX-XXXX",
-    email: "email@email.com",
-    tags: ["Intern", "Outside Volunteer", "2+ More"],
-  },
-  {
-    id: "5",
-    firstName: "First Name",
-    lastInital: "Last Initial",
-    phoneNumber: "XXX-XXX-XXXX",
-    email: "email@email.com",
-    tags: ["Intern", "Outside Volunteer", "2+ More"],
-  },
-  {
-    id: "6",
-    firstName: "First Name",
-    lastInital: "Last Initial",
-    phoneNumber: "XXX-XXX-XXXX",
-    email: "email@email.com",
-    tags: ["Intern", "Outside Volunteer", "2+ More"],
-  },
-];
+import { useState, useEffect } from "react";
 
 export default function VolunteerTable() {
+  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+
+  useEffect(() => {
+    async function fetchVolunteers() {
+      try {
+        const response = await fetch("http://localhost:4000/api/volunteer");
+        const data = await response.json();
+        setVolunteers(data);
+      } catch (error) {
+        console.error("Error fetching volunteers:", error);
+      }
+    }
+
+    fetchVolunteers();
+  }, []);
+
   return (
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
@@ -108,16 +75,16 @@ export default function VolunteerTable() {
           </tr>
         </thead>
         <tbody>
-          {mockVolunteers.map((volunteer) => (
-            <tr key={volunteer.id}>
+          {volunteers.map((volunteer) => (
+            <tr key={volunteer._id}>
               <td>
-                {volunteer.firstName}, {volunteer.lastInital}
+                {volunteer.firstName}, {volunteer.lastName}
               </td>
               <td>{volunteer.phoneNumber}</td>
               <td>{volunteer.email}</td>
               <td>
                 <div className={styles.tagsContainer}>
-                  {volunteer.tags.map((tag) => {
+                  {volunteer.tags.map((tag, index) => {
                     let colorClass = styles.greenPillTag;
 
                     if (tag == "Intern") {
@@ -128,7 +95,10 @@ export default function VolunteerTable() {
                       colorClass = styles.orangePillTag;
                     }
                     return (
-                      <span key={`col1-{tag}`} className={`${styles.pillTag} ${colorClass}`}>
+                      <span
+                        key={`col1-${volunteer._id}-${tag}-${index}`}
+                        className={`${styles.pillTag} ${colorClass}`}
+                      >
                         {tag}
                       </span>
                     );
@@ -137,7 +107,7 @@ export default function VolunteerTable() {
               </td>
               <td>
                 <div className={styles.tagsContainer}>
-                  {volunteer.tags.map((tag) => {
+                  {volunteer.tags.map((tag, index) => {
                     let colorClass = styles.greenPillTag;
 
                     if (tag == "Intern") {
@@ -148,7 +118,10 @@ export default function VolunteerTable() {
                       colorClass = styles.orangePillTag;
                     }
                     return (
-                      <span key={`col2-{tag}`} className={`${styles.pillTag} ${colorClass}`}>
+                      <span
+                        key={`col2-${volunteer._id}-${tag}-${index}`}
+                        className={`${styles.pillTag} ${colorClass}`}
+                      >
                         {tag}
                       </span>
                     );

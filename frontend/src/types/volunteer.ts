@@ -1,8 +1,8 @@
 export type Volunteer = {
-  id: string;
+  _id: string;
   firstName: string;
-  lastInital: string;
-  phoneNumber: string;
+  lastName: string;
   email: string;
+  phoneNumber: string;
   tags: string[];
 };

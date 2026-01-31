@@ -28,14 +28,14 @@
 
 .main {
   flex: 1;
-  background: "#fff";
-  height: "100vh";
-  overflow-y: "auto";
-  overflow-x: "hidden";
+  background: #fff;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .body {
   margin: 0;
-  height: "100vh";
-  overflow: "hidden";
+  height: 100vh;
+  overflow: hidden;
 }

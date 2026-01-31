@@ -1,41 +1,50 @@
-"use client";
-
-import VolunteerTable from "@/components/VolunteerTable";
-import TitleBar from "@/components/TitleBar";
-import SearchBar from "@/components/SearchBar";
-import PageBar from "@/components/PageBar";
+import Image from "next/image";
 import styles from "./page.module.css";
-import { useState } from "react";
 
-export default function Page() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const itemsPerPage = 6;
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const handleTotalItemsChange = (total: number) => {
-    setTotalItems(total);
-  };
-
+export default function Home() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <TitleBar />
-        <SearchBar />
-        <VolunteerTable
-          itemsPerPage={itemsPerPage}
-          pageNumber={currentPage}
-          onTotalItemsChange={handleTotalItemsChange}
+        <Image
+          className={styles.logo}
+          src="/next.svg"
+          alt="Next.js logo"
+          width={180}
+          height={37}
+          priority
         />
-        <PageBar
-          totalItems={totalItems}
-          currentPage={currentPage}
-          itemsPerPage={itemsPerPage}
-          onPageChange={handlePageChange}
-        />
+        <ol>
+          <li>
+            Get started by editing <code>src/app/page.tsx</code>.
+          </li>
+          <li>Save and see your changes instantly.</li>
+        </ol>
+
+        <div className={styles.ctas}>
+          <a
+            className={styles.primary}
+            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              className={styles.logo}
+              src="/vercel.svg"
+              alt="Vercel logomark"
+              width={20}
+              height={20}
+            />
+            Deploy now
+          </a>
+          <a
+            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.secondary}
+          >
+            Read our docs
+          </a>
+        </div>
       </main>
     </div>
   );

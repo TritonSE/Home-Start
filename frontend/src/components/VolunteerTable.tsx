@@ -3,7 +3,17 @@ import { Volunteer } from "../types/volunteer";
 import styles from "./VolunteerTable.module.css";
 import { useState, useEffect } from "react";
 
-export default function VolunteerTable() {
+interface VolunteerTableProps {
+  itemsPerPage: number;
+  pageNumber: number;
+  onTotalItemsChange: (total: number) => void;
+}
+
+export default function VolunteerTable({
+  itemsPerPage,
+  pageNumber,
+  onTotalItemsChange,
+}: VolunteerTableProps) {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
 
   useEffect(() => {
@@ -12,13 +22,19 @@ export default function VolunteerTable() {
         const response = await fetch("http://localhost:4000/api/volunteer");
         const data = await response.json();
         setVolunteers(data);
+        onTotalItemsChange(data.length);
       } catch (error) {
         console.error("Error fetching volunteers:", error);
       }
     }
 
     fetchVolunteers();
-  }, []);
+  }, [onTotalItemsChange]);
+
+  // Calculate which volunteers to display based on current page
+  const startIndex = (pageNumber - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const displayedVolunteers = volunteers.slice(startIndex, endIndex);
 
   return (
     <div className={styles.tableWrapper}>
@@ -75,7 +91,7 @@ export default function VolunteerTable() {
           </tr>
         </thead>
         <tbody>
-          {volunteers.map((volunteer) => (
+          {displayedVolunteers.map((volunteer) => (
             <tr key={volunteer._id}>
               <td>
                 {volunteer.firstName}, {volunteer.lastName}

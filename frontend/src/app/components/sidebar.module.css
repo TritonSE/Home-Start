@@ -14,14 +14,6 @@
 }
 
 .logoWrap {
-  display: flex;
-  justify-content: center;
-
-  margin-top: 4px;
-  margin-bottom: 34px;
-}
-
-.logo {
   display: none;
 }
 
@@ -81,12 +73,6 @@
   transform: scale(0.99);
 }
 
-/*.item:focus-visible {
-    outline: 2px solid #1a1a1a;
-    outline-offset: 2px;
-}
-*/
-
 .item:focus-visible {
   outline: none;
   box-shadow: 0 0 0 4px #1a1a1a;
@@ -122,6 +108,15 @@
     border-right: 1px solid var(--Lofi-Gray-3, #979797);
     background: var(--Surface-page, #fbffff);
   }
+
+  .logoWrap {
+    display: flex;
+    justify-content: center;
+
+    margin-top: 4px;
+    margin-bottom: 34px;
+  }
+
   .logo {
     width: 115px;
     height: auto;

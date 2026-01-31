@@ -10,7 +10,7 @@ import { useState } from "react";
 export default function Page() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const itemsPerPage = 4;
+  const itemsPerPage = 6;
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

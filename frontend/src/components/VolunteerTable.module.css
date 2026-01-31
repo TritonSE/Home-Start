@@ -102,7 +102,7 @@
 }
 
 .orangePillTag:hover {
-  background-color: #c46200ce;
+  background-color: #ffc370db;
   color: #ffffff;
 }
 
@@ -112,17 +112,9 @@
 }
 
 .greenPillTag:hover {
-  background-color: #007f3fcb;
+  background-color: #1fcb75cb;
   color: #ffffff;
 }
-
-/*
-.tableWrapper {
-  max-width: 1050px;
-  overflow-x: auto;
-  overflow-y: visible;
-}
-*/
 
 .tableWrapper {
   max-width: 1050px;

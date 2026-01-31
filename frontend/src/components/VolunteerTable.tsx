@@ -23,6 +23,8 @@ export default function VolunteerTable({
         const data = await response.json();
         setVolunteers(data);
         onTotalItemsChange(data.length);
+
+        console.log("Volunteers fetched successfully");
       } catch (error) {
         console.error("Error fetching volunteers:", error);
       }

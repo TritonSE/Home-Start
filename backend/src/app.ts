@@ -1,16 +1,14 @@
-import "dotenv/config";
-import cors from "cors";
+import dotenv from "dotenv";
 import express from "express";
-import { isHttpError } from "http-errors";
+import mongoose from "mongoose";
 
 import "./firebase/admin";
 import { type AuthRequest, verifyToken } from "./middleware/auth";
-import volunteerRoutes from "./routes/volunteerRoutes";
 
-import type { NextFunction, Request, Response } from "express";
+dotenv.config({ quiet: true });
 
 const app = express();
-dotenv.config({ quiet: true });
+const PORT = 4000;
 
 // Middleware
 app.use(express.json());
@@ -18,18 +16,13 @@ app.use(express.json());
 async function startServer() {
   const mongoString = process.env.DATABASE_URL;
 
-app.use(
-  cors({
-    origin: process.env.FRONTEND_ORIGIN,
-  }),
-);
+  if (!mongoString) {
+    throw new Error("DATABASE_URL is not defined in .env");
+  }
 
-app.use("/api/volunteer", volunteerRoutes);
-
-app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
-  // 500 is the "internal server error" error code, this will be our fallback
-  let statusCode = 500;
-  let errorMessage = "An error has occurred.";
+  try {
+    await mongoose.connect(mongoString);
+    console.info("Database Connected");
 
     // Example routes
     app.get("/api/public", (req, res) => {
@@ -48,18 +41,10 @@ app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);
-  // check is necessary because anything can be thrown, type is not guaranteed
-  if (isHttpError(error)) {
-    // error.status is unique to the http error class, it allows us to pass status codes with errors
-    statusCode = error.status;
-    errorMessage = error.message;
   }
-  // prefer custom http errors but if they don't exist, fallback to default
-  else if (error instanceof Error) {
-    errorMessage = error.message;
-  }
+}
 
-  res.status(statusCode).json({ error: errorMessage });
+startServer().catch((err) => {
+  console.error("Unhandled startup error:", err);
+  process.exit(1);
 });
-
-export default app;

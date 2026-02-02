@@ -1,14 +1,16 @@
-import dotenv from "dotenv";
+import "dotenv/config";
+import cors from "cors";
 import express from "express";
-import mongoose from "mongoose";
+import { isHttpError } from "http-errors";
 
 import "./firebase/admin";
 import { type AuthRequest, verifyToken } from "./middleware/auth";
+import volunteerRoutes from "./routes/volunteerRoutes";
 
-dotenv.config({ quiet: true });
+import type { NextFunction, Request, Response } from "express";
 
 const app = express();
-const PORT = 4000;
+dotenv.config({ quiet: true });
 
 // Middleware
 app.use(express.json());
@@ -16,13 +18,18 @@ app.use(express.json());
 async function startServer() {
   const mongoString = process.env.DATABASE_URL;
 
-  if (!mongoString) {
-    throw new Error("DATABASE_URL is not defined in .env");
-  }
+app.use(
+  cors({
+    origin: process.env.FRONTEND_ORIGIN,
+  }),
+);
 
-  try {
-    await mongoose.connect(mongoString);
-    console.info("Database Connected");
+app.use("/api/volunteer", volunteerRoutes);
+
+app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
+  // 500 is the "internal server error" error code, this will be our fallback
+  let statusCode = 500;
+  let errorMessage = "An error has occurred.";
 
     // Example routes
     app.get("/api/public", (req, res) => {
@@ -41,10 +48,18 @@ async function startServer() {
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);
+  // check is necessary because anything can be thrown, type is not guaranteed
+  if (isHttpError(error)) {
+    // error.status is unique to the http error class, it allows us to pass status codes with errors
+    statusCode = error.status;
+    errorMessage = error.message;
   }
-}
+  // prefer custom http errors but if they don't exist, fallback to default
+  else if (error instanceof Error) {
+    errorMessage = error.message;
+  }
 
-startServer().catch((err) => {
-  console.error("Unhandled startup error:", err);
-  process.exit(1);
+  res.status(statusCode).json({ error: errorMessage });
 });
+
+export default app;

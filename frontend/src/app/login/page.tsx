@@ -148,9 +148,9 @@ function LoginFormContent() {
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    <Image src="/ic_hide.svg" alt="Hide password" width={20} height={20} />
+                    <Image src="/ic_show.svg" alt="to hide password" width={20} height={20} />
                   ) : (
-                    <Image src="/ic_show.svg" alt="Show password" width={20} height={20} />
+                    <Image src="/ic_hide.svg" alt="to show password" width={20} height={20} />
                   )}
                 </button>
               </div>

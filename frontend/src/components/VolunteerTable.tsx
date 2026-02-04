@@ -46,7 +46,6 @@ export default function VolunteerTable({
           <col style={{ width: "251px" }} />
           <col style={{ width: "251px" }} />
           <col style={{ width: "302px" }} />
-          <col style={{ width: "302px" }} />
         </colgroup>
         <thead>
           <tr>
@@ -69,14 +68,6 @@ export default function VolunteerTable({
             <th>
               <div className={styles.headerContent}>
                 <span>Email</span>
-                <span>
-                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
-                </span>
-              </div>
-            </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Tags</span>
                 <span>
                   <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
                 </span>
@@ -115,29 +106,6 @@ export default function VolunteerTable({
                     return (
                       <span
                         key={`col1-${volunteer._id}-${tag}-${index}`}
-                        className={`${styles.pillTag} ${colorClass}`}
-                      >
-                        {tag}
-                      </span>
-                    );
-                  })}
-                </div>
-              </td>
-              <td>
-                <div className={styles.tagsContainer}>
-                  {volunteer.tags.map((tag, index) => {
-                    let colorClass = styles.greenPillTag;
-
-                    if (tag == "Intern") {
-                      colorClass = styles.bluePillTag;
-                    }
-
-                    if (tag == "Outside Volunteer") {
-                      colorClass = styles.orangePillTag;
-                    }
-                    return (
-                      <span
-                        key={`col2-${volunteer._id}-${tag}-${index}`}
                         className={`${styles.pillTag} ${colorClass}`}
                       >
                         {tag}

@@ -304,6 +304,7 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
     const emails = parsedVolunteers.map((v) => v.email);
     const phoneNumbers = parsedVolunteers.map((v) => v.phoneNumber);
     const existing = await VolunteerModel.find({
+      // Find all in one await
       $or: [{ email: { $in: emails } }, { phoneNumber: { $in: phoneNumbers } }],
     });
 
@@ -319,7 +320,8 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
     const wouldUpdate = parsedVolunteers.length - wouldCreate;
 
     res.status(200).json({
-      volunteers: parsedVolunteers,
+      message: "CSV parsed successfully",
+      volunteerInfo: parsedVolunteers,
       total: parsedVolunteers.length,
       wouldCreate,
       wouldUpdate,

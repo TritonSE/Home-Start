@@ -8,6 +8,7 @@ import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
 
 import type { RequestHandler } from "express";
+import type { Buffer } from "node:buffer";
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -260,39 +261,81 @@ const validateVolunteer = (volunteer: unknown) => {
   return true;
 };
 
-export const uploadVolunteersCsv: RequestHandler = async (req, res, next) => {
+const parseVolunteersHelper = async (fileBuffer: Buffer) => {
+  const parsedVolunteers: CreateVolunteerBody[] = [] as CreateVolunteerBody[];
+  const bufferStream = new PassThrough();
+  bufferStream.end(fileBuffer);
+
+  await new Promise<void>((resolve, reject) => {
+    bufferStream
+      .pipe(csvParser())
+      .on("data", (data: Record<string, string>) => {
+        const valid = validateVolunteer(data);
+
+        if (!valid) {
+          bufferStream.destroy();
+          reject(createError(400, `Invalid volunteer data: ${JSON.stringify(data)}`));
+          return;
+        }
+
+        const { tags, ...otherData } = data;
+        const creationBody = {
+          ...otherData,
+          tags: tags.split(" "),
+        } as CreateVolunteerBody;
+
+        parsedVolunteers.push(creationBody);
+      })
+      .on("end", resolve)
+      .on("error", reject);
+  });
+
+  return parsedVolunteers;
+};
+
+export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
   try {
     if (req.file === undefined) {
       return res.status(400).json({ error: "No CSV file attached" });
     }
 
-    const volunteerCreationBodies: CreateVolunteerBody[] = [] as CreateVolunteerBody[];
-    const bufferStream = new PassThrough();
-    bufferStream.end(req.file.buffer);
+    const parsedVolunteers = await parseVolunteersHelper(req.file.buffer);
 
-    await new Promise<void>((resolve, reject) => {
-      bufferStream
-        .pipe(csvParser())
-        .on("data", (data: Record<string, string>) => {
-          const valid = validateVolunteer(data);
-
-          if (!valid) {
-            bufferStream.destroy();
-            reject(createError(400, `Invalid volunteer data: ${JSON.stringify(data)}`));
-            return;
-          }
-
-          const { tags, ...otherData } = data;
-          const creationBody = {
-            ...otherData,
-            tags: tags.split(" "),
-          } as CreateVolunteerBody;
-
-          volunteerCreationBodies.push(creationBody);
-        })
-        .on("end", resolve)
-        .on("error", reject);
+    const emails = parsedVolunteers.map((v) => v.email);
+    const phoneNumbers = parsedVolunteers.map((v) => v.phoneNumber);
+    const existing = await VolunteerModel.find({
+      $or: [{ email: { $in: emails } }, { phoneNumber: { $in: phoneNumbers } }],
     });
+
+    const existingSet = new Set<string>();
+    existing.forEach((volunteer) => {
+      existingSet.add(volunteer.email);
+      existingSet.add(volunteer.phoneNumber);
+    });
+
+    const wouldCreate = parsedVolunteers.filter(
+      (v) => !existingSet.has(v.email) && !existingSet.has(v.phoneNumber),
+    ).length;
+    const wouldUpdate = parsedVolunteers.length - wouldCreate;
+
+    res.status(200).json({
+      volunteers: parsedVolunteers,
+      total: parsedVolunteers.length,
+      wouldCreate,
+      wouldUpdate,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
+  try {
+    if (req.file === undefined) {
+      return res.status(400).json({ error: "No CSV file attached" });
+    }
+
+    const volunteerCreationBodies = await parseVolunteersHelper(req.file.buffer);
 
     const bulkOps = volunteerCreationBodies.map((body) => ({
       updateOne: {

@@ -1,0 +1,164 @@
+@import url("https://fonts.googleapis.com/css2?family=Viga&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap");
+
+
+.page {
+    height: 100vh;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+}
+  
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    height: 64px;
+    display: grid;
+    grid-template-columns: 48px 1fr 48px;
+    align-items: center;
+    padding: 0 16px;
+    background: #ffffff;
+}
+  
+.backBtn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+}
+  
+.backIcon {
+    width: 20px;
+    height: 20px;
+}
+  
+.title {
+    margin: 0;
+    text-align: center;
+    font-family: var(--Font-family-Headings, Viga);
+    font-weight: 500;
+    font-size: 18px;
+    color: #000;
+}
+  
+.headerRight {
+    height: 44px;
+}
+  
+.content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    padding: 12px 16px 0;
+    padding-top: calc(12px + 64px); 
+    padding-bottom: 160px;
+}
+  
+.searchWrap {
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid #d9e0e0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+}
+  
+.searchIcon {
+    opacity: 0.55;
+}
+  
+.searchInput {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 16px;
+    background: transparent;
+}
+  
+.filters {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+  
+.chip {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+  
+.chipOutline {
+    background: #ffffff;
+    border: 1.5px solid #1f3f78;
+    color: #1f3f78;
+}
+  
+.chipActive {
+    background: #1f3f78;
+    border: 1.5px solid #1f3f78;
+    color: #ffffff;
+}
+  
+.recipientsHeader {
+    margin-top: 18px;
+}
+  
+.recipientsTitle {
+    font-size: 22px;
+    font-weight: 700;
+    color: #000;
+}
+  
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+  
+.bottomCta {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 64px;
+    padding: 16px;
+  
+    background: transparent; 
+    border-top: none;       
+    box-shadow: none;        
+  
+    display: flex;
+    justify-content: center;
+}
+  
+.cta,
+.ctaDisabled {
+  width: min(720px, calc(100% - 32px));
+  height: 56px;         
+  font-size: 18px;       
+  font-weight: 700;
+  border-radius: 12px;  
+  border: none;
+}
+  
+.cta {
+    background: #163c73;
+    color: #ffffff;
+    cursor: pointer;
+}
+  
+.ctaDisabled {
+    background: #c9cdcd;
+    color: #ffffff;
+    cursor: not-allowed;
+}

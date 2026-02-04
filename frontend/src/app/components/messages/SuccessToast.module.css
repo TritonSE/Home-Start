@@ -1,0 +1,86 @@
+.wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+  
+    display: grid;
+    place-items: center;
+    padding: 16px;
+}
+  
+.card {
+    width: min(560px, calc(100% - 32px)); 
+    border-radius: 18px;
+  
+    background: #E6F2EC;
+    border: 2px solid #007F3F;
+  
+    display: flex;
+    align-items: center;
+    gap: 14px; 
+  
+    padding: 18px 20px; 
+  
+    animation: popFade var(--toast-ms, 1800ms) ease forwards;
+}
+  
+.icon {
+    width: 56px;
+    height: 56px;
+    flex: 0 0 auto;
+}
+  
+.textWrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+  
+.title {
+    font-family: "Open Sans", sans-serif;
+    font-size: 26px;    
+    font-weight: 600; 
+    color: #000;
+    line-height: 1.2;
+  }
+  
+.message {
+    font-family: "Open Sans", sans-serif;
+    font-size: 18px;   /* ← 28 → 18 */
+    font-weight: 400;
+    color: #000;
+    line-height: 1.5;
+}
+  
+@keyframes popFade {
+    0% {
+      transform: translateY(6px) scale(0.98);
+      opacity: 0;
+    }
+    15% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    85% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-6px) scale(0.99);
+      opacity: 0;
+    }
+}
+  
+@media (max-width: 480px) {
+    .title {
+      font-size: 20px;
+    }
+    .message {
+      font-size: 15px;
+    }
+    .icon {
+      width: 44px;
+      height: 44px;
+    }
+  }

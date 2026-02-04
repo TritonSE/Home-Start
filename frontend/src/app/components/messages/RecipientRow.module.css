@@ -1,0 +1,50 @@
+.row {
+    width: 100%;
+    border: none;
+    background: #E6F2F3;
+    border-radius: 16px;
+    padding: 6px 12px;    
+    min-height: 64px;      
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+  
+.rowSelected {
+    background: #B0C7D0;
+}
+  
+.left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+  
+.name {
+    font-family: "Open Sans", sans-serif;
+    font-size: 16px;     
+    font-weight: 400;
+    color: #000;
+}
+  
+  
+.right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+  
+.tag {
+    font-family: "Open Sans", sans-serif;
+    font-size: 14px;      
+    padding: 6px 12px;    
+    border-radius: 999px;
+    background: #fff;
+    color: #000;
+}
+  
+.checkbox {
+    width: 24px;           /* 28→24 */
+    height: 24px;
+}

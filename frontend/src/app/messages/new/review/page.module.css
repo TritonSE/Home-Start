@@ -1,0 +1,221 @@
+@import url("https://fonts.googleapis.com/css2?family=Viga&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap");
+
+:root {
+  --header-h: 64px;
+}
+
+.page {
+  height: 100dvh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding-top: calc(var(--header-h) + env(safe-area-inset-top));
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+
+  padding-top: env(safe-area-inset-top);
+  height: calc(var(--header-h) + env(safe-area-inset-top));
+
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: center;
+
+  padding-left: 16px;
+  padding-right: 16px;
+  background: #fff;
+  border-bottom: 1px solid #e6eaea;
+}
+
+.backBtn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.backIcon {
+  width: 24px;
+  height: 24px;
+}
+
+.headerTitle {
+  margin: 0;
+  text-align: center;
+  font-family: var(--Font-family-Headings, Viga);
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 500;
+  color: #000;
+}
+
+.headerRight {
+  width: 44px;
+  height: 44px;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  padding-top: calc(16px + 64px + env(safe-area-inset-top));
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 140px;
+
+  max-width: 720px;
+  margin: 0 auto;
+  font-family: "Open Sans", sans-serif;
+}
+
+@media (max-width: 767px) {
+  .content {
+    max-width: none;
+    margin: 0;
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #000;
+}
+
+.editLink {
+  border: none;
+  background: transparent;
+  color: #1d3a6b;
+  font-size: 14px;
+  font-weight: 400;              /* ← 600 → 400（細く） */
+  text-decoration: underline;    /* ← 下線 */
+  text-underline-offset: 2px;    /* ← 下線をちょい下に */
+  text-decoration-thickness: 1px;/* ← 細めの下線 */
+  cursor: pointer;
+  padding: 0;                    /* ボタンの余計なpadding消す */
+}
+
+.recipientsCard {
+  width: 100%;
+  border-radius: 12px;
+  background: #eef2f2;
+  padding: 14px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.groupsIconWrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #1d3a6b;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.groupsIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.recipientsText {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000;
+}
+
+.previewCard {
+  width: 100%;
+  border-radius: 12px;
+  background: #eef2f2;
+  padding: 16px;
+}
+
+.previewText {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: "Open Sans", sans-serif;
+  font-size: 16px;
+  line-height: 22px;
+  color: #000;
+}
+
+.personalizedRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.check {
+  font-size: 18px;
+  line-height: 18px;
+  color: #000;
+  margin-top: 2px;
+}
+
+.personalizedTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #000;
+}
+
+.personalizedSub {
+  font-size: 14px;
+  color: #3a3a3a;
+  margin-top: 2px;
+}
+
+.bottomSpacer {
+  height: 12px;
+}
+
+.bottomCta {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 64px;
+  z-index: 20;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  background: transparent;
+}
+
+.sendBtn {
+  width: min(720px, calc(100% - 32px));
+  min-height: 56px;
+  border-radius: 12px;
+  border: none;
+  background: #163c73;
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+  cursor: pointer;
+}

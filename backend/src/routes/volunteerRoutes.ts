@@ -45,4 +45,10 @@ router.put(
 
 router.post("/csv", upload.single("csv"), volunteer.uploadVolunteersCsv);
 
+router.post(
+  "/batch",
+  VolunteerValidator.batchCreateVolunteerValidator,
+  volunteer.uploadVolunteerBatch,
+);
+
 export default router;

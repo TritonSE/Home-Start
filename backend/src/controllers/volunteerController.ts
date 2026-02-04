@@ -2,11 +2,16 @@ import { PassThrough } from "node:stream";
 
 import csvParser from "csv-parser";
 import { validationResult } from "express-validator";
+import createError from "http-errors";
 
 import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
 
 import type { RequestHandler } from "express";
+
+// eslint-disable-next-line regexp/no-super-linear-backtracking
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_NUMBER_REGEX = /^\(?\d{3}\)?[-\s.]?\d{3}[-\s.]?\d{4}$/;
 
 export const getVolunteer: RequestHandler = async (req, res, next) => {
   const volunteerId = req.params.id;
@@ -208,12 +213,51 @@ export const deleteVolunteer: RequestHandler = async (req, res, next) => {
   }
 };
 
-type CSVRawEntry = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  tags: string;
+export const uploadVolunteerBatch: RequestHandler<
+  object,
+  object,
+  { volunteers: CreateVolunteerBody[] }
+> = async (req, res, next) => {
+  const errors = validationResult(req);
+  try {
+    validationErrorParser(errors);
+
+    const { volunteers } = req.body;
+    const bulkOps = volunteers.map((body) => ({
+      updateOne: {
+        filter: {
+          $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
+        },
+        update: {
+          $set: body,
+        },
+        upsert: true,
+      },
+    }));
+    const createdVolunteers = await VolunteerModel.bulkWrite(bulkOps, { ordered: false });
+
+    res.status(200).json({
+      message: "Volunteers created successfully",
+      created: createdVolunteers.upsertedCount,
+      updated: createdVolunteers.modifiedCount,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const validateVolunteer = (volunteer: unknown) => {
+  const typedVolunteer = volunteer as CreateVolunteerBody;
+  if (!typedVolunteer?.firstName || !typedVolunteer?.lastName) {
+    return false;
+  }
+  if (!typedVolunteer?.email || !EMAIL_REGEX.test(typedVolunteer.email)) {
+    return false;
+  }
+  if (!typedVolunteer?.phoneNumber || !PHONE_NUMBER_REGEX.test(typedVolunteer.phoneNumber)) {
+    return false;
+  }
+  return true;
 };
 
 export const uploadVolunteersCsv: RequestHandler = async (req, res, next) => {
@@ -221,9 +265,6 @@ export const uploadVolunteersCsv: RequestHandler = async (req, res, next) => {
     if (req.file === undefined) {
       return res.status(400).json({ error: "No CSV file attached" });
     }
-
-    const existingVolunteers = await VolunteerModel.find();
-    const existingEmails = existingVolunteers.map((volunteer) => volunteer.email);
 
     const volunteerCreationBodies: CreateVolunteerBody[] = [] as CreateVolunteerBody[];
     const bufferStream = new PassThrough();
@@ -233,7 +274,13 @@ export const uploadVolunteersCsv: RequestHandler = async (req, res, next) => {
       bufferStream
         .pipe(csvParser())
         .on("data", (data: Record<string, string>) => {
-          if (existingEmails.includes((data as CSVRawEntry).email)) return;
+          const valid = validateVolunteer(data);
+
+          if (!valid) {
+            bufferStream.destroy();
+            reject(createError(400, `Invalid volunteer data: ${JSON.stringify(data)}`));
+            return;
+          }
 
           const { tags, ...otherData } = data;
           const creationBody = {
@@ -241,30 +288,29 @@ export const uploadVolunteersCsv: RequestHandler = async (req, res, next) => {
             tags: tags.split(" "),
           } as CreateVolunteerBody;
 
-          // console.log("-----------------------------------------------");
-          // console.log("creationBody ", creationBody);
-          // console.log("rawData ", data as CSVRawEntry);
           volunteerCreationBodies.push(creationBody);
         })
         .on("end", resolve)
         .on("error", reject);
     });
 
-    const createdVolunteers = await Promise.all(
-      volunteerCreationBodies.map(async (body) =>
-        VolunteerModel.create({
-          firstName: body.firstName,
-          lastName: body.lastName,
-          email: body.email,
-          phoneNumber: body.phoneNumber,
-          tags: body.tags,
-        }),
-      ),
-    );
+    const bulkOps = volunteerCreationBodies.map((body) => ({
+      updateOne: {
+        filter: {
+          $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
+        },
+        update: {
+          $set: body,
+        },
+        upsert: true,
+      },
+    }));
+    const createdVolunteers = await VolunteerModel.bulkWrite(bulkOps, { ordered: false });
 
-    res.status(201).json({
+    res.status(200).json({
       message: "Volunteers created successfully",
-      created: createdVolunteers,
+      created: createdVolunteers.upsertedCount,
+      updated: createdVolunteers.modifiedCount,
     });
   } catch (err) {
     next(err);

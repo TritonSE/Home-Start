@@ -1,6 +1,7 @@
 "use client";
 import { Volunteer } from "../types/volunteer";
 import styles from "./VolunteerTable.module.css";
+import { fetchVolunteers } from "@/app/api/volunteer";
 import { useState, useEffect } from "react";
 
 interface VolunteerTableProps {
@@ -17,10 +18,9 @@ export default function VolunteerTable({
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
 
   useEffect(() => {
-    async function fetchVolunteers() {
+    async function loadVolunteers() {
       try {
-        const response = await fetch("http://localhost:4000/api/volunteer");
-        const data = await response.json();
+        const data = await fetchVolunteers();
         setVolunteers(data);
         onTotalItemsChange(data.length);
 

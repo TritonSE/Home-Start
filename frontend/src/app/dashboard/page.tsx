@@ -7,8 +7,12 @@ import icCaretRight from "../../../public/chevron_backward.svg";
 import Link from "next/link";
 import Image from "next/image";
 import LogoutButton from "../components/LogoutButton";
+import { useState } from "react";
+import LogoutModal from "../components/LogoutModal";
 
 export default function Dashboard() {
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
   const CARDS = [
     {
       href: "some-route",
@@ -71,7 +75,15 @@ export default function Dashboard() {
           })}
         </div>
       </div>
-      <LogoutButton onLogout={() => {}} />
+      <LogoutButton onLogout={() => setShowLogoutModal(true)} />
+      {showLogoutModal && (
+        <LogoutModal
+          onClose={() => setShowLogoutModal(false)}
+          onConfirm={() => {
+            setShowLogoutModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }

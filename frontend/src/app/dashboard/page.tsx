@@ -9,6 +9,8 @@ import Image from "next/image";
 import LogoutButton from "../components/LogoutButton";
 import { useState } from "react";
 import LogoutModal from "../components/LogoutModal";
+import { signOut } from "firebase/auth";
+import { auth } from "@/firebase/firebase";
 
 export default function Dashboard() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -33,6 +35,14 @@ export default function Dashboard() {
       icon: importExport,
     },
   ] as const;
+
+  const handleLogout = async () => {
+    await signOut(auth);
+
+    // delete the login cookie created in LoginForm
+    document.cookie = "firebaseAuthToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    window.location.href = "/login";
+  };
 
   return (
     <div className={styles.dashboard}>
@@ -79,8 +89,9 @@ export default function Dashboard() {
       {showLogoutModal && (
         <LogoutModal
           onClose={() => setShowLogoutModal(false)}
-          onConfirm={() => {
+          onConfirm={async () => {
             setShowLogoutModal(false);
+            await handleLogout();
           }}
         />
       )}

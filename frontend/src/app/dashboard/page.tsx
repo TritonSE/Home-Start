@@ -6,6 +6,7 @@ import importExport from "../../../public/ion_document.svg";
 import icCaretRight from "../../../public/chevron_backward.svg";
 import Link from "next/link";
 import Image from "next/image";
+import LogoutButton from "../components/LogoutButton";
 
 export default function Dashboard() {
   const CARDS = [
@@ -70,6 +71,7 @@ export default function Dashboard() {
           })}
         </div>
       </div>
+      <LogoutButton onLogout={() => {}} />
     </div>
   );
 }

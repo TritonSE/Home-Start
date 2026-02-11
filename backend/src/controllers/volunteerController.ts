@@ -244,7 +244,7 @@ export const uploadVolunteerBatch: RequestHandler<
         upsert: true,
       },
     }));
-    // Continue writing others if even one fails
+    // Continue writing others even if one fails
     const createdVolunteers = await VolunteerModel.bulkWrite(bulkOps, { ordered: false });
 
     res.status(200).json({
@@ -289,11 +289,14 @@ const validateVolunteer = (volunteer: unknown) => {
   return true;
 };
 
-const ynToBool = (value: string, trueEquiv = "Y"): boolean | undefined => {
-  if (!value) {
-    return undefined;
+const statusKeyToString = (key: string): string => {
+  if (key === "R") {
+    return "returning";
+  } else if (key === "N") {
+    return "new";
+  } else {
+    return key;
   }
-  return value === trueEquiv;
 };
 
 const createCSVCreationBody = (data: Record<string, string>): CreateVolunteerBody => {
@@ -302,19 +305,7 @@ const createCSVCreationBody = (data: Record<string, string>): CreateVolunteerBod
     lastName: data.Last,
     email: data.Email,
     phoneNumber: data.Phone,
-    jobNumber: data["Job #"],
-    new: ynToBool(data.New, "N"),
-    group: data.Group,
-    interestAcknowledged: ynToBool(data["Interest Acknowledged?"]),
-    appRec: ynToBool(data["App Rec'd"]),
-    position: data.Position,
-    confirmEmail: ynToBool(data["Confirm Email"]),
-    assignRemindEmail: ynToBool(data["Assign/ Remind Email"]),
-    completed: ynToBool(data["9%"], "C"),
-    inPhone: ynToBool(data["In Phone?"]),
-    inAbila: ynToBool(data["In Abila?"]),
-    inMailChimp: ynToBool(data["In Mail Chimp?"]),
-    notes: data.Notes,
+    status: statusKeyToString(data.New),
   } as CreateVolunteerBody;
 };
 
@@ -406,6 +397,7 @@ export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
         upsert: true,
       },
     }));
+    // Continue writing others even if one fails
     const createdVolunteers = await VolunteerModel.bulkWrite(bulkOps, { ordered: false });
 
     res.status(200).json({

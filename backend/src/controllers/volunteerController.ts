@@ -8,6 +8,7 @@ import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
 
 import type { RequestHandler } from "express";
+import type { MongoBulkWriteError, WriteError } from "mongodb";
 import type { Buffer } from "node:buffer";
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
@@ -214,6 +215,14 @@ export const deleteVolunteer: RequestHandler = async (req, res, next) => {
   }
 };
 
+type UpdateVolunteerOp = {
+  u: {
+    $set: {
+      email: string;
+    };
+  };
+};
+
 export const uploadVolunteerBatch: RequestHandler<
   object,
   object,
@@ -235,6 +244,7 @@ export const uploadVolunteerBatch: RequestHandler<
         upsert: true,
       },
     }));
+    // Continue writing others if even one fails
     const createdVolunteers = await VolunteerModel.bulkWrite(bulkOps, { ordered: false });
 
     res.status(200).json({
@@ -242,7 +252,25 @@ export const uploadVolunteerBatch: RequestHandler<
       created: createdVolunteers.upsertedCount,
       updated: createdVolunteers.modifiedCount,
     });
-  } catch (err) {
+  } catch (err: any) {
+    if ((err as MongoBulkWriteError)?.name === "MongoBulkWriteError") {
+      const typedErr = err as MongoBulkWriteError;
+      const failedBodies = [];
+      const writeErrors: WriteError[] = Array.isArray(typedErr.writeErrors)
+        ? (typedErr.writeErrors as WriteError[])
+        : [typedErr.writeErrors as WriteError];
+      for (const writeError of writeErrors) {
+        const body = (writeError.err?.op as UpdateVolunteerOp)?.u?.$set;
+        failedBodies.push(body);
+      }
+      res.status(500).json({
+        message: "Error creating volunteers",
+        created: typedErr.result.upsertedCount,
+        updated: typedErr.result.modifiedCount,
+        failed: failedBodies,
+      });
+      return;
+    }
     next(err);
   }
 };
@@ -261,6 +289,32 @@ const validateVolunteer = (volunteer: unknown) => {
   return true;
 };
 
+const ynToBool = (value: string, trueEquiv = "Y"): boolean => {
+  return value === trueEquiv;
+};
+
+const createCSVCreationBody = (data: Record<string, string>): CreateVolunteerBody => {
+  return {
+    firstName: data.First,
+    lastName: data.Last,
+    email: data.Email,
+    phoneNumber: data.Phone,
+    jobNumber: data["Job #"],
+    returning: ynToBool(data.New, "R"),
+    group: data.Group,
+    interestAcknowledged: ynToBool(data["Interest Acknowledged?"]),
+    appRec: ynToBool(data["App Rec'd"]),
+    position: data.Position,
+    confirmEmail: ynToBool(data["Confirm Email"]),
+    assignRemindEmail: ynToBool(data["Assign/ Remind Email"]),
+    completed: ynToBool(data["9%"], "C"),
+    inPhone: ynToBool(data["In Phone?"]),
+    inAbila: ynToBool(data["In Abila?"]),
+    inMailChimp: ynToBool(data["In Mail Chimp?"]),
+    notes: data.Notes,
+  } as CreateVolunteerBody;
+};
+
 const parseVolunteersHelper = async (fileBuffer: Buffer) => {
   const parsedVolunteers: CreateVolunteerBody[] = [] as CreateVolunteerBody[];
   const bufferStream = new PassThrough();
@@ -270,19 +324,18 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
     bufferStream
       .pipe(csvParser())
       .on("data", (data: Record<string, string>) => {
-        const valid = validateVolunteer(data);
+        if (data.Count === "0") {
+          return;
+        }
+        const creationBody = createCSVCreationBody(data);
+
+        const valid = validateVolunteer(creationBody);
 
         if (!valid) {
           bufferStream.destroy();
           reject(createError(400, `Invalid volunteer data: ${JSON.stringify(data)}`));
           return;
         }
-
-        const { tags, ...otherData } = data;
-        const creationBody = {
-          ...otherData,
-          tags: tags.split(" "),
-        } as CreateVolunteerBody;
 
         parsedVolunteers.push(creationBody);
       })
@@ -358,6 +411,24 @@ export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
       updated: createdVolunteers.modifiedCount,
     });
   } catch (err) {
+    if ((err as MongoBulkWriteError)?.name === "MongoBulkWriteError") {
+      const typedErr = err as MongoBulkWriteError;
+      const failedBodies = [];
+      const writeErrors: WriteError[] = Array.isArray(typedErr.writeErrors)
+        ? (typedErr.writeErrors as WriteError[])
+        : [typedErr.writeErrors as WriteError];
+      for (const writeError of writeErrors) {
+        const body = (writeError.err?.op as UpdateVolunteerOp)?.u?.$set;
+        failedBodies.push(body);
+      }
+      res.status(500).json({
+        message: "Error creating volunteers",
+        created: typedErr.result.upsertedCount,
+        updated: typedErr.result.modifiedCount,
+        failed: failedBodies,
+      });
+      return;
+    }
     next(err);
   }
 };

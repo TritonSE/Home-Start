@@ -12,6 +12,45 @@ const volunteerSchema = new Schema({
     default: [],
     required: true,
   },
+  jobNumber: {
+    type: String,
+  },
+  returning: {
+    type: Boolean,
+  },
+  group: {
+    type: String,
+  },
+  interestAcknowledged: {
+    type: Boolean,
+  },
+  appRec: {
+    type: Boolean,
+  },
+  position: {
+    type: String,
+  },
+  confirmEmail: {
+    type: Boolean,
+  },
+  assignRemindEmail: {
+    type: Boolean,
+  },
+  completed: {
+    type: Boolean,
+  },
+  inPhone: {
+    type: Boolean,
+  },
+  inAbila: {
+    type: Boolean,
+  },
+  inMailChimp: {
+    type: Boolean,
+  },
+  notes: {
+    type: String,
+  },
 });
 
 type Volunteer = InferSchemaType<typeof volunteerSchema>;

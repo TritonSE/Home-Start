@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Viga, Open_Sans } from "next/font/google";
+import { Montserrat, Viga, Open_Sans } from "next/font/google";
 import "./globals.css";
 
 const openSans = Open_Sans({
   variable: "--font-open-sans",
   subsets: ["latin"],
   weight: ["400"],
+});
+
+const montserrat = Montserrat({
+  variable: "--font-title-bold",
+  subsets: ["latin"],
+  weight: ["800", "900"],
 });
 
 const geistSans = Geist({
@@ -36,7 +42,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${openSans.variable}`}>{children}</body>
+      <body suppressHydrationWarning className={`${openSans.variable} ${montserrat.variable}`}>
+        {children}
+      </body>
     </html>
   );
 }

@@ -4,7 +4,11 @@ import ExportButton from "./ExportButton";
 import ImportVolunteerModal from "./ImportVolunteerModal";
 import { useState } from "react";
 
-export default function TitleBar() {
+type TitleBarProps = {
+  onImportComplete: () => void;
+};
+
+export default function TitleBar({ onImportComplete }: TitleBarProps) {
   const [open, setOpen] = useState(false);
   return (
     <div className={styles.titleBar}>
@@ -12,7 +16,9 @@ export default function TitleBar() {
       <div className={styles.importExportButtons}>
         <ExportButton />
         <ImportButton onClick={() => setOpen(true)} />
-        {open && <ImportVolunteerModal onClose={() => setOpen(false)} />}
+        {open && (
+          <ImportVolunteerModal onClose={() => setOpen(false)} onComplete={onImportComplete} />
+        )}
       </div>
     </div>
   );

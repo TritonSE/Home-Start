@@ -10,6 +10,7 @@ import { useState } from "react";
 export default function Page() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [showImportSuccess, setShowImportSuccess] = useState(false);
   const itemsPerPage = 6;
 
   const handlePageChange = (page: number) => {
@@ -20,10 +21,30 @@ export default function Page() {
     setTotalItems(total);
   };
 
+  const handleImportComplete = () => {
+    setShowImportSuccess(true);
+  };
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <TitleBar />
+        {showImportSuccess && (
+          <div className={styles.importSuccessBanner}>
+            <div className={styles.importSuccessContent}>
+              <img src="/success.svg" className={styles.importSuccessIcon} />
+              <span className={styles.importSuccessText}>CSV Successfully Uploaded</span>
+            </div>
+            <button
+              type="button"
+              className={styles.importSuccessClose}
+              onClick={() => setShowImportSuccess(false)}
+              aria-label="Dismiss success message"
+            >
+              ×
+            </button>
+          </div>
+        )}
+        <TitleBar onImportComplete={handleImportComplete} />
         <SearchBar />
         <VolunteerTable
           itemsPerPage={itemsPerPage}

@@ -15,7 +15,7 @@ const volunteerSchema = new Schema({
   jobNumber: {
     type: String,
   },
-  returning: {
+  new: {
     type: Boolean,
   },
   group: {

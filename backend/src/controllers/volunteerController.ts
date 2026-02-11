@@ -289,7 +289,10 @@ const validateVolunteer = (volunteer: unknown) => {
   return true;
 };
 
-const ynToBool = (value: string, trueEquiv = "Y"): boolean => {
+const ynToBool = (value: string, trueEquiv = "Y"): boolean | undefined => {
+  if (!value) {
+    return undefined;
+  }
   return value === trueEquiv;
 };
 
@@ -300,7 +303,7 @@ const createCSVCreationBody = (data: Record<string, string>): CreateVolunteerBod
     email: data.Email,
     phoneNumber: data.Phone,
     jobNumber: data["Job #"],
-    returning: ynToBool(data.New, "R"),
+    new: ynToBool(data.New, "N"),
     group: data.Group,
     interestAcknowledged: ynToBool(data["Interest Acknowledged?"]),
     appRec: ynToBool(data["App Rec'd"]),

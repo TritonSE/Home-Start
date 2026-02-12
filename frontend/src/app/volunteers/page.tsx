@@ -10,6 +10,9 @@ import { useState } from "react";
 export default function Page() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [selectedEvent, setSelectedEvent] = useState<Set<string>>(new Set());
+  const [selectedStatus, setSelectedStatus] = useState<Set<string>>(new Set());
+  const [selectedVolunteerType, setSelectedVolunteerType] = useState<Set<string>>(new Set());
   const itemsPerPage = 6;
 
   const handlePageChange = (page: number) => {
@@ -24,11 +27,21 @@ export default function Page() {
     <div className={styles.page}>
       <main className={styles.main}>
         <TitleBar />
-        <SearchBar />
+        <SearchBar
+          selectedEvent={selectedEvent}
+          setSelectedEvent={setSelectedEvent}
+          selectedStatus={selectedStatus}
+          setSelectedStatus={setSelectedStatus}
+          selectedVolunteerType={selectedVolunteerType}
+          setSelectedVolunteerType={setSelectedVolunteerType}
+        />
         <VolunteerTable
           itemsPerPage={itemsPerPage}
           pageNumber={currentPage}
           onTotalItemsChange={handleTotalItemsChange}
+          selectedEvent={selectedEvent}
+          selectedStatus={selectedStatus}
+          selectedVolunteerType={selectedVolunteerType}
         />
         <PageBar
           totalItems={totalItems}

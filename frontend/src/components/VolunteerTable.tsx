@@ -8,35 +8,54 @@ interface VolunteerTableProps {
   itemsPerPage: number;
   pageNumber: number;
   onTotalItemsChange: (total: number) => void;
+  selectedEvent: Set<string>;
+  selectedStatus: Set<string>;
+  selectedVolunteerType: Set<string>;
 }
 
 export default function VolunteerTable({
   itemsPerPage,
   pageNumber,
   onTotalItemsChange,
+  selectedEvent,
+  selectedStatus,
+  selectedVolunteerType,
 }: VolunteerTableProps) {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
 
   useEffect(() => {
     async function loadVolunteers() {
       try {
+        console.log("Attempting to fetch volunteers");
         const data = await fetchVolunteers();
         setVolunteers(data);
-        onTotalItemsChange(data.length);
-
         console.log("Volunteers fetched successfully");
       } catch (error) {
         console.error("Error fetching volunteers:", error);
       }
     }
 
-    fetchVolunteers();
-  }, [onTotalItemsChange]);
+    loadVolunteers();
+  }, []);
+
+  // Combine all selected filters
+  const allSelectedTags = new Set([...selectedEvent, ...selectedStatus, ...selectedVolunteerType]);
+
+  // Filter volunteers based on selected tags
+  const filteredVolunteers = volunteers.filter((volunteer) => {
+    if (allSelectedTags.size === 0) return true; // Show all if no filters selected
+    return volunteer.tags.some((tag) => allSelectedTags.has(tag));
+  });
+
+  // Update total items whenever filters or volunteers change
+  useEffect(() => {
+    onTotalItemsChange(filteredVolunteers.length);
+  }, [filteredVolunteers, onTotalItemsChange]);
 
   // Calculate which volunteers to display based on current page
   const startIndex = (pageNumber - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const displayedVolunteers = volunteers.slice(startIndex, endIndex);
+  const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
 
   return (
     <div className={styles.tableWrapper}>

@@ -1,23 +1,61 @@
 "use client";
 
 import styles from "./SearchBar.module.css";
+import { Volunteer } from "../types/volunteer";
+import { fetchVolunteers } from "@/app/api/volunteer";
 import { useEffect, useRef, useState } from "react";
 
-export default function SearchBar() {
+interface SearchBarProps {
+  selectedEvent: Set<string>;
+  setSelectedEvent: (value: Set<string>) => void;
+  selectedStatus: Set<string>;
+  setSelectedStatus: (value: Set<string>) => void;
+  selectedVolunteerType: Set<string>;
+  setSelectedVolunteerType: (value: Set<string>) => void;
+}
+
+export default function SearchBar({
+  selectedEvent,
+  setSelectedEvent,
+  selectedStatus,
+  setSelectedStatus,
+  selectedVolunteerType,
+  setSelectedVolunteerType,
+}: SearchBarProps) {
   const [search, setSearch] = useState<string | undefined>();
   const [tagSearch, setTagSearch] = useState<string | undefined>();
   const [open, setOpen] = useState<"event" | "status" | "volunteerType" | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<Set<string>>(new Set());
-  const [selectedStatus, setSelectedStatus] = useState<Set<string>>(new Set());
-  const [selectedVolunteerType, setSelectedVolunteerType] = useState<Set<string>>(new Set());
+  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
-  // Dummy tags for now
-  const eventTags = ["Spring Cleanup", "Food Drive", "Community Center", "School Reading Program"];
-  const statusTags = ["Active", "Inactive", "On Leave"];
-  const volunteerTypeTags = ["Regular", "Occasional", "Coordinator"];
+  // Putting all tags under one category for now
+  const [tags, setTags] = useState<string[]>([]);
+  //const eventTags;
+  //const statusTags;
+  //const volunteerTypeTags;
 
   useEffect(() => {
+    async function loadVolunteers() {
+      try {
+        console.log("Attempting to fetch volunteers");
+        const data = await fetchVolunteers();
+        setVolunteers(data);
+        console.log("Volunteers fetched successfully");
+
+        // Extract unique tags from volunteers
+        const uniqueTags = new Set<string>();
+        data.forEach((volunteer) => {
+          volunteer.tags.forEach((tag) => {
+            uniqueTags.add(tag);
+          });
+        });
+        setTags(Array.from(uniqueTags));
+      } catch (error) {
+        console.error("Error fetching volunteers:", error);
+      }
+    }
+    loadVolunteers();
+
     function handleClickOutside(e: MouseEvent) {
       if (!wrapperRef.current) return;
       if (e.target instanceof Node && !wrapperRef.current.contains(e.target)) {
@@ -83,7 +121,6 @@ export default function SearchBar() {
           </span>
           <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
             <input
-            
               type="text"
               value={tagSearch}
               onChange={(e) => setTagSearch(e.target.value)}
@@ -92,7 +129,7 @@ export default function SearchBar() {
           </form>
         </div>
 
-        <div className={styles.dropdownItemContainer}>    
+        <div className={styles.dropdownItemContainer}>
           {items
             .filter((item) => item.toLowerCase().includes(tagSearch?.toLowerCase() || ""))
             .map((item) => (
@@ -106,13 +143,14 @@ export default function SearchBar() {
                   onClick={() => toggleTag(item, cat)}
                   type="button"
                 >
-                  {selected.has(item) && <img src="/Checkbox.svg" alt="checked" className={styles.checkIcon} />}
+                  {selected.has(item) && (
+                    <img src="/Checkbox.svg" alt="checked" className={styles.checkIcon} />
+                  )}
                 </button>
                 <div className={styles.filterLabel}>{item}</div>
               </div>
             ))}
         </div>
-          
       </div>
     );
   }
@@ -136,6 +174,8 @@ export default function SearchBar() {
       </div>
 
       <div className={styles.tagsContainer} ref={wrapperRef}>
+        {/* REMOVING OTHER 2 TAG FILTERS FOR NOW. ALL TAGS CAN BE FOUND UNDER VOLUNTEER TYPE.
+
         <div className={styles.pillWrapper}>
           <button
             className={styles.pillTagEvent}
@@ -144,7 +184,7 @@ export default function SearchBar() {
           >
             <span className={styles.pillTagText}> Event </span>
           </button>
-          {renderDropdown(eventTags, "event")}
+          {renderDropdown(tags, "event")}
         </div>
 
         <div className={styles.pillWrapper}>
@@ -155,9 +195,10 @@ export default function SearchBar() {
           >
             <span className={styles.pillTagText}>Status</span>
           </button>
-          {renderDropdown(statusTags, "status")}
+          {renderDropdown(tags, "status")}
         </div>
 
+      */}
         <div className={styles.pillWrapper}>
           <button
             className={styles.pillTagVolunteerType}
@@ -166,10 +207,22 @@ export default function SearchBar() {
           >
             <span className={styles.pillTagText}>Volunteer Type</span>
           </button>
-          {renderDropdown(volunteerTypeTags, "volunteerType")}
+          {renderDropdown(tags, "volunteerType")}
         </div>
 
-      </div> 
+        <div className={styles.clearFiltersContainer}>
+          <button
+            className={styles.clearFilterButton}
+            onClick={() => {
+              setSelectedEvent(new Set());
+              setSelectedStatus(new Set());
+              setSelectedVolunteerType(new Set());
+            }}
+          >
+            Clear All
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

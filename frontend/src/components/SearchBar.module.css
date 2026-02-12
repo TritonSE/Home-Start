@@ -95,7 +95,7 @@
 
 .pillTagEvent:hover,
 .pillTagStatus:hover,
-.pillTagType:hover {
+.pillTagVolunteerType:hover {
   background-color: #10203b;
   color: #ffffff;
   cursor: pointer;
@@ -123,7 +123,6 @@
   letter-spacing: 0%;
 }
 
-
 .dropdown {
   display: flex;
   flex-direction: column;
@@ -132,19 +131,19 @@
   border-radius: 12px;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.12);
   padding: 24px;
-  gap:8px;
+  gap: 8px;
   width: 391px;
   height: 260px;
 }
 
-.dropdownSearch{
+.dropdownSearch {
   display: flex;
   flex-direction: column;
   width: 343px;
   gap: 8px;
 }
 
-.dropdownItemContainer{
+.dropdownItemContainer {
   display: flex;
   flex-direction: column;
   height: 116px;
@@ -164,9 +163,7 @@
   cursor: pointer;
 }
 
-
-
-.checkBox{
+.checkBox {
   width: 20px;
   height: 20px;
   border-radius: 4px;
@@ -192,7 +189,7 @@
   height: 16px;
 }
 
-.filterLabel{
+.filterLabel {
   width: 167px;
   height: 20px;
   font-family: var(--font-open-sans);
@@ -209,3 +206,30 @@
   font-weight: 700;
 }
 
+.clearFilterButtonCotainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 343px;
+  height: 32px;
+  gap: 8px;
+}
+
+.clearFilterButton {
+  display: flex;
+  flex-direction: row;
+  width: 90px;
+  height: 32px;
+  padding: 8px 12px;
+  gap: 16px;
+  border: none;
+  background-color: transparent;
+  font-family: var(--font-open-sans);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.8px;
+}
+.clearFilterButton:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}

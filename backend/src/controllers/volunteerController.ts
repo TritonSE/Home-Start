@@ -361,15 +361,20 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
       existingSet.add(volunteer.phoneNumber);
     });
 
-    const wouldCreate = parsedVolunteers.filter(
-      (v) => !existingSet.has(v.email) && !existingSet.has(v.phoneNumber),
-    ).length;
-    const wouldUpdate = parsedVolunteers.length - wouldCreate;
+    const wouldCreate = parsedVolunteers
+      .filter((v) => !existingSet.has(v.email) && !existingSet.has(v.phoneNumber))
+      .map((v) => v.email);
+
+    const wouldUpdate = parsedVolunteers
+      .filter((v) => existingSet.has(v.email) || existingSet.has(v.phoneNumber))
+      .map((v) => v.email);
 
     res.status(200).json({
       message: "CSV parsed successfully",
       volunteerInfo: parsedVolunteers,
       total: parsedVolunteers.length,
+      wouldCreateCount: wouldCreate.length,
+      wouldUpdateCount: wouldUpdate.length,
       wouldCreate,
       wouldUpdate,
     });

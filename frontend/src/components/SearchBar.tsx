@@ -1,20 +1,24 @@
 "use client";
 
 import styles from "./SearchBar.module.css";
-import { Volunteer } from "../types/volunteer";
-import { fetchVolunteers } from "@/app/api/volunteer";
 import { useEffect, useRef, useState } from "react";
 
 interface SearchBarProps {
+  search: string;
+  setSearch: (value: string) => void;
+  tags: string[];
   selectedEvent: Set<string>;
-  setSelectedEvent: (value: Set<string>) => void;
+  setSelectedEvent: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   selectedStatus: Set<string>;
-  setSelectedStatus: (value: Set<string>) => void;
+  setSelectedStatus: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   selectedVolunteerType: Set<string>;
-  setSelectedVolunteerType: (value: Set<string>) => void;
+  setSelectedVolunteerType: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
 }
 
 export default function SearchBar({
+  search,
+  setSearch,
+  tags,
   selectedEvent,
   setSelectedEvent,
   selectedStatus,
@@ -22,40 +26,11 @@ export default function SearchBar({
   selectedVolunteerType,
   setSelectedVolunteerType,
 }: SearchBarProps) {
-  const [search, setSearch] = useState<string | undefined>();
   const [tagSearch, setTagSearch] = useState<string | undefined>();
   const [open, setOpen] = useState<"event" | "status" | "volunteerType" | null>(null);
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
-  // Putting all tags under one category for now
-  const [tags, setTags] = useState<string[]>([]);
-  //const eventTags;
-  //const statusTags;
-  //const volunteerTypeTags;
-
   useEffect(() => {
-    async function loadVolunteers() {
-      try {
-        console.log("Attempting to fetch volunteers");
-        const data = await fetchVolunteers();
-        setVolunteers(data);
-        console.log("Volunteers fetched successfully");
-
-        // Extract unique tags from volunteers
-        const uniqueTags = new Set<string>();
-        data.forEach((volunteer) => {
-          volunteer.tags.forEach((tag) => {
-            uniqueTags.add(tag);
-          });
-        });
-        setTags(Array.from(uniqueTags));
-      } catch (error) {
-        console.error("Error fetching volunteers:", error);
-      }
-    }
-    loadVolunteers();
-
     function handleClickOutside(e: MouseEvent) {
       if (!wrapperRef.current) return;
       if (e.target instanceof Node && !wrapperRef.current.contains(e.target)) {
@@ -174,31 +149,6 @@ export default function SearchBar({
       </div>
 
       <div className={styles.tagsContainer} ref={wrapperRef}>
-        {/* REMOVING OTHER 2 TAG FILTERS FOR NOW. ALL TAGS CAN BE FOUND UNDER VOLUNTEER TYPE.
-
-        <div className={styles.pillWrapper}>
-          <button
-            className={styles.pillTagEvent}
-            aria-expanded={open === "event"}
-            onClick={() => toggle("event")}
-          >
-            <span className={styles.pillTagText}> Event </span>
-          </button>
-          {renderDropdown(tags, "event")}
-        </div>
-
-        <div className={styles.pillWrapper}>
-          <button
-            className={styles.pillTagStatus}
-            aria-expanded={open === "status"}
-            onClick={() => toggle("status")}
-          >
-            <span className={styles.pillTagText}>Status</span>
-          </button>
-          {renderDropdown(tags, "status")}
-        </div>
-
-      */}
         <div className={styles.pillWrapper}>
           <button
             className={styles.pillTagVolunteerType}

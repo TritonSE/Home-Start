@@ -1,62 +1,12 @@
 "use client";
 import { Volunteer } from "../types/volunteer";
 import styles from "./VolunteerTable.module.css";
-import { fetchVolunteers } from "@/app/api/volunteer";
-import { useState, useEffect } from "react";
 
 interface VolunteerTableProps {
-  itemsPerPage: number;
-  pageNumber: number;
-  onTotalItemsChange: (total: number) => void;
-  selectedEvent: Set<string>;
-  selectedStatus: Set<string>;
-  selectedVolunteerType: Set<string>;
+  volunteers: Volunteer[];
 }
 
-export default function VolunteerTable({
-  itemsPerPage,
-  pageNumber,
-  onTotalItemsChange,
-  selectedEvent,
-  selectedStatus,
-  selectedVolunteerType,
-}: VolunteerTableProps) {
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
-
-  useEffect(() => {
-    async function loadVolunteers() {
-      try {
-        console.log("Attempting to fetch volunteers");
-        const data = await fetchVolunteers();
-        setVolunteers(data);
-        console.log("Volunteers fetched successfully");
-      } catch (error) {
-        console.error("Error fetching volunteers:", error);
-      }
-    }
-
-    loadVolunteers();
-  }, []);
-
-  // Combine all selected filters
-  const allSelectedTags = new Set([...selectedEvent, ...selectedStatus, ...selectedVolunteerType]);
-
-  // Filter volunteers based on selected tags
-  const filteredVolunteers = volunteers.filter((volunteer) => {
-    if (allSelectedTags.size === 0) return true; // Show all if no filters selected
-    return volunteer.tags.some((tag) => allSelectedTags.has(tag));
-  });
-
-  // Update total items whenever filters or volunteers change
-  useEffect(() => {
-    onTotalItemsChange(filteredVolunteers.length);
-  }, [filteredVolunteers, onTotalItemsChange]);
-
-  // Calculate which volunteers to display based on current page
-  const startIndex = (pageNumber - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
-
+export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
   return (
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
@@ -103,7 +53,7 @@ export default function VolunteerTable({
           </tr>
         </thead>
         <tbody>
-          {displayedVolunteers.map((volunteer) => (
+          {volunteers.map((volunteer) => (
             <tr key={volunteer._id}>
               <td>
                 {volunteer.firstName}, {volunteer.lastName}
@@ -115,11 +65,11 @@ export default function VolunteerTable({
                   {volunteer.tags.map((tag, index) => {
                     let colorClass = styles.greenPillTag;
 
-                    if (tag == "Intern") {
+                    if (tag === "Intern") {
                       colorClass = styles.bluePillTag;
                     }
 
-                    if (tag == "Outside Volunteer") {
+                    if (tag === "Outside Volunteer") {
                       colorClass = styles.orangePillTag;
                     }
                     return (

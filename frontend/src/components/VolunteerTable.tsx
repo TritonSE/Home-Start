@@ -7,12 +7,14 @@ interface VolunteerTableProps {
   itemsPerPage: number;
   pageNumber: number;
   onTotalItemsChange: (total: number) => void;
+  onVolunteerSelect?: (volunteer: Volunteer) => void;
 }
 
 export default function VolunteerTable({
   itemsPerPage,
   pageNumber,
   onTotalItemsChange,
+  onVolunteerSelect,
 }: VolunteerTableProps) {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
 
@@ -33,7 +35,6 @@ export default function VolunteerTable({
     fetchVolunteers();
   }, [onTotalItemsChange]);
 
-  // Calculate which volunteers to display based on current page
   const startIndex = (pageNumber - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const displayedVolunteers = volunteers.slice(startIndex, endIndex);
@@ -94,7 +95,12 @@ export default function VolunteerTable({
         </thead>
         <tbody>
           {displayedVolunteers.map((volunteer) => (
-            <tr key={volunteer._id}>
+            <tr
+              key={volunteer._id}
+              onClick={() => onVolunteerSelect?.(volunteer)}
+              // Changes cursor to hand when hovering over volunteer
+              style={{ cursor: "pointer" }}
+            >
               <td>
                 {volunteer.firstName}, {volunteer.lastName}
               </td>

@@ -7,8 +7,8 @@ type LogoutButtonProps = {
 
 export default function LogoutButton({ onLogout }: LogoutButtonProps) {
   return (
-    <button className={styles.button} onClick={onLogout} type="button" aria-label="Log out">
-      <span className={styles.text}>Logout</span>
+    <button className={styles.button} onClick={onLogout} type="button" aria-label="Log Out">
+      <span className={styles.text}>Log Out</span>
     </button>
   );
 }

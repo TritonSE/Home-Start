@@ -52,13 +52,27 @@ const makePhoneValidator = () =>
   body("phoneNumber")
     .exists()
     .withMessage("phone is required")
-    .bail() // What kind of phone number do we want to enforce?
-    .isMobilePhone("any")
-    .withMessage("phoneNumber must be a valid mobile phone number");
+    .bail()
+    .custom((value: string) => {
+      const digitsOnly = value.replace(/\D/g, "");
+      if (digitsOnly.length !== 10) {
+        throw new Error("phoneNumber must be a valid phone number");
+      }
+      return true;
+    });
 
 const tagsValidator = () => body("tags").optional().isArray();
 
 export const createVolunteerValidator = [
+  makeFirstNameValidator(),
+  makeLastNameValidator(),
+  makeEmailValidator(),
+  makePhoneValidator(),
+  tagsValidator(),
+];
+
+export const updateVolunteerValidator = [
+  makeParamIDValidator(),
   makeFirstNameValidator(),
   makeLastNameValidator(),
   makeEmailValidator(),

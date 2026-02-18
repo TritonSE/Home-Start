@@ -1,20 +1,117 @@
 "use client";
 import { Volunteer } from "../types/volunteer";
 import styles from "./VolunteerProfileModal.module.css";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface VolunteerProfileModalProps {
   volunteer: Volunteer | null;
   isOpen: boolean;
   onClose: () => void;
+  onVolunteerUpdated?: (volunteer: Volunteer) => void;
 }
+
+const STATUS_TAGS = ["Returner", "Expert", "New"];
+const VOLUNTEER_TYPE_TAGS = ["Intern", "Outside Volunteer"];
 
 export default function VolunteerProfileModal({
   volunteer,
   isOpen,
   onClose,
+  onVolunteerUpdated,
 }: VolunteerProfileModalProps) {
   const [activeTab, setActiveTab] = useState("view");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [statusTags, setStatusTags] = useState<string[]>([]);
+  const [typeTags, setTypeTags] = useState<string[]>([]);
+  const [statusInput, setStatusInput] = useState("");
+  const [typeInput, setTypeInput] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  useEffect(() => {
+    if (!volunteer) return;
+    setFirstName(volunteer.firstName);
+    setLastName(volunteer.lastName);
+    setEmail(volunteer.email);
+    setPhoneNumber(volunteer.phoneNumber);
+
+    const nextTypeTags = volunteer.tags.filter((tag) => VOLUNTEER_TYPE_TAGS.includes(tag));
+    const nextStatusTags = volunteer.tags.filter((tag) => !VOLUNTEER_TYPE_TAGS.includes(tag));
+    setTypeTags(nextTypeTags);
+    setStatusTags(nextStatusTags);
+    setStatusInput("");
+    setTypeInput("");
+    setSaveError("");
+  }, [volunteer]);
+
+  const combinedTags = useMemo(() => {
+    const merged = [...statusTags, ...typeTags];
+    return merged.filter((tag, index) => merged.indexOf(tag) === index);
+  }, [statusTags, typeTags]);
+
+  const handleAddStatusTag = () => {
+    const value = statusInput.trim();
+    if (!value || statusTags.includes(value)) return;
+    setStatusTags((prev) => [...prev, value]);
+    setStatusInput("");
+  };
+
+  const handleAddTypeTag = () => {
+    const value = typeInput.trim();
+    if (!value || typeTags.includes(value)) return;
+    setTypeTags((prev) => [...prev, value]);
+    setTypeInput("");
+  };
+
+  const handleRemoveStatusTag = (tag: string) => {
+    setStatusTags((prev) => prev.filter((value) => value !== tag));
+  };
+
+  const handleRemoveTypeTag = (tag: string) => {
+    setTypeTags((prev) => prev.filter((value) => value !== tag));
+  };
+
+  const handleSave = async () => {
+    if (!volunteer) return;
+    setIsSaving(true);
+    setSaveError("");
+    try {
+      const response = await fetch(`http://localhost:4000/api/volunteer/${volunteer._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          phoneNumber,
+          tags: combinedTags,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string };
+        throw new Error(payload.error || "Failed to update volunteer");
+      }
+
+      const updated = (await response.json()) as Volunteer;
+      onVolunteerUpdated?.(updated);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Failed to update volunteer");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const getTagColorClass = (tag: string) => {
+    if (tag === "Outside Volunteer") return styles.tagOrange;
+    if (tag.includes("More")) return styles.tagGreen;
+    return styles.tagTeal;
+  };
 
   if (!isOpen || !volunteer) return null;
 
@@ -49,7 +146,154 @@ export default function VolunteerProfileModal({
         {activeTab === "view" ? (
           <ViewContent volunteer={volunteer} />
         ) : (
-          <EditContent volunteer={volunteer} />
+          <div className={styles.editSection}>
+            <div className={styles.editField}>
+              <label className={styles.editLabel} htmlFor="edit-first-name">
+                First Name
+              </label>
+              <input
+                id="edit-first-name"
+                className={styles.editInput}
+                value={firstName}
+                onChange={(event) => setFirstName(event.target.value)}
+              />
+            </div>
+            <div className={styles.editField}>
+              <label className={styles.editLabel} htmlFor="edit-last-name">
+                Last Name
+              </label>
+              <input
+                id="edit-last-name"
+                className={styles.editInput}
+                value={lastName}
+                onChange={(event) => setLastName(event.target.value)}
+              />
+            </div>
+            <div className={styles.editField}>
+              <label className={styles.editLabel} htmlFor="edit-email">
+                Email
+              </label>
+              <input
+                id="edit-email"
+                className={styles.editInput}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </div>
+            <div className={styles.editField}>
+              <label className={styles.editLabel} htmlFor="edit-phone">
+                Phone
+              </label>
+              <input
+                id="edit-phone"
+                className={styles.editInput}
+                value={phoneNumber}
+                onChange={(event) => setPhoneNumber(event.target.value)}
+              />
+            </div>
+
+            <div className={styles.tagsSection}>
+              <div className={styles.sectionHeaderWithHint}>
+                <span className={styles.sectionTitle}>Status</span>
+                <span className={styles.sectionHint}>Tap x to Remove</span>
+              </div>
+              <div className={styles.tagsRow}>
+                {statusTags.map((tag) => (
+                  <span key={`status-${tag}`} className={`${styles.tag} ${getTagColorClass(tag)}`}>
+                    {tag}
+                    <button
+                      type="button"
+                      className={styles.tagRemove}
+                      onClick={() => handleRemoveStatusTag(tag)}
+                      aria-label={`Remove ${tag}`}
+                    >
+                      <img src="/redx.svg" alt="" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className={styles.searchAddRow}>
+                <div className={styles.searchAddField}>
+                  <input
+                    className={styles.searchAddInput}
+                    placeholder="Add Text"
+                    value={statusInput}
+                    onChange={(event) => setStatusInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        handleAddStatusTag();
+                      }
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className={styles.addButton}
+                  onClick={handleAddStatusTag}
+                  aria-label="Add status tag"
+                >
+                  <img src="/plus.svg" alt="" />
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.tagsSection}>
+              <div className={styles.sectionHeaderWithHint}>
+                <span className={styles.sectionTitle}>Volunteer Type</span>
+                <span className={styles.sectionHint}>Tap x to Remove</span>
+              </div>
+              <div className={styles.tagsRow}>
+                {typeTags.map((tag) => (
+                  <span key={`type-${tag}`} className={`${styles.tag} ${getTagColorClass(tag)}`}>
+                    {tag}
+                    <button
+                      type="button"
+                      className={styles.tagRemove}
+                      onClick={() => handleRemoveTypeTag(tag)}
+                      aria-label={`Remove ${tag}`}
+                    >
+                      <img src="/redx.svg" alt="" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className={styles.searchAddRow}>
+                <div className={styles.searchAddField}>
+                  <input
+                    className={styles.searchAddInput}
+                    placeholder="Add Text"
+                    value={typeInput}
+                    onChange={(event) => setTypeInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        handleAddTypeTag();
+                      }
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className={styles.addButton}
+                  onClick={handleAddTypeTag}
+                  aria-label="Add volunteer type tag"
+                >
+                  <img src="/plus.svg" alt="" />
+                </button>
+              </div>
+            </div>
+
+            {saveError ? <span className={styles.saveError}>{saveError}</span> : null}
+            <button
+              type="button"
+              className={styles.saveButton}
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              {isSaving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -103,8 +347,4 @@ function ViewContent({ volunteer }: { volunteer: Volunteer }) {
       </div>
     </>
   );
-}
-
-function EditContent({ volunteer }: { volunteer: Volunteer }) {
-  return <div>temp</div>;
 }

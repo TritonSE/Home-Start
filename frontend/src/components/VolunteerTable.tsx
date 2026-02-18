@@ -8,6 +8,7 @@ interface VolunteerTableProps {
   pageNumber: number;
   onTotalItemsChange: (total: number) => void;
   onVolunteerSelect?: (volunteer: Volunteer) => void;
+  refreshKey?: number;
 }
 
 export default function VolunteerTable({
@@ -15,6 +16,7 @@ export default function VolunteerTable({
   pageNumber,
   onTotalItemsChange,
   onVolunteerSelect,
+  refreshKey,
 }: VolunteerTableProps) {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
 
@@ -33,7 +35,7 @@ export default function VolunteerTable({
     }
 
     fetchVolunteers();
-  }, [onTotalItemsChange]);
+  }, [onTotalItemsChange, refreshKey]);
 
   const startIndex = (pageNumber - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;

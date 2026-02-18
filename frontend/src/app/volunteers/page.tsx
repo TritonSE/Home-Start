@@ -14,6 +14,7 @@ export default function Page() {
   const [totalItems, setTotalItems] = useState(0);
   const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const itemsPerPage = 6;
 
   const handlePageChange = (page: number) => {
@@ -37,6 +38,7 @@ export default function Page() {
           itemsPerPage={itemsPerPage}
           pageNumber={currentPage}
           onTotalItemsChange={handleTotalItemsChange}
+          refreshKey={refreshKey}
           onVolunteerSelect={(volunteer) => {
             setSelectedVolunteer(volunteer);
             setIsSheetOpen(true);
@@ -53,6 +55,10 @@ export default function Page() {
         volunteer={selectedVolunteer}
         isOpen={isSheetOpen}
         onClose={handleSheetClose}
+        onVolunteerUpdated={(volunteer) => {
+          setSelectedVolunteer(volunteer);
+          setRefreshKey((prev) => prev + 1);
+        }}
       />
     </div>
   );

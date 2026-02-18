@@ -111,6 +111,44 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
   }
 };
 
+type UpdateVolunteerBody = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  tags?: string[];
+};
+
+export const updateVolunteer: RequestHandler = async (req, res, next) => {
+  const errors = validationResult(req);
+  const volunteerId = req.params.id;
+  const { firstName, lastName, email, phoneNumber, tags = [] } = req.body as UpdateVolunteerBody;
+
+  try {
+    validationErrorParser(errors);
+
+    const volunteer = await VolunteerModel.findByIdAndUpdate(
+      volunteerId,
+      {
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        tags,
+      },
+      { new: true, runValidators: true },
+    );
+
+    if (!volunteer) {
+      return res.status(404).json({ error: "Could not find volunteer" });
+    }
+
+    res.status(200).json(volunteer);
+  } catch (err) {
+    next(err);
+  }
+};
+
 type UpdateVolunteerContactBody = {
   email: string;
   phoneNumber: string;

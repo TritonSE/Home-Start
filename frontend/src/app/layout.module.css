@@ -3,27 +3,22 @@
   flex-direction: column-reverse;
   width: 100vw;
   height: 100vh;
+  padding-bottom: 32px;
 }
 
 @media (min-width: 748px) {
   .layout {
     flex-direction: row;
     height: 100vh;
+    padding-bottom: 0px;
   }
 }
 
 .contentArea {
   max-width: 1320px;
   margin: 0 auto;
-  padding-top: 62px;
   width: 100%;
   box-sizing: border-box;
-}
-
-@media (min-width: 748px) {
-  .contentArea {
-    padding: 60px 80px;
-  }
 }
 
 .main {
@@ -32,10 +27,22 @@
   height: "100vh";
   overflow-y: "auto";
   overflow-x: "hidden";
+  margin-top: 62px;
+  margin-left: 15px;
+  margin-right: 15px;
 }
 
 .body {
   margin: 0;
   height: "100vh";
   overflow: "hidden";
+}
+
+@media (min-width: 748px) {
+  .main {
+    margin-top: 60px;
+    margin-bottom: 60px;
+    margin-left: 80px;
+    margin-right: 80px;
+  }
 }

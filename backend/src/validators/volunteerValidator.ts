@@ -19,25 +19,25 @@ const makeParamIDValidator = () =>
 const makeFirstNameValidator = (path = "firstName") =>
   body(path)
     .exists()
-    .withMessage("name is required")
+    .withMessage("first name is required")
     .bail()
     .isString()
-    .withMessage("name must be a string")
+    .withMessage("first name must be a string")
     .bail()
     .notEmpty()
-    .withMessage("name cannot be empty")
+    .withMessage("first name cannot be empty")
     .bail();
 
 const makeLastNameValidator = (path = "lastName") =>
   body(path)
     .exists()
-    .withMessage("name is required")
+    .withMessage("last name is required")
     .bail()
     .isString()
-    .withMessage("name must be a string")
+    .withMessage("last name must be a string")
     .bail()
     .notEmpty()
-    .withMessage("name cannot be empty")
+    .withMessage("last name cannot be empty")
     .bail();
 
 const makeEmailValidator = (path = "email") =>

@@ -79,13 +79,6 @@
   font-family: "Open Sans", sans-serif;
 }
 
-@media (max-width: 767px) {
-  .content {
-    max-width: none;
-    margin: 0;
-  }
-}
-
 .section {
   display: flex;
   flex-direction: column;
@@ -109,14 +102,14 @@
 .editLink {
   border: none;
   background: transparent;
-  color: #1d3a6b;
+  color: #979797;
   font-size: 14px;
-  font-weight: 400;              /* ← 600 → 400（細く） */
-  text-decoration: underline;    /* ← 下線 */
-  text-underline-offset: 2px;    /* ← 下線をちょい下に */
-  text-decoration-thickness: 1px;/* ← 細めの下線 */
+  font-weight: 400;              
+  text-decoration: underline;   
+  text-underline-offset: 2px;  
+  text-decoration-thickness: 1px;
   cursor: pointer;
-  padding: 0;                    /* ボタンの余計なpadding消す */
+  padding: 0;                 
 }
 
 .recipientsCard {
@@ -170,20 +163,20 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-top: 6px;
+  margin-top: 10px;
 }
 
 .check {
   font-size: 18px;
   line-height: 18px;
-  color: #000;
+  color: #979797;
   margin-top: 2px;
 }
 
 .personalizedTitle {
   font-size: 14px;
-  font-weight: 700;
-  color: #000;
+  font-weight: 400;
+  color: #979797; 
 }
 
 .personalizedSub {
@@ -218,4 +211,90 @@
   font-weight: 700;
   font-size: 18px;
   cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  .content {
+    max-width: 920px;
+    padding-top: 24px;      
+    padding-bottom: 140px;   
+  }
+
+  .header {
+    position: sticky;       
+    top: 0;
+    left: auto;
+    right: auto;
+
+    max-width: 920px;
+    margin: 0 auto;
+
+    height: var(--header-h);
+    padding-top: 0;          
+    z-index: 50;
+  }
+
+  .page {
+    padding-top: 0;
+    height: 100vh;
+    overflow: hidden;     
+  }
+
+  .content {
+    height: calc(100vh - var(--header-h));
+    overflow-y: auto;        
+    -webkit-overflow-scrolling: auto;
+  }
+
+  .sectionTitle {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .editLink {
+    font-size: 14px;        
+  }
+
+  .recipientsCard {
+    padding: 18px 18px;
+    border-radius: 14px;
+  }
+
+  .recipientsText {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .previewCard {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  .previewText {
+    font-size: 17px;
+    line-height: 24px;
+  }
+
+  .bottomCta {
+    position: fixed;
+    left: 270px;          
+    right: 0;
+    bottom: 24px;
+
+    padding: 0 16px;
+    z-index: 200;
+
+    display: flex;
+    justify-content: center;
+
+    pointer-events: none;  
+  }
+
+  .sendBtn {
+    pointer-events: auto;
+
+    width: min(920px, calc(100% - 32px));
+    max-width: 920px;
+    min-height: 56px;
+  }
 }

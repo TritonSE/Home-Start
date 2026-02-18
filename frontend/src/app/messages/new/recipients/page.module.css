@@ -1,164 +1,364 @@
 @import url("https://fonts.googleapis.com/css2?family=Viga&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap");
 
-
 .page {
-    height: 100vh;
-    background: #ffffff;
-    display: flex;
-    flex-direction: column;
+  height: 100dvh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  font-family: "Open Sans", sans-serif;
 }
-  
+
 .header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    height: 64px;
-    display: grid;
-    grid-template-columns: 48px 1fr 48px;
-    align-items: center;
-    padding: 0 16px;
-    background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 64px;
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: center;
+  padding: 0 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e6eaea;
 }
-  
+
 .backBtn {
-    width: 44px;
-    height: 44px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
 }
-  
+
 .backIcon {
-    width: 20px;
-    height: 20px;
+  width: 20px;
+  height: 20px;
 }
-  
+
 .title {
-    margin: 0;
-    text-align: center;
-    font-family: var(--Font-family-Headings, Viga);
-    font-weight: 500;
-    font-size: 18px;
-    color: #000;
+  margin: 0;
+  text-align: center;
+  font-family: var(--Font-family-Headings, Viga);
+  font-weight: 500;
+  font-size: 18px;
+  color: #000;
 }
-  
+
 .headerRight {
-    height: 44px;
+  height: 44px;
 }
-  
+
 .content {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    padding: calc(16px + 64px) 16px 160px;
+  
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+}
 
-    padding: 12px 16px 0;
-    padding-top: calc(12px + 64px); 
-    padding-bottom: 160px;
-}
+.searchRow {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #fff;
   
-.searchWrap {
-    height: 44px;
-    border-radius: 8px;
-    border: 1px solid #d9e0e0;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 44px;
+    gap: 12px;
     align-items: center;
-    gap: 10px;
-    padding: 0 12px;
-}
   
+    padding-bottom: 12px; /* 下の余白 */
+}
+
+.searchWrap {
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid #d9e0e0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: #fff;
+}
+
 .searchIcon {
-    opacity: 0.55;
+  opacity: 0.55;
 }
-  
+
 .searchInput {
     border: none;
     outline: none;
     width: 100%;
     font-size: 16px;
     background: transparent;
-}
-  
-.filters {
-    margin-top: 12px;
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-}
-  
-.chip {
-    height: 34px;
-    padding: 0 14px;
-    border-radius: 999px;
-    font-size: 14px;
-    cursor: pointer;
-    white-space: nowrap;
-}
-  
-.chipOutline {
-    background: #ffffff;
-    border: 1.5px solid #1f3f78;
-    color: #1f3f78;
-}
-  
-.chipActive {
-    background: #1f3f78;
-    border: 1.5px solid #1f3f78;
-    color: #ffffff;
-}
-  
-.recipientsHeader {
-    margin-top: 18px;
-}
-  
-.recipientsTitle {
-    font-size: 22px;
-    font-weight: 700;
     color: #000;
-}
+    caret-color: #000;
+    -webkit-text-fill-color: #000; 
+    appearance: none;
+  }
   
+.searchInput::placeholder {
+    color: #9aa3a3;
+    -webkit-text-fill-color: #9aa3a3;
+}
+
+.filterBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid #d9e0e0;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #1d3a6b;
+}
+
+.recipientsHeader {
+  margin-top: 18px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recipientsTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #000;
+}
+
+.selectAllLink {
+  border: none;
+  background: transparent;
+  color: #8a8a8a;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 .list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-  
+
 .bottomCta {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 64px;
-    padding: 16px;
-  
-    background: transparent; 
-    border-top: none;       
-    box-shadow: none;        
-  
-    display: flex;
-    justify-content: center;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 64px;
+  padding: 16px;
+  background: transparent;
+  display: flex;
+  justify-content: center;
 }
-  
+
 .cta,
 .ctaDisabled {
   width: min(720px, calc(100% - 32px));
-  height: 56px;         
-  font-size: 18px;       
+  height: 56px;
+  font-size: 18px;
   font-weight: 700;
-  border-radius: 12px;  
+  border-radius: 12px;
   border: none;
 }
-  
+
 .cta {
-    background: #163c73;
-    color: #ffffff;
-    cursor: pointer;
+  background: #163c73;
+  color: #ffffff;
+  cursor: pointer;
 }
-  
+
 .ctaDisabled {
-    background: #c9cdcd;
-    color: #ffffff;
-    cursor: not-allowed;
+  background: #c9cdcd;
+  color: #ffffff;
+  cursor: not-allowed;
+}
+
+.sheetOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  align-items: end;
+}
+
+.overlayDismiss {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.38);
+  border: none;
+}
+
+.sheet {
+  position: relative;
+  width: 100%;
+  background: #fff;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  padding: 10px 16px 16px;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.sheetHandle {
+  width: 54px;
+  height: 5px;
+  border-radius: 999px;
+  background: #d8d8d8;
+  margin: 6px auto 10px;
+}
+
+.sheetHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sheetTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #000;
+}
+
+.sheetClose {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  color: #000;
+}
+
+.sheetSection {
+  margin-top: 14px;
+}
+
+.sheetSectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 10px;
+}
+
+.sheetChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sheetChip {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1.5px solid #1f3f78;
+  background: #fff;
+  color: #1f3f78;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sheetChipOn {
+  background: #1f3f78;
+  color: #fff;
+}
+
+.sheetActions {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.clearBtn {
+  height: 46px;
+  border-radius: 10px;
+  border: 1.5px solid #cfd6d6;
+  background: #fff;
+  color: #7b7b7b;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.clearBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.applyBtn {
+  height: 46px;
+  border-radius: 10px;
+  border: none;
+  background: #163c73;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sheetBottomPad {
+  height: env(safe-area-inset-bottom);
+}
+
+@media (min-width: 768px) {
+    .page {
+      height: 100vh;
+      overflow: hidden;
+    }
+  
+    .header {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      max-width: 920px;
+      margin: 0 auto;
+      background: #fff;
+      z-index: 50;
+      border-bottom: 1px solid #e6eaea;
+    }
+  
+    .content {
+      overflow-y: auto;
+      height: calc(100vh - 64px);
+      padding: 24px 16px 140px; 
+      max-width: 920px;
+      margin: 0 auto;
+    }
+  
+    .searchRow {
+      position: static;
+      padding-bottom: 0;
+      margin-bottom: 18px;
+      background: transparent;
+      z-index: auto;
+    }
+  
+    .bottomCta {
+      position: fixed;
+      left: 270px;
+      right: 0;
+      bottom: 24px;
+      z-index: 200;
+      padding: 0 16px;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+  
+    .cta,
+    .ctaDisabled {
+      pointer-events: auto;
+      width: min(920px, calc(100% - 32px));
+      height: 56px;
+    }
 }

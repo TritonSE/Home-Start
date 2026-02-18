@@ -10,6 +10,12 @@ const TOKEN = "{{first_name}}";
 export default function NewMessagePage() {
   const router = useRouter();
 
+  const mode = useTextingFlowStore((s) => s.mode);
+  const setMode = useTextingFlowStore((s) => s.setMode);
+
+  const subject = useTextingFlowStore((s) => s.subject);
+  const setSubject = useTextingFlowStore((s) => s.setSubject);
+
   const message = useTextingFlowStore((s) => s.message);
   const setMessage = useTextingFlowStore((s) => s.setMessage);
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
@@ -17,21 +23,32 @@ export default function NewMessagePage() {
   const recipientsCount = selectedRecipientIds.length;
 
   const canReview = useMemo(() => {
-    return recipientsCount > 0 && message.trim().length > 0;
-  }, [recipientsCount, message]);
+    if (recipientsCount === 0) return false;
+
+    const hasMessage = (message || "").trim().length > 0;
+    if (!hasMessage) return false;
+
+    if (mode === "email") {
+      return (subject || "").trim().length > 0;
+    }
+    return true;
+  }, [mode, recipientsCount, subject, message]);
+
 
   const editorRef = useRef<HTMLDivElement | null>(null);
-  const renderHtml = useMemo(() => {
 
+  const renderHtml = useMemo(() => {
     const escaped = (message || "")
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;");
+
     const withPills = escaped.replaceAll(
       TOKEN,
       `<span class="${styles.pill}" contenteditable="false">First Name</span>`
     );
+
     return withPills.replaceAll("\n", "<br/>");
   }, [message]);
 
@@ -39,9 +56,11 @@ export default function NewMessagePage() {
     const el = editorRef.current;
     if (!el) return "";
     const clone = el.cloneNode(true) as HTMLElement;
+
     clone.querySelectorAll(`.${styles.pill}`).forEach((node) => {
       node.replaceWith(document.createTextNode(TOKEN));
     });
+
     return (clone.innerText || "").replace(/\u00A0/g, " ");
   }, []);
 
@@ -49,25 +68,23 @@ export default function NewMessagePage() {
     const el = editorRef.current;
     if (!el) return;
     if (el.innerHTML === renderHtml) return;
-
     el.innerHTML = renderHtml;
   }, [renderHtml]);
 
   const insertFirstName = useCallback(() => {
-    const trimmed = message.trim();
+    const trimmed = (message || "").trim();
     if (trimmed.length === 0) {
       setMessage(`${TOKEN} `);
       return;
     }
 
-    const needsSpace = !message.endsWith(" ");
+    const needsSpace = !(message || "").endsWith(" ");
     setMessage(`${message}${needsSpace ? " " : ""}${TOKEN} `);
+
     requestAnimationFrame(() => {
       editorRef.current?.focus();
     });
   }, [message, setMessage]);
-
-  const toLabel = recipientsCount === 0 ? "" : `${recipientsCount} Volunteers`;
 
   return (
     <div className={styles.page}>
@@ -78,30 +95,60 @@ export default function NewMessagePage() {
       </header>
 
       <main className={styles.content}>
-        {/* To row */}
-        <section className={`${styles.section} ${styles.toSection}`}>
-          <div className={styles.toRow}>
-            <div className={styles.toBox}>
-              <span className={styles.toLabel}>To:</span>
-              {toLabel ? <span className={styles.toPill}>{toLabel}</span> : null}
-            </div>
+        {/* Tabs */}
+        <div className={styles.tabsWrap} role="tablist" aria-label="Message type">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "text"}
+            className={`${styles.tab} ${mode === "text" ? styles.tabActive : ""}`}
+            onClick={() => setMode("text")}
+          >
+            Text
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "email"}
+            className={`${styles.tab} ${mode === "email" ? styles.tabActive : ""}`}
+            onClick={() => setMode("email")}
+          >
+            Email
+          </button>
+        </div>
+
+        {/* To row (new design) */}
+        <section className={styles.toSectionNew}>
+          <div className={styles.toRowNew}>
+            <span className={styles.toLabelNew}>To:</span>
 
             <button
               type="button"
-              className={styles.iconButton}
-              aria-label="Edit recipients"
+              className={styles.selectRecipientsBtn}
               onClick={() => router.push("/messages/new/recipients")}
             >
-              <img src="/edit.svg" alt="" className={styles.icon} />
+              {recipientsCount > 0 ? `${recipientsCount} selected` : "Select Recipients"}
+              <span className={styles.chev} aria-hidden>
+                ›
+              </span>
             </button>
           </div>
         </section>
 
-        {/* Message */}
-        <section className={`${styles.section} ${styles.messageSection}`}>
-          <div className={styles.messageLabel}>Message</div>
+        {/* Subject (Email only) */}
+        {mode === "email" ? (
+          <section className={styles.subjectSectionNew}>
+            <input
+              className={styles.subjectInput}
+              placeholder="Subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+            />
+          </section>
+        ) : null}
 
-          {/* ✅ textareaの代わり */}
+        {/* Message */}
+        <section className={styles.messageSectionNew}>
           <div
             ref={editorRef}
             className={styles.richEditor}
@@ -114,9 +161,11 @@ export default function NewMessagePage() {
         </section>
 
         {/* Insert First Name */}
-        <section className={`${styles.section} ${styles.insertSection}`}>
-          <button type="button" className={styles.insertBtn} onClick={insertFirstName}>
-            <img src="/insertFirstName.svg" alt="" className={styles.insertIcon} />
+        <section className={styles.insertSectionNew}>
+          <button type="button" className={styles.insertBtnNew} onClick={insertFirstName}>
+            <span className={styles.plus} aria-hidden>
+              +
+            </span>
             Insert First Name
           </button>
 
@@ -129,7 +178,6 @@ export default function NewMessagePage() {
         <div className={styles.bottomSpacer} />
       </main>
 
-      {/* Fixed Review Button */}
       <div className={styles.reviewFixed}>
         <button
           type="button"

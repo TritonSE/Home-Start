@@ -4,6 +4,7 @@ import type { InferSchemaType } from "mongoose";
 
 const tagSchema = new Schema({
   name: { type: String, required: true },
+  // Color is a hex string
   color: { type: String, required: true },
   type: { type: String, required: true },
 });

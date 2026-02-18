@@ -43,16 +43,16 @@
 }
 
 .input {
-  width: 100%;
+  width: 370px;
   height: 44px;
   padding: 12px 14px;
-  margin: 8px 0 20px;
-  display: inline-block;
-  background-color: #f5f5f5;
+  margin: 0 0 8px;
+  display: block;
+  background-color: #ffffff;
   border: 1px solid #d0d7de;
   border-radius: 6px;
-  color: var(--Text-2, #4d5358);
-  font-family: "Albert Sans";
+  color: var(--Text-2, #676767);
+  font-family: "Open Sans";
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -89,7 +89,7 @@
 .subtitle2 {
   display: flex;
   align-items: flex-start;
-  gap: 24px;
+  gap: 16px;
   align-self: stretch;
   color: black;
   font-family: "Albert Sans";
@@ -101,14 +101,14 @@
 }
 
 .signInButton {
-  width: 100%;
+  width: 370px;
   display: flex;
-  padding: 14px 24px;
+  height: 56px;
+  padding: 16px 20px;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  align-self: stretch;
-  margin-top: 24px;
+  gap: 16px;
+  margin-top: 0;
   background: #1d3a6b;
   color: var(--Neutral-Base-White, #fafafa);
   border: none;
@@ -120,9 +120,10 @@
   font-size: 16px;
   font-style: medium;
   font-weight: 400;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  box-sizing: border-box;
 }
 
 .signInButton:hover {
@@ -138,8 +139,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 16px;
-  margin-bottom: 24px;
+  margin-top: 0;
+  margin-bottom: 0;
+  width: 370px;
 }
 
 .checkbox {
@@ -203,13 +205,18 @@
 
 .passwordField {
   position: relative;
+  width: 370px;
+}
+
+.passwordField .input {
+  padding-right: 42px;
 }
 
 .eyeIcon {
   position: absolute;
-  right: 14px;
+  right: 12px;
   top: 50%;
-  transform: translateY(-75%);
+  transform: translateY(-50%);
   cursor: pointer;
   background: none;
   border: none;
@@ -219,7 +226,8 @@
   justify-content: center;
   color: #9ca3af;
   font-size: 18px;
-  margin-top: 0;
+  margin: 0;
+  z-index: 10;
 }
 
 .error {
@@ -238,4 +246,8 @@
 
 .innerForm {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 }

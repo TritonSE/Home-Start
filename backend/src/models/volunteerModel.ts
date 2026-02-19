@@ -8,7 +8,8 @@ const volunteerSchema = new Schema({
   email: { type: String, required: true },
   phoneNumber: { type: String, required: true },
   tags: {
-    type: [String],
+    type: [Schema.Types.ObjectId],
+    ref: "Tag",
     default: [],
     required: true,
   },

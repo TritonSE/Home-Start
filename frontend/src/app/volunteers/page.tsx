@@ -1,7 +1,9 @@
 "use client";
 
 import { Volunteer } from "@/types/volunteer";
+import { Tag } from "@/types/tag";
 import { fetchVolunteers } from "@/app/api/volunteer";
+import { fetchTags } from "@/app/api/tag";
 import VolunteerTable from "@/components/VolunteerTable";
 import TitleBar from "@/components/TitleBar";
 import SearchBar from "@/components/SearchBar";
@@ -12,6 +14,7 @@ import { useState, useEffect } from "react";
 export default function Page() {
   // Data state
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   // Filter states
   const [search, setSearch] = useState("");
@@ -23,23 +26,25 @@ export default function Page() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // Fetch volunteers once on mount
+  // Fetch volunteers and tags once on mount
   useEffect(() => {
-    async function loadVolunteers() {
+    async function loadData() {
       try {
-        console.log("Attempting to fetch volunteers");
-        const data = await fetchVolunteers();
-        setVolunteers(data);
-        console.log("Volunteers fetched successfully");
+        const [volunteerData, tagData] = await Promise.all([fetchVolunteers(), fetchTags()]);
+        setVolunteers(volunteerData);
+        setTags(tagData);
       } catch (error) {
-        console.error("Error fetching volunteers:", error);
+        console.error("Error fetching data:", error);
       }
     }
-    loadVolunteers();
+    loadData();
   }, []);
 
-  // Extract unique tags from volunteers
-  const uniqueTags = Array.from(new Set(volunteers.flatMap((volunteer) => volunteer.tags)));
+  // Filter tags by type
+  const eventTags = tags.filter((tag) => tag.type === "event").map((tag) => tag.name);
+  const volunteerTypeTags = tags
+    .filter((tag) => tag.type === "volunteer type")
+    .map((tag) => tag.name);
 
   // Combine all selected tag filters
   const allSelectedTags = new Set([...selectedEvent, ...selectedStatus, ...selectedVolunteerType]);
@@ -48,7 +53,7 @@ export default function Page() {
   const filteredVolunteers = volunteers.filter((volunteer) => {
     // Tag filter
     if (allSelectedTags.size > 0) {
-      const hasMatchingTag = volunteer.tags.some((tag) => allSelectedTags.has(tag));
+      const hasMatchingTag = volunteer.tags?.some((tag) => allSelectedTags.has(tag.name));
       if (!hasMatchingTag) return false;
     }
 
@@ -73,7 +78,8 @@ export default function Page() {
         <SearchBar
           search={search}
           setSearch={setSearch}
-          tags={uniqueTags}
+          eventTags={eventTags}
+          volunteerTypeTags={volunteerTypeTags}
           selectedEvent={selectedEvent}
           setSelectedEvent={setSelectedEvent}
           selectedStatus={selectedStatus}

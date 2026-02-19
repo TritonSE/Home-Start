@@ -79,41 +79,12 @@
   padding-bottom: 8px;
   gap: 8px;
   font-size: 12px;
+  height: 40px;
 }
 
 .tagsContainer {
   display: flex;
   gap: 8px;
-}
-
-.bluePillTag {
-  background-color: #e6f2f3;
-  color: #007a8a;
-}
-
-.bluePillTag:hover {
-  background-color: #007a8ada;
-  color: #ffffff;
-}
-
-.orangePillTag {
-  background-color: #f9efe6;
-  color: #c46200;
-}
-
-.orangePillTag:hover {
-  background-color: #ffc370db;
-  color: #ffffff;
-}
-
-.greenPillTag {
-  background-color: #e6f2ec;
-  color: #007f3f;
-}
-
-.greenPillTag:hover {
-  background-color: #1fcb75cb;
-  color: #ffffff;
 }
 
 .tableWrapper {

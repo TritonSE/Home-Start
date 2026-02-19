@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import { isHttpError } from "http-errors";
 
+import tagRoutes from "./routes/tagRoutes";
 import volunteerRoutes from "./routes/volunteerRoutes";
 
 import type { NextFunction, Request, Response } from "express";
@@ -19,6 +20,7 @@ app.use(
 );
 
 app.use("/api/volunteer", volunteerRoutes);
+app.use("/api/tag", tagRoutes);
 
 app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
   // 500 is the "internal server error" error code, this will be our fallback

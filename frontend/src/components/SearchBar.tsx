@@ -6,7 +6,9 @@ import { useEffect, useRef, useState } from "react";
 interface SearchBarProps {
   search: string;
   setSearch: (value: string) => void;
-  tags: string[];
+  eventTags: string[];
+  volunteerTypeTags: string[];
+
   selectedEvent: Set<string>;
   setSelectedEvent: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   selectedStatus: Set<string>;
@@ -18,7 +20,8 @@ interface SearchBarProps {
 export default function SearchBar({
   search,
   setSearch,
-  tags,
+  eventTags,
+  volunteerTypeTags,
   selectedEvent,
   setSelectedEvent,
   selectedStatus,
@@ -157,7 +160,18 @@ export default function SearchBar({
           >
             <span className={styles.pillTagText}>Volunteer Type</span>
           </button>
-          {renderDropdown(tags, "volunteerType")}
+          {renderDropdown(volunteerTypeTags, "volunteerType")}
+        </div>
+
+        <div className={styles.pillWrapper}>
+          <button
+            className={styles.pillTagEvent}
+            aria-expanded={open === "event"}
+            onClick={() => toggle("event")}
+          >
+            <span className={styles.pillTagText}>Event</span>
+          </button>
+          {renderDropdown(eventTags, "event")}
         </div>
 
         <div className={styles.clearFiltersContainer}>

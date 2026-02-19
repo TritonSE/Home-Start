@@ -11,10 +11,11 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
         <colgroup>
-          <col style={{ width: "197px" }} />
-          <col style={{ width: "251px" }} />
-          <col style={{ width: "251px" }} />
-          <col style={{ width: "302px" }} />
+          <col style={{ width: "170px" }} />
+          <col style={{ width: "140px" }} />
+          <col style={{ width: "220px" }} />
+          <col style={{ width: "140px" }} />
+          <col style={{ width: "200px" }} />
         </colgroup>
         <thead>
           <tr>
@@ -44,7 +45,15 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
             </th>
             <th>
               <div className={styles.headerContent}>
-                <span>Tags</span>
+                <span>Volunteer Type</span>
+                <span>
+                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+                </span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Event</span>
                 <span>
                   <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
                 </span>
@@ -62,22 +71,15 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
               <td>{volunteer.email}</td>
               <td>
                 <div className={styles.tagsContainer}>
-                  {volunteer.tags.map((tag, index) => {
-                    let colorClass = styles.greenPillTag;
-
-                    if (tag === "Intern") {
-                      colorClass = styles.bluePillTag;
-                    }
-
-                    if (tag === "Outside Volunteer") {
-                      colorClass = styles.orangePillTag;
-                    }
+                  {volunteer.tags?.map((tag, index) => {
+                    const colorClass = styles.pillTag;
                     return (
                       <span
                         key={`col1-${volunteer._id}-${tag}-${index}`}
                         className={`${styles.pillTag} ${colorClass}`}
+                        style={{ backgroundColor: tag.color }}
                       >
-                        {tag}
+                        {tag.name}
                       </span>
                     );
                   })}

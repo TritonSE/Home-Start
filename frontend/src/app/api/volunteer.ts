@@ -1,12 +1,14 @@
 import { Volunteer } from "@/types/volunteer";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export async function fetchVolunteers(): Promise<Volunteer[]> {
   try {
-    console.log("Starting fetch to http://localhost:4000/api/volunteer");
+    console.log(`${API_URL}/api/volunteer`);
 
     let response: Response;
     try {
-      response = await fetch("http://localhost:4000/api/volunteer");
+      response = await fetch(`${API_URL}/api/volunteer`);
     } catch (fetchError) {
       console.error("Fetch network error:", fetchError);
       throw new Error(`Network error during fetch: ${fetchError}`);

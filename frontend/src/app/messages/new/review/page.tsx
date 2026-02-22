@@ -43,7 +43,7 @@ export default function ReviewAndSendPage() {
     setSending(true);
 
     try {
-      // TODO: backendできたらここでAPI叩く
+      // TODO
       await new Promise((r) => setTimeout(r, 250));
 
       setShowSuccess(true);

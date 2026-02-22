@@ -9,6 +9,10 @@
   font-family: "Open Sans", sans-serif;
 }
 
+.page * {
+  font-family: inherit;
+}
+
 .header {
   position: sticky;
   top: 0;
@@ -72,7 +76,7 @@
     gap: 12px;
     align-items: center;
   
-    padding-bottom: 12px; /* 下の余白 */
+    padding-bottom: 12px; 
 }
 
 .searchWrap {
@@ -166,7 +170,7 @@
   width: min(720px, calc(100% - 32px));
   height: 56px;
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 400;
   border-radius: 12px;
   border: none;
 }

@@ -78,13 +78,10 @@ export default function RecipientsPage() {
     const current = new Set(selectedRecipientIds);
 
     if (!allFilteredSelected) {
-      // select all (union)
       for (const id of filteredIds) current.add(id);
       setRecipients(Array.from(current));
       return;
     }
-
-    // deselect all filtered (subtract)
     for (const id of filteredIds) current.delete(id);
     setRecipients(Array.from(current));
   }, [allFilteredSelected, filteredIds, selectedRecipientIds, setRecipients]);
@@ -103,7 +100,6 @@ export default function RecipientsPage() {
   };
 
   const applyFilters = () => {
-    // 今はUIだけ（データが来たらここで絞り込みロジック入れる）
     setFiltersOpen(false);
   };
 

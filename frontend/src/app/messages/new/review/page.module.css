@@ -11,6 +11,11 @@
   display: flex;
   flex-direction: column;
   padding-top: calc(var(--header-h) + env(safe-area-inset-top));
+  font-family: "Open Sans", sans-serif;
+}
+
+.page * {
+  font-family: inherit;
 }
 
 .header {
@@ -208,9 +213,18 @@
   border: none;
   background: #163c73;
   color: #fff;
-  font-weight: 700;
+  font-weight: 400;
   font-size: 18px;
   cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  .content {
+    max-width: none;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 
 @media (min-width: 768px) {

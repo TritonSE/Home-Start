@@ -71,18 +71,38 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
               <td>{volunteer.email}</td>
               <td>
                 <div className={styles.tagsContainer}>
-                  {volunteer.tags?.map((tag, index) => {
-                    const colorClass = styles.pillTag;
-                    return (
-                      <span
-                        key={`col1-${volunteer._id}-${tag}-${index}`}
-                        className={`${styles.pillTag} ${colorClass}`}
-                        style={{ backgroundColor: tag.color }}
-                      >
-                        {tag.name}
-                      </span>
-                    );
-                  })}
+                  {volunteer.tags
+                    ?.filter((tag) => tag.type === "volunteer type")
+                    .map((tag, index) => {
+                      const colorClass = styles.pillTag;
+                      return (
+                        <span
+                          key={`col1-${volunteer._id}-${tag}-${index}`}
+                          className={`${styles.pillTag} ${colorClass}`}
+                          style={{ backgroundColor: tag.color }}
+                        >
+                          {tag.name}
+                        </span>
+                      );
+                    })}
+                </div>
+              </td>
+              <td>
+                <div className={styles.tagsContainer}>
+                  {volunteer.tags
+                    ?.filter((tag) => tag.type === "event")
+                    .map((tag, index) => {
+                      const colorClass = styles.pillTag;
+                      return (
+                        <span
+                          key={`col2-${volunteer._id}-${tag}-${index}`}
+                          className={`${styles.pillTag} ${colorClass}`}
+                          style={{ backgroundColor: tag.color }}
+                        >
+                          {tag.name}
+                        </span>
+                      );
+                    })}
                 </div>
               </td>
             </tr>

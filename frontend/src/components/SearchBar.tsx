@@ -154,7 +154,17 @@ export default function SearchBar({
       <div className={styles.tagsContainer} ref={wrapperRef}>
         <div className={styles.pillWrapper}>
           <button
-            className={styles.pillTagVolunteerType}
+            className={`${styles.pillTagStatus} ${selectedStatus.size > 0 ? styles.pillTagActive : ""}`}
+            aria-expanded={open === "status"}
+            onClick={() => toggle("status")}
+          >
+            <span className={styles.pillTagText}>Status</span>
+          </button>
+        </div>
+
+        <div className={styles.pillWrapper}>
+          <button
+            className={`${styles.pillTagVolunteerType} ${selectedVolunteerType.size > 0 ? styles.pillTagActive : ""}`}
             aria-expanded={open === "volunteerType"}
             onClick={() => toggle("volunteerType")}
           >
@@ -165,7 +175,7 @@ export default function SearchBar({
 
         <div className={styles.pillWrapper}>
           <button
-            className={styles.pillTagEvent}
+            className={`${styles.pillTagEvent} ${selectedEvent.size > 0 ? styles.pillTagActive : ""}`}
             aria-expanded={open === "event"}
             onClick={() => toggle("event")}
           >

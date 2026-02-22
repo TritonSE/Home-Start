@@ -95,7 +95,8 @@
 
 .pillTagEvent:hover,
 .pillTagStatus:hover,
-.pillTagVolunteerType:hover {
+.pillTagVolunteerType:hover,
+.pillTagActive {
   background-color: #10203b;
   color: #ffffff;
   cursor: pointer;

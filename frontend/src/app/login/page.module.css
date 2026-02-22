@@ -1,0 +1,253 @@
+.page {
+  background-color: white;
+  background-image: url("/signUpBackground.svg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form {
+  background-color: white;
+  width: 542px;
+  height: auto;
+  padding: 48px 64px;
+  font-size: 14px;
+}
+
+.logoContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  color: #000;
+  font-family:
+    var(--font-geist-sans),
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-size: 21px;
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.input {
+  width: 370px;
+  height: 44px;
+  padding: 12px 14px;
+  margin: 0 0 8px;
+  display: block;
+  background-color: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  color: var(--Text-2, #676767);
+  font-family: "Open Sans";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #1f4e78;
+  background-color: white;
+}
+
+.input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.inputError {
+  border-color: #a40026 !important;
+  color: #a40026;
+}
+
+.passwordError {
+  color: #a40026;
+  font-family: "Albert Sans";
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: -16px;
+  margin-bottom: 16px;
+  padding-left: 2px;
+}
+
+.subtitle2 {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  align-self: stretch;
+  color: black;
+  font-family: "Albert Sans";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  margin-top: 24px;
+}
+
+.signInButton {
+  width: 370px;
+  display: flex;
+  height: 56px;
+  padding: 16px 20px;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 0;
+  background: #1d3a6b;
+  color: var(--Neutral-Base-White, #fafafa);
+  border: none;
+  font-family:
+    var(--font-geist-sans),
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-size: 16px;
+  font-style: medium;
+  font-weight: 400;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.signInButton:hover {
+  background-color: #1a3a5a;
+}
+
+.signInButton:active {
+  background-color: #152d47;
+}
+
+.rememberMeContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 0;
+  margin-bottom: 0;
+  width: 370px;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  appearance: none;
+  border: 2px solid #d0d7de;
+  border-radius: 3px;
+  cursor: pointer;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.checkbox:checked {
+  background-color: #1f4e78;
+  border: 2px solid #1f4e78;
+}
+
+.checkbox:checked::after {
+  content: "✓";
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.rememberMeLabel {
+  color: var(--Neutral-Black, #000);
+  font-family: "Albert Sans";
+  font-size: 14px;
+  font-weight: 500;
+  line-height: normal;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.formEntry {
+  color: var(--Neutral-Black, #000);
+  font-family: "Albert Sans";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.linkText {
+  color: #9ca3af;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.linkText:hover {
+  color: #1f4e78;
+}
+
+.passwordField {
+  position: relative;
+  width: 370px;
+}
+
+.passwordField .input {
+  padding-right: 42px;
+}
+
+.eyeIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 18px;
+  margin: 0;
+  z-index: 10;
+}
+
+.error {
+  color: #60696f;
+  font-family: "Albert Sans";
+  font-size: 14px;
+  margin-bottom: 4px;
+  margin-top: 8px;
+}
+
+.successText {
+  margin-top: 12px;
+  color: var(--Primary, #057e6f);
+  font-size: 14px;
+}
+
+.innerForm {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}

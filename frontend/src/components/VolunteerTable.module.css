@@ -117,8 +117,26 @@
 }
 
 .tableWrapper {
-  max-width: 1050px;
+  max-width: 100%;
   overflow-x: auto;
   overflow-y: visible;
   min-height: 400px;
+}
+
+.checkboxCell {
+  width: 44px;
+  text-align: center;
+  padding-left: 12px;
+  padding-right: 4px;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #1a3a5c;
+}
+
+.selectedRow td {
+  background-color: #eef4fb !important;
 }

@@ -20,7 +20,7 @@ app.use(
 
 app.use("/api/volunteer", volunteerRoutes);
 
-app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
+app.use((error: Error, req: Request, res: Response, _next: NextFunction) => {
   // 500 is the "internal server error" error code, this will be our fallback
   let statusCode = 500;
   let errorMessage = "An error has occurred.";

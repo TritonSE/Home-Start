@@ -1,48 +1,43 @@
 "use client";
 import { Volunteer } from "../types/volunteer";
 import styles from "./VolunteerTable.module.css";
-import Image from "next/image";
 import { useState, useEffect } from "react";
 
 interface VolunteerTableProps {
-  itemsPerPage: number;
-  pageNumber: number;
-  onTotalItemsChange: (total: number) => void;
+  volunteers: Volunteer[];
 }
 
-export default function VolunteerTable({
-  itemsPerPage,
-  pageNumber,
-  onTotalItemsChange,
-}: VolunteerTableProps) {
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    async function fetchVolunteers() {
-      try {
-        const response = await fetch("http://localhost:4000/api/volunteer");
-        const data = await response.json();
-        setVolunteers(data);
-        onTotalItemsChange(data.length);
+  const allSelected = volunteers.length > 0 && volunteers.every((v) => selectedIds.has(v._id));
+  const someSelected = volunteers.some((v) => selectedIds.has(v._id));
 
-        console.log("Volunteers fetched successfully");
-      } catch (error) {
-        console.error("Error fetching volunteers:", error);
-      }
+  function toggleAll() {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(volunteers.map((v) => v._id)));
     }
+  }
 
-    fetchVolunteers();
-  }, [onTotalItemsChange]);
-
-  // Calculate which volunteers to display based on current page
-  const startIndex = (pageNumber - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const displayedVolunteers = volunteers.slice(startIndex, endIndex);
+  function toggleOne(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
 
   return (
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
         <colgroup>
+          <col style={{ width: "44px" }} />
           <col style={{ width: "197px" }} />
           <col style={{ width: "251px" }} />
           <col style={{ width: "251px" }} />
@@ -50,11 +45,23 @@ export default function VolunteerTable({
         </colgroup>
         <thead>
           <tr>
+            <th className={styles.checkboxCell}>
+              <input
+                type="checkbox"
+                className={styles.checkbox}
+                checked={allSelected}
+                ref={(el) => {
+                  if (el) el.indeterminate = someSelected && !allSelected;
+                }}
+                onChange={toggleAll}
+                aria-label="Select all volunteers"
+              />
+            </th>
             <th>
               <div className={styles.headerContent}>
                 <span>Volunteer</span>
                 <span>
-                  <Image src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
                 </span>
               </div>
             </th>
@@ -62,7 +69,7 @@ export default function VolunteerTable({
               <div className={styles.headerContent}>
                 <span>Phone Number</span>
                 <span>
-                  <Image src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
                 </span>
               </div>
             </th>
@@ -70,7 +77,7 @@ export default function VolunteerTable({
               <div className={styles.headerContent}>
                 <span>Email</span>
                 <span>
-                  <Image src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
                 </span>
               </div>
             </th>
@@ -78,15 +85,27 @@ export default function VolunteerTable({
               <div className={styles.headerContent}>
                 <span>Tags</span>
                 <span>
-                  <Image src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
                 </span>
               </div>
             </th>
           </tr>
         </thead>
         <tbody>
-          {displayedVolunteers.map((volunteer) => (
-            <tr key={volunteer._id}>
+          {volunteers.map((volunteer) => (
+            <tr
+              key={volunteer._id}
+              className={selectedIds.has(volunteer._id) ? styles.selectedRow : ""}
+            >
+              <td className={styles.checkboxCell}>
+                <input
+                  type="checkbox"
+                  className={styles.checkbox}
+                  checked={selectedIds.has(volunteer._id)}
+                  onChange={() => toggleOne(volunteer._id)}
+                  aria-label={`Select ${volunteer.firstName} ${volunteer.lastName}`}
+                />
+              </td>
               <td>
                 {volunteer.firstName}, {volunteer.lastName}
               </td>
@@ -97,11 +116,11 @@ export default function VolunteerTable({
                   {volunteer.tags.map((tag, index) => {
                     let colorClass = styles.greenPillTag;
 
-                    if (tag == "Intern") {
+                    if (tag === "Intern") {
                       colorClass = styles.bluePillTag;
                     }
 
-                    if (tag == "Outside Volunteer") {
+                    if (tag === "Outside Volunteer") {
                       colorClass = styles.orangePillTag;
                     }
                     return (

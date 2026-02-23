@@ -1,3 +1,4 @@
+import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import { isHttpError } from "http-errors";
@@ -36,6 +37,12 @@ const PORT = 4000;
 
 // Middleware
 app.use(express.json());
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_ORIGIN,
+  }),
+);
 
 async function startServer() {
   const mongoString = process.env.DATABASE_URL;

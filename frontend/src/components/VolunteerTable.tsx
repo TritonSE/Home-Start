@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { Volunteer } from "../types/volunteer";
 import styles from "./VolunteerTable.module.css";
 
@@ -7,10 +8,36 @@ interface VolunteerTableProps {
 }
 
 export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const allSelected = volunteers.length > 0 && volunteers.every((v) => selectedIds.has(v._id));
+  const someSelected = volunteers.some((v) => selectedIds.has(v._id));
+
+  function toggleAll() {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(volunteers.map((v) => v._id)));
+    }
+  }
+
+  function toggleOne(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
   return (
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
         <colgroup>
+          <col style={{ width: "44px" }} />
           <col style={{ width: "197px" }} />
           <col style={{ width: "251px" }} />
           <col style={{ width: "251px" }} />
@@ -18,6 +45,18 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
         </colgroup>
         <thead>
           <tr>
+            <th className={styles.checkboxCell}>
+              <input
+                type="checkbox"
+                className={styles.checkbox}
+                checked={allSelected}
+                ref={(el) => {
+                  if (el) el.indeterminate = someSelected && !allSelected;
+                }}
+                onChange={toggleAll}
+                aria-label="Select all volunteers"
+              />
+            </th>
             <th>
               <div className={styles.headerContent}>
                 <span>Volunteer</span>
@@ -54,7 +93,19 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
         </thead>
         <tbody>
           {volunteers.map((volunteer) => (
-            <tr key={volunteer._id}>
+            <tr
+              key={volunteer._id}
+              className={selectedIds.has(volunteer._id) ? styles.selectedRow : ""}
+            >
+              <td className={styles.checkboxCell}>
+                <input
+                  type="checkbox"
+                  className={styles.checkbox}
+                  checked={selectedIds.has(volunteer._id)}
+                  onChange={() => toggleOne(volunteer._id)}
+                  aria-label={`Select ${volunteer.firstName} ${volunteer.lastName}`}
+                />
+              </td>
               <td>
                 {volunteer.firstName}, {volunteer.lastName}
               </td>

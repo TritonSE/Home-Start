@@ -22,6 +22,8 @@ export default function Page() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [showImportSuccess, setShowImportSuccess] = useState(false);
   const itemsPerPage = 6;
 
   // Fetch volunteers once on mount
@@ -67,29 +69,51 @@ export default function Page() {
   const endIndex = startIndex + itemsPerPage;
   const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
 
+  const handleImportComplete = () => {
+    setShowImportSuccess(true);
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <TitleBar />
-        <SearchBar
-          search={search}
-          setSearch={setSearch}
-          tags={uniqueTags}
-          selectedEvent={selectedEvent}
-          setSelectedEvent={setSelectedEvent}
-          selectedStatus={selectedStatus}
-          setSelectedStatus={setSelectedStatus}
-          selectedVolunteerType={selectedVolunteerType}
-          setSelectedVolunteerType={setSelectedVolunteerType}
-        />
-        <VolunteerTable volunteers={displayedVolunteers} />
-        <PageBar
-          totalItems={filteredVolunteers.length}
-          currentPage={currentPage}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-        />
-      </main>
-    </div>
+    <Sidebar>
+      <div className={styles.page}>
+        <main className={styles.main}>
+          {showImportSuccess && (
+            <div className={styles.importSuccessBanner}>
+              <div className={styles.importSuccessContent}>
+                <img src="/success.svg" className={styles.importSuccessIcon} />
+                <span className={styles.importSuccessText}>CSV Successfully Uploaded</span>
+              </div>
+              <button
+                type="button"
+                className={styles.importSuccessClose}
+                onClick={() => setShowImportSuccess(false)}
+                aria-label="Dismiss success message"
+              >
+                ×
+              </button>
+            </div>
+          )}
+          <TitleBar onImportComplete={handleImportComplete} />
+          <SearchBar
+            search={search}
+            setSearch={setSearch}
+            tags={uniqueTags}
+            selectedEvent={selectedEvent}
+            setSelectedEvent={setSelectedEvent}
+            selectedStatus={selectedStatus}
+            setSelectedStatus={setSelectedStatus}
+            selectedVolunteerType={selectedVolunteerType}
+            setSelectedVolunteerType={setSelectedVolunteerType}
+          />
+          <VolunteerTable volunteers={displayedVolunteers} />
+          <PageBar
+            totalItems={filteredVolunteers.length}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
+        </main>
+      </div>
+    </Sidebar>
   );
 }

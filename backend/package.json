@@ -24,6 +24,7 @@
     "envalid": "^8.1.0",
     "express": "^5.2.1",
     "express-validator": "^7.2.1",
+    "firebase-admin": "^13.6.1",
     "http-errors": "^2.0.0",
     "module-alias": "^2.2.3",
     "mongodb": "^6.20.0",

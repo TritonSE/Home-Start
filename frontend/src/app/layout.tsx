@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Open_Sans, Viga } from "next/font/google";
 import "./globals.css";
-import Sidebar from "./components/sidebar";
 import styles from "./layout.module.css";
 
 const geistSans = Geist({
@@ -37,12 +36,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${openSans.variable} ${viga.variable} ${styles.body}`}
       >
-        <div className={styles.layout}>
-          <Sidebar />
-          <main className={styles.main}>
-            <div className={styles.contentArea}>{children}</div>
-          </main>
-        </div>
+        {children}
       </body>
     </html>
   );

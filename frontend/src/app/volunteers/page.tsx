@@ -68,28 +68,30 @@ export default function Page() {
   const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
 
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <TitleBar />
-        <SearchBar
-          search={search}
-          setSearch={setSearch}
-          tags={uniqueTags}
-          selectedEvent={selectedEvent}
-          setSelectedEvent={setSelectedEvent}
-          selectedStatus={selectedStatus}
-          setSelectedStatus={setSelectedStatus}
-          selectedVolunteerType={selectedVolunteerType}
-          setSelectedVolunteerType={setSelectedVolunteerType}
-        />
-        <VolunteerTable volunteers={displayedVolunteers} />
-        <PageBar
-          totalItems={filteredVolunteers.length}
-          currentPage={currentPage}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-        />
-      </main>
-    </div>
+    <Sidebar>
+      <div className={styles.page}>
+        <main className={styles.main}>
+          <TitleBar />
+          <SearchBar
+            search={search}
+            setSearch={setSearch}
+            tags={uniqueTags}
+            selectedEvent={selectedEvent}
+            setSelectedEvent={setSelectedEvent}
+            selectedStatus={selectedStatus}
+            setSelectedStatus={setSelectedStatus}
+            selectedVolunteerType={selectedVolunteerType}
+            setSelectedVolunteerType={setSelectedVolunteerType}
+          />
+          <VolunteerTable volunteers={displayedVolunteers} />
+          <PageBar
+            totalItems={filteredVolunteers.length}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
+        </main>
+      </div>
+    </Sidebar>
   );
 }

@@ -1,10 +1,10 @@
 import { validationResult } from "express-validator";
 
 import TagModel from "../models/tagModel";
+import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
 
 import type { RequestHandler } from "express";
-
 export const getTag: RequestHandler = async (req, res, next) => {
   const tagId = req.params.id;
 
@@ -63,10 +63,16 @@ export const deleteTag: RequestHandler = async (req, res, next) => {
   const tagId = req.params.id;
 
   try {
-    const tag = await TagModel.findByIdAndDelete(tagId);
+    const tag = await TagModel.findById(tagId);
+
     if (!tag) {
       return res.status(404).json({ error: "Could not find tag" });
     }
+
+    await VolunteerModel.updateMany({ tags: tagId }, { $pull: { tags: tagId } });
+
+    await TagModel.findByIdAndDelete(tagId);
+
     res.status(200).json({ message: "Tag deleted successfully" });
   } catch (err) {
     next(err);

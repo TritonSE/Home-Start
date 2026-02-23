@@ -1,6 +1,7 @@
 "use client";
 import { Volunteer } from "../types/volunteer";
 import styles from "./VolunteerTable.module.css";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 
 interface VolunteerTableProps {
@@ -53,7 +54,7 @@ export default function VolunteerTable({
               <div className={styles.headerContent}>
                 <span>Volunteer</span>
                 <span>
-                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+                  <Image src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
                 </span>
               </div>
             </th>
@@ -61,7 +62,7 @@ export default function VolunteerTable({
               <div className={styles.headerContent}>
                 <span>Phone Number</span>
                 <span>
-                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+                  <Image src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
                 </span>
               </div>
             </th>
@@ -69,7 +70,7 @@ export default function VolunteerTable({
               <div className={styles.headerContent}>
                 <span>Email</span>
                 <span>
-                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+                  <Image src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
                 </span>
               </div>
             </th>
@@ -77,7 +78,7 @@ export default function VolunteerTable({
               <div className={styles.headerContent}>
                 <span>Tags</span>
                 <span>
-                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+                  <Image src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
                 </span>
               </div>
             </th>

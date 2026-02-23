@@ -2,6 +2,7 @@
 
 import styles from "./SearchBar.module.css";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function SearchBar() {
   const [search, setSearch] = useState<string>();
@@ -11,7 +12,7 @@ export default function SearchBar() {
       <div className={styles.searchField}>
         <div className={styles.inputField}>
           <span className={styles.ic_search}>
-            <img src="/Union.svg" alt="Union logo" className={styles.union} />
+            <Image src="/Union.svg" alt="Union logo" className={styles.union} />
           </span>
           <form className={styles.textField}>
             <input type="text" value={search} placeholder="Search Volunteer"></input>

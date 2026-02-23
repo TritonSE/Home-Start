@@ -88,10 +88,14 @@ export default function RecipientsPage() {
 
   const toggleFilterChip = (kind: "event" | "status", value: string) => {
     if (kind === "event") {
-      setSelectedEvents((prev) => (prev.includes(value) ? prev.filter((x) => x !== value) : [...prev, value]));
+      setSelectedEvents((prev) =>
+        prev.includes(value) ? prev.filter((x) => x !== value) : [...prev, value],
+      );
       return;
     }
-    setSelectedStatuses((prev) => (prev.includes(value) ? prev.filter((x) => x !== value) : [...prev, value]));
+    setSelectedStatuses((prev) =>
+      prev.includes(value) ? prev.filter((x) => x !== value) : [...prev, value],
+    );
   };
 
   const clearAllFilters = () => {
@@ -196,7 +200,12 @@ export default function RecipientsPage() {
             <div className={styles.sheetHandle} aria-hidden />
             <div className={styles.sheetHeader}>
               <div className={styles.sheetTitle}>Filters</div>
-              <button type="button" className={styles.sheetClose} onClick={() => setFiltersOpen(false)} aria-label="Close">
+              <button
+                type="button"
+                className={styles.sheetClose}
+                onClick={() => setFiltersOpen(false)}
+                aria-label="Close"
+              >
                 ×
               </button>
             </div>

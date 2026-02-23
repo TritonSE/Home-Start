@@ -109,12 +109,12 @@
   background: transparent;
   color: #979797;
   font-size: 14px;
-  font-weight: 400;              
-  text-decoration: underline;   
-  text-underline-offset: 2px;  
+  font-weight: 400;
+  text-decoration: underline;
+  text-underline-offset: 2px;
   text-decoration-thickness: 1px;
   cursor: pointer;
-  padding: 0;                 
+  padding: 0;
 }
 
 .recipientsCard {
@@ -181,7 +181,7 @@
 .personalizedTitle {
   font-size: 14px;
   font-weight: 400;
-  color: #979797; 
+  color: #979797;
 }
 
 .personalizedSub {
@@ -230,12 +230,12 @@
 @media (min-width: 768px) {
   .content {
     max-width: 920px;
-    padding-top: 24px;      
-    padding-bottom: 140px;   
+    padding-top: 24px;
+    padding-bottom: 140px;
   }
 
   .header {
-    position: sticky;       
+    position: sticky;
     top: 0;
     left: auto;
     right: auto;
@@ -244,19 +244,19 @@
     margin: 0 auto;
 
     height: var(--header-h);
-    padding-top: 0;          
+    padding-top: 0;
     z-index: 50;
   }
 
   .page {
     padding-top: 0;
     height: 100vh;
-    overflow: hidden;     
+    overflow: hidden;
   }
 
   .content {
     height: calc(100vh - var(--header-h));
-    overflow-y: auto;        
+    overflow-y: auto;
     -webkit-overflow-scrolling: auto;
   }
 
@@ -266,7 +266,7 @@
   }
 
   .editLink {
-    font-size: 14px;        
+    font-size: 14px;
   }
 
   .recipientsCard {
@@ -291,7 +291,7 @@
 
   .bottomCta {
     position: fixed;
-    left: 270px;          
+    left: 270px;
     right: 0;
     bottom: 24px;
 
@@ -301,7 +301,7 @@
     display: flex;
     justify-content: center;
 
-    pointer-events: none;  
+    pointer-events: none;
   }
 
   .sendBtn {

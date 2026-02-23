@@ -1,11 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import { useTextingFlowStore } from "./_store/textingFlowStore";
+import icCaretLeft from "../../../../public/ic_caretleft.svg";
+import blueChevronLeft from "../../../../public/blue_chevron_left.svg";
+import bluePlus from "../../../../public/blue_plus.svg";
+import Image from "next/image";
 
-const TOKEN = "{{first_name}}";
+const TOKEN = "{{First Name}}";
 
 export default function NewMessagePage() {
   const router = useRouter();
@@ -22,34 +26,32 @@ export default function NewMessagePage() {
 
   const recipientsCount = selectedRecipientIds.length;
 
-  const canReview = useMemo(() => {
-    if (recipientsCount === 0) return false;
-
-    const hasMessage = (message || "").trim().length > 0;
-    if (!hasMessage) return false;
-
-    if (mode === "email") {
-      return (subject || "").trim().length > 0;
-    }
-    return true;
-  }, [mode, recipientsCount, subject, message]);
-
+  const [draftText, setDraftText] = useState(message ?? "");
 
   const editorRef = useRef<HTMLDivElement | null>(null);
 
-  const renderHtml = useMemo(() => {
-    const escaped = (message || "")
+  function tokenTextToHtml(text: string) {
+    const escaped = text
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;");
 
-    const withPills = escaped.replaceAll(
+    const withPill = escaped.replaceAll(
       TOKEN,
-      `<span class="${styles.pill}" contenteditable="false">First Name</span>`
+      `<span class="${styles.pill}" contenteditable="false">First Name</span>`,
     );
 
-    return withPills.replaceAll("\n", "<br/>");
+    return withPill.replaceAll("\n", "<br/>");
+  }
+
+  useEffect(() => {
+    const el = editorRef.current;
+    if (!el) return;
+
+    if ((el.innerHTML ?? "").trim() !== "") return;
+
+    el.innerHTML = tokenTextToHtml(message ?? "");
   }, [message]);
 
   const readPlainTextFromEditor = useCallback(() => {
@@ -64,34 +66,68 @@ export default function NewMessagePage() {
     return (clone.innerText || "").replace(/\u00A0/g, " ");
   }, []);
 
-  useEffect(() => {
-    const el = editorRef.current;
-    if (!el) return;
-    if (el.innerHTML === renderHtml) return;
-    el.innerHTML = renderHtml;
-  }, [renderHtml]);
+  const canReview = useMemo(() => {
+    if (recipientsCount === 0) return false;
 
-  const insertFirstName = useCallback(() => {
-    const trimmed = (message || "").trim();
-    if (trimmed.length === 0) {
-      setMessage(`${TOKEN} `);
+    const hasMessage = (draftText || "").trim().length > 0;
+    if (!hasMessage) return false;
+
+    if (mode === "email") {
+      return (subject || "").trim().length > 0;
+    }
+    return true;
+  }, [mode, recipientsCount, subject, draftText]);
+
+  const insertFirstName = () => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    editor.focus();
+
+    const pill = document.createElement("span");
+    pill.className = styles.pill;
+    pill.setAttribute("contenteditable", "false");
+    pill.textContent = "First Name";
+
+    const space = document.createTextNode(" ");
+
+    const sel = window.getSelection();
+    if (!sel) return;
+
+    if (sel.rangeCount === 0) {
+      editor.appendChild(pill);
+      editor.appendChild(space);
       return;
     }
 
-    const needsSpace = !(message || "").endsWith(" ");
-    setMessage(`${message}${needsSpace ? " " : ""}${TOKEN} `);
+    const range = sel.getRangeAt(0);
 
-    requestAnimationFrame(() => {
-      editorRef.current?.focus();
-    });
-  }, [message, setMessage]);
+    if (!editor.contains(range.commonAncestorContainer)) {
+      const end = document.createRange();
+      end.selectNodeContents(editor);
+      end.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(end);
+    }
+
+    const r = sel.getRangeAt(0);
+
+    r.deleteContents();
+    r.insertNode(space);
+    r.insertNode(pill);
+
+    r.setStartAfter(space);
+    r.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(r);
+  };
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.headerLeft} aria-hidden />
+        <Image src={icCaretLeft} alt="" />
         <h1 className={styles.headerTitle}>New Message</h1>
-        <div className={styles.headerRight} aria-hidden />
+        <div></div>
       </header>
 
       <main className={styles.content}>
@@ -125,19 +161,20 @@ export default function NewMessagePage() {
             <button
               type="button"
               className={styles.selectRecipientsBtn}
-              onClick={() => router.push("/messages/new/recipients")}
+              onClick={() => {
+                setMessage(readPlainTextFromEditor());
+                router.push("/messages/new/recipients");
+              }}
             >
               {recipientsCount > 0 ? `${recipientsCount} selected` : "Select Recipients"}
-              <span className={styles.chev} aria-hidden>
-                ›
-              </span>
+              <Image src={blueChevronLeft} alt="" />
             </button>
           </div>
         </section>
 
         {/* Subject (Email only) */}
         {mode === "email" ? (
-          <section className={styles.subjectSectionNew}>
+          <section className={styles.subjectSection}>
             <input
               className={styles.subjectInput}
               placeholder="Subject"
@@ -148,46 +185,48 @@ export default function NewMessagePage() {
         ) : null}
 
         {/* Message */}
-        <section className={styles.messageSectionNew}>
-          <div
-            ref={editorRef}
-            className={styles.richEditor}
-            contentEditable
-            role="textbox"
-            aria-multiline="true"
-            data-placeholder="Compose your message..."
-            onInput={() => setMessage(readPlainTextFromEditor())}
-          />
-        </section>
+        <div className={styles.messageBox}>
+          <section className={styles.messageSectionNew}>
+            <div
+              ref={editorRef}
+              className={styles.richEditor}
+              contentEditable
+              role="textbox"
+              aria-multiline="true"
+              data-placeholder="Compose your message..."
+              onInput={() => setDraftText(editorRef.current?.innerText ?? "")}
+            />
+          </section>
+        </div>
 
         {/* Insert First Name */}
         <section className={styles.insertSectionNew}>
           <button type="button" className={styles.insertBtnNew} onClick={insertFirstName}>
-            <span className={styles.plus} aria-hidden>
-              +
-            </span>
+            <Image src={bluePlus} alt="" />
             Insert First Name
           </button>
 
           <div className={styles.helper}>
             <img src="/mdi_information.svg" alt="" className={styles.helperIcon} />
-            <span>Tap the button to insert a volunteer’s name wherever you want it to appear.</span>
+            <span className={styles.bottomText}>
+              Tap the button to insert a volunteer’s name wherever you want it to appear.
+            </span>
           </div>
         </section>
-
-        <div className={styles.bottomSpacer} />
+        <div className={styles.reviewFixed}>
+          <button
+            type="button"
+            className={canReview ? styles.reviewBtn : styles.reviewBtnDisabled}
+            disabled={!canReview}
+            onClick={() => {
+              setMessage(readPlainTextFromEditor());
+              router.push("/messages/new/review");
+            }}
+          >
+            <span className={styles.reviewBtnText}>Review and Send</span>
+          </button>
+        </div>
       </main>
-
-      <div className={styles.reviewFixed}>
-        <button
-          type="button"
-          className={canReview ? styles.reviewBtn : styles.reviewBtnDisabled}
-          disabled={!canReview}
-          onClick={() => router.push("/messages/new/review")}
-        >
-          Review and Send
-        </button>
-      </div>
     </div>
   );
 }

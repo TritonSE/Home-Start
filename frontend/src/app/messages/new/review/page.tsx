@@ -64,7 +64,12 @@ export default function ReviewAndSendPage() {
 
   return (
     <div className={styles.page}>
-      <SuccessToast open={showSuccess} message={successMessage} durationMs={2600} onDone={onToastDone} />
+      <SuccessToast
+        open={showSuccess}
+        message={successMessage}
+        durationMs={2600}
+        onDone={onToastDone}
+      />
 
       <header className={styles.header}>
         <button type="button" className={styles.backBtn} aria-label="Back" onClick={handleBack}>
@@ -102,7 +107,11 @@ export default function ReviewAndSendPage() {
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Message Preview</h2>
-            <button type="button" className={styles.editLink} onClick={() => router.push("/messages/new")}>
+            <button
+              type="button"
+              className={styles.editLink}
+              onClick={() => router.push("/messages/new")}
+            >
               Edit
             </button>
           </div>
@@ -127,7 +136,12 @@ export default function ReviewAndSendPage() {
       </main>
 
       <div className={styles.bottomCta}>
-        <button type="button" className={styles.sendBtn} disabled={!canSend || sending} onClick={handleSend}>
+        <button
+          type="button"
+          className={styles.sendBtn}
+          disabled={!canSend || sending}
+          onClick={handleSend}
+        >
           {sending ? "Sending..." : "Send Text"}
         </button>
       </div>

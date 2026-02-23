@@ -1,16 +1,14 @@
 .layout {
   display: flex;
   flex-direction: column-reverse;
-  width: 100vw;
-  height: 100vh;
-  padding-bottom: 32px;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 @media (min-width: 748px) {
   .layout {
     flex-direction: row;
     height: 100vh;
-    padding-bottom: 0px;
   }
 }
 
@@ -18,24 +16,24 @@
   max-width: 1320px;
   margin: 0 auto;
   width: 100%;
+  height: 100%;
   box-sizing: border-box;
 }
 
 .main {
-  flex: 1;
-  background: "#fff";
-  height: "100vh";
-  overflow-y: "auto";
-  overflow-x: "hidden";
-  margin-top: 62px;
-  margin-left: 15px;
-  margin-right: 15px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  padding-top: 62px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 
 .body {
   margin: 0;
-  height: "100vh";
-  overflow: "hidden";
+  height: 100vh;
+  width: 100vw;
 }
 
 @media (min-width: 748px) {

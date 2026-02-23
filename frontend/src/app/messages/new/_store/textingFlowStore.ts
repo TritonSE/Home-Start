@@ -59,6 +59,6 @@ export const useTextingFlowStore = create<TextingFlowState>()(
     {
       name: "texting-flow-draft",
       storage: createJSONStorage(() => sessionStorage),
-    }
-  )
+    },
+  ),
 );

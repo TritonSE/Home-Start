@@ -6,7 +6,7 @@ import styles from "./SuccessToast.module.css";
 
 type Props = {
   open: boolean;
-  title?: string; 
+  title?: string;
   message: string;
   durationMs?: number;
   onDone?: () => void;
@@ -34,10 +34,7 @@ export default function SuccessToast({
 
     return (
       <div className={styles.wrap} aria-live="polite" aria-atomic="true">
-        <div
-          className={styles.card}
-          style={{ ["--toast-ms" as string]: `${durationMs}ms` }}
-        >
+        <div className={styles.card} style={{ ["--toast-ms" as string]: `${durationMs}ms` }}>
           <img src="/success.svg" alt="" className={styles.icon} />
 
           <div className={styles.textWrap}>

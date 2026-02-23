@@ -1,9 +1,33 @@
 import dotenv from "dotenv";
 import express from "express";
+import { isHttpError } from "http-errors";
 import mongoose from "mongoose";
 
 import "./firebase/admin";
 import { type AuthRequest, verifyToken } from "./middleware/auth";
+import tagRoutes from "./routes/tagRoutes";
+import volunteerRoutes from "./routes/volunteerRoutes";
+
+import type { NextFunction, Request, Response } from "express";
+
+const handleError = (error: unknown, req: Request, res: Response, _next: NextFunction) => {
+  // 500 is the "internal server error" error code, this will be our fallback
+  let statusCode = 500;
+  let errorMessage = "An error has occurred.";
+
+  // check is necessary because anything can be thrown, type is not guaranteed
+  if (isHttpError(error)) {
+    // error.status is unique to the http error class, it allows us to pass status codes with errors
+    statusCode = error.status;
+    errorMessage = error.message;
+  }
+  // prefer custom http errors but if they don't exist, fallback to default
+  else if (error instanceof Error) {
+    errorMessage = error.message;
+  }
+
+  res.status(statusCode).json({ error: errorMessage });
+};
 
 dotenv.config({ quiet: true });
 
@@ -34,6 +58,11 @@ async function startServer() {
       const authReq = req as AuthRequest;
       res.json({ message: "You are authenticated!", user: authReq.user });
     });
+
+    app.use("/api/volunteer", verifyToken, volunteerRoutes);
+    app.use("/api/tag", verifyToken, tagRoutes);
+
+    app.use(handleError);
 
     app.listen(PORT, () => {
       console.info(`Listening on port ${PORT}`);

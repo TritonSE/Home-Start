@@ -1,20 +1,31 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import RecipientRow from "../../../components/messages/RecipientRow";
 import { useTextingFlowStore } from "../_store/textingFlowStore";
 
-type Recipient = {
+type VolunteerRow = {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   tags: string[];
 };
 
-const mockRecipients: Recipient[] = Array.from({ length: 24 }).map((_, i) => ({
+type Recipient = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  tags: string[];
+};
+
+const mockRecipients: VolunteerRow[] = Array.from({ length: 3 }).map((_, i) => ({
   id: `r${i + 1}`,
-  name: "Frederico M.",
+  firstName: `Recipient`,
+  lastName: `#${i + 1}`,
   tags: ["Intern"],
 }));
 
@@ -23,7 +34,6 @@ const EVENTS = [
   "Celebration Event 3",
   "Holiday Toy Drive 2024",
   "Small Celebration",
-  "Holiday Toy Drive 2024",
 ];
 
 const STATUSES = ["New", "Returner"];
@@ -31,8 +41,13 @@ const STATUSES = ["New", "Returner"];
 export default function RecipientsPage() {
   const router = useRouter();
 
+  const [volunteerRows, setVolunteerRows] = useState<VolunteerRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
   const toggleRecipient = useTextingFlowStore((s) => s.toggleRecipient);
+  const setRecipientIds = useTextingFlowStore((s) => s.setRecipientIds);
   const setRecipients = useTextingFlowStore((s) => s.setRecipients);
 
   const [query, setQuery] = useState("");
@@ -43,11 +58,41 @@ export default function RecipientsPage() {
 
   const selectedSet = useMemo(() => new Set(selectedRecipientIds), [selectedRecipientIds]);
 
+  useEffect(() => {
+    let cancelled: boolean = false;
+    async function loadVolunteerRows() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res = await fetch("http://localhost:4000/api/volunteer/getVolunteerRows", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+
+        const data: VolunteerRow[] = await res.json();
+        if (!cancelled) setVolunteerRows(data);
+      } catch (e: any) {
+        if (!cancelled) setError(e.message ?? "Unknown error");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadVolunteerRows();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return mockRecipients;
-    return mockRecipients.filter((r) => r.name.toLowerCase().includes(q));
-  }, [query]);
+    if (!q) return volunteerRows;
+    return volunteerRows.filter((r) => r.firstName.toLowerCase().includes(q));
+  }, [query, volunteerRows]);
 
   const filteredIds = useMemo(() => filtered.map((r) => r.id), [filtered]);
 
@@ -79,12 +124,12 @@ export default function RecipientsPage() {
 
     if (!allFilteredSelected) {
       for (const id of filteredIds) current.add(id);
-      setRecipients(Array.from(current));
+      setRecipientIds(Array.from(current));
       return;
     }
     for (const id of filteredIds) current.delete(id);
-    setRecipients(Array.from(current));
-  }, [allFilteredSelected, filteredIds, selectedRecipientIds, setRecipients]);
+    setRecipientIds(Array.from(current));
+  }, [allFilteredSelected, filteredIds, selectedRecipientIds, setRecipientIds]);
 
   const toggleFilterChip = (kind: "event" | "status", value: string) => {
     if (kind === "event") {
@@ -103,7 +148,22 @@ export default function RecipientsPage() {
     setSelectedStatuses([]);
   };
 
-  const applyFilters = () => {
+  const applyFilters = async () => {
+    const res = await fetch("http://localhost:4000/api/volunteer/getSelectedVolunteers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        events: selectedEvents,
+        statuses: selectedStatuses,
+      }),
+    });
+
+    const data: Recipient[] = await res.json();
+    for (const r of data) {
+      toggleRecipient(r.id);
+    }
+
+    setRecipients(data);
     setFiltersOpen(false);
   };
 
@@ -159,20 +219,25 @@ export default function RecipientsPage() {
             {allFilteredSelected ? "Deselect All" : "Select All"}
           </button>
         </div>
-
-        <div className={styles.list}>
-          {filtered.map((r) => (
-            <RecipientRow
-              key={r.id}
-              name={r.name}
-              tags={r.tags}
-              selected={selectedSet.has(r.id)}
-              onToggle={() => toggleRecipient(r.id)}
-              checkboxPosition="left"
-              disableSelectedStyle
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className={styles.loading}>Loading volunteers...</div>
+        ) : error ? (
+          <div className={styles.error}>{error} volunteers</div>
+        ) : (
+          <div className={styles.list}>
+            {filtered.map((r) => (
+              <RecipientRow
+                key={r.id}
+                name={r.firstName + " " + r.lastName}
+                tags={r.tags}
+                selected={selectedSet.has(r.id)}
+                onToggle={() => toggleRecipient(r.id)}
+                checkboxPosition="left"
+                disableSelectedStyle
+              />
+            ))}
+          </div>
+        )}
       </main>
 
       <div className={styles.bottomCta}>

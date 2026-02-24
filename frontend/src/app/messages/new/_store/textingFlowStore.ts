@@ -11,6 +11,7 @@ type TextingFlowState = {
   subject: string;
   message: string;
   selectedRecipientIds: string[];
+  selectedRecipients: Recipient[];
 
   setMode: (mode: MessageMode) => void;
 
@@ -18,10 +19,20 @@ type TextingFlowState = {
   setMessage: (msg: string) => void;
 
   toggleRecipient: (id: string) => void;
-  setRecipients: (ids: string[]) => void;
+  setRecipientIds: (ids: string[]) => void;
+  setRecipients: (recipients: Recipient[]) => void;
   clearRecipients: () => void;
 
   resetDraft: () => void;
+};
+
+type Recipient = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  tags: string[];
 };
 
 export const useTextingFlowStore = create<TextingFlowState>()(
@@ -32,6 +43,7 @@ export const useTextingFlowStore = create<TextingFlowState>()(
       subject: "",
       message: "",
       selectedRecipientIds: [],
+      selectedRecipients: [],
 
       setMode: (mode) => set({ mode }),
       setSubject: (subject) => set({ subject }),
@@ -45,7 +57,8 @@ export const useTextingFlowStore = create<TextingFlowState>()(
         });
       },
 
-      setRecipients: (ids) => set({ selectedRecipientIds: ids }),
+      setRecipientIds: (ids) => set({ selectedRecipientIds: ids }),
+      setRecipients: (recipients) => set({ selectedRecipients: recipients }),
       clearRecipients: () => set({ selectedRecipientIds: [] }),
 
       resetDraft: () =>

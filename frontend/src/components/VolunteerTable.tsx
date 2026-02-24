@@ -60,33 +60,21 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
             <th>
               <div className={styles.headerContent}>
                 <span>Volunteer</span>
-                <span>
-                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
-                </span>
               </div>
             </th>
             <th>
               <div className={styles.headerContent}>
                 <span>Phone Number</span>
-                <span>
-                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
-                </span>
               </div>
             </th>
             <th>
               <div className={styles.headerContent}>
                 <span>Email</span>
-                <span>
-                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
-                </span>
               </div>
             </th>
             <th>
               <div className={styles.headerContent}>
                 <span>Tags</span>
-                <span>
-                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
-                </span>
               </div>
             </th>
           </tr>

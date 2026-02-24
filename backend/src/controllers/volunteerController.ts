@@ -6,6 +6,7 @@ import createError from "http-errors";
 
 import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
+import { batchCreateVolunteerValidator } from "../validators/volunteerValidator";
 
 import type { RequestHandler } from "express";
 import type { MongoBulkWriteError, WriteError } from "mongodb";
@@ -347,6 +348,14 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
     }
 
     const parsedVolunteers = await parseVolunteersHelper(req.file.buffer);
+
+    const mockReq = { body: { volunteers: parsedVolunteers } } as unknown as Request;
+    await Promise.all(batchCreateVolunteerValidator.map(async (v) => v.run(mockReq)));
+
+    const errors = validationResult(mockReq);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
     const emails = parsedVolunteers.map((v) => v.email);
     const phoneNumbers = parsedVolunteers.map((v) => v.phoneNumber);

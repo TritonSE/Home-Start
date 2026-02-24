@@ -43,7 +43,7 @@ router.put(
   volunteer.removeTagsFromVolunteer,
 );
 
-router.post("/upload-csv", upload.single("csv"), volunteer.createVolunteersCsv);
+// router.post("/upload-csv", upload.single("csv"), volunteer.createVolunteersCsv);
 router.post("/parse-csv", upload.single("csv"), volunteer.parseVolunteersCsv);
 
 router.post(

@@ -26,19 +26,23 @@ export default function Page() {
   const [showImportSuccess, setShowImportSuccess] = useState(false);
   const itemsPerPage = 6;
 
+  const loadVolunteers = async () => {
+    try {
+      console.log("Attempting to fetch volunteers");
+      const data = await fetchVolunteers();
+      setVolunteers(data);
+      console.log("Volunteers fetched successfully");
+    } catch (error) {
+      console.error("Error fetching volunteers:", error);
+    }
+  };
+
   // Fetch volunteers once on mount
   useEffect(() => {
-    async function loadVolunteers() {
-      try {
-        console.log("Attempting to fetch volunteers");
-        const data = await fetchVolunteers();
-        setVolunteers(data);
-        console.log("Volunteers fetched successfully");
-      } catch (error) {
-        console.error("Error fetching volunteers:", error);
-      }
-    }
-    loadVolunteers();
+    const fetchData = async () => {
+      await loadVolunteers();
+    };
+    fetchData();
   }, []);
 
   // Extract unique tags from volunteers
@@ -70,6 +74,8 @@ export default function Page() {
   const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
 
   const handleImportComplete = () => {
+    // Refresh volunteers after import
+    loadVolunteers();
     setShowImportSuccess(true);
   };
 

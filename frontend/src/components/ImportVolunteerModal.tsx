@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styles from "./ImportVolunteerModal.module.css";
+import { parseVolunteersCsv, uploadVolunteerBatch } from "@/app/api/volunteer";
 
 type ImportVolunteerModalProps = {
   onClose: () => void;
@@ -9,49 +10,53 @@ type ImportVolunteerModalProps = {
 type Status = "idle" | "error" | "success";
 type Step = "upload" | "review";
 
-type PlaceholderChange = {
+type ParsedVolunteerChange = {
   status: "New" | "Updated";
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone: string;
+  phoneNumber: string;
+};
+
+type ParsedCSVResult = {
+  newCount: number;
+  updatedCount: number;
+  changes: ParsedVolunteerChange[];
 };
 
 export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolunteerModalProps) {
   const [status, setStatus] = useState<Status>("idle");
   const [fileName, setFileName] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("upload");
-
-  // Placeholder data until CSV processing is implemented.
-  const placeholderReview = {
-    newCount: 24,
-    updatedCount: 10,
-    changes: [
-      {
-        status: "New",
-        name: "William, Seymore",
-        email: "wseymore@gmail.com",
-        phone: "720-672-8098",
-      },
-      {
-        status: "New",
-        name: "Kaya, Toast",
-        email: "kayatoast@gmail.com",
-        phone: "830-298-9085",
-      },
-      {
-        status: "Updated",
-        name: "Mariana, Lee",
-        email: "mariana.lee@gmail.com",
-        phone: "415-555-2452",
-      },
-    ] as PlaceholderChange[],
-  };
+  const [csvParsedInfo, setCSVParsedInfo] = useState<ParsedCSVResult | null>(null);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setFileName(file.name);
+
+    parseVolunteersCsv(file).then((result) => {
+      if (!result.ok) {
+        setStatus("error");
+        return;
+      }
+      const data = {
+        newCount: result.data.wouldCreateCount,
+        updatedCount: result.data.wouldUpdateCount,
+        changes: [
+          ...result.data.volunteerInfo.map((volunteer) => ({
+            status: result.data.wouldCreate.includes(volunteer.email) ? "New" : "Updated",
+            firstName: volunteer.firstName,
+            lastName: volunteer.lastName,
+            email: volunteer.email,
+            phoneNumber: volunteer.phoneNumber,
+          })),
+        ] as ParsedVolunteerChange[],
+      } as ParsedCSVResult;
+
+      setCSVParsedInfo(data);
+    });
 
     if (!file.name.endsWith(".csv")) {
       setStatus("error");
@@ -61,12 +66,29 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
     setStatus("success");
   }
 
-  function handleContinue() {
+  async function handleContinue() {
     if (step === "upload" && status === "success") {
       setStep("review");
       return;
     }
 
+    if (!csvParsedInfo) return;
+    const result = await uploadVolunteerBatch(
+      csvParsedInfo.changes.map((change) => ({
+        firstName: change.firstName,
+        lastName: change.lastName,
+        email: change.email,
+        phoneNumber: change.phoneNumber,
+        isReturning: false,
+      })),
+    );
+
+    if (!result.ok) {
+      alert("Failed to upload volunteers: " + result.error);
+      return;
+    }
+
+    alert("Volunteers imported successfully!");
     onComplete();
     onClose();
   }
@@ -156,14 +178,14 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                     <img src="/ic_success.svg" className={styles.summaryIcon} />
                     <span>New Volunteers</span>
                   </div>
-                  <div className={styles.summaryCount}>{placeholderReview.newCount}</div>
+                  <div className={styles.summaryCount}>{csvParsedInfo.newCount}</div>
                 </div>
                 <div className={`${styles.summaryCard} ${styles.summaryCardUpdated}`}>
                   <div className={styles.summaryHeader}>
                     <img src="/ic_new.svg" className={styles.summaryIcon} />
                     <span>Updated Volunteers</span>
                   </div>
-                  <div className={styles.summaryCount}>{placeholderReview.updatedCount}</div>
+                  <div className={styles.summaryCount}>{csvParsedInfo.updatedCount}</div>
                 </div>
               </div>
 
@@ -171,7 +193,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                 <div className={styles.sectionTitle}>Detailed Changes</div>
                 <div className={styles.detailCard}>
                   <div className={styles.detailList}>
-                    {placeholderReview.changes.map((change, index) => (
+                    {csvParsedInfo.changes.map((change, index) => (
                       <div key={`${change.email}-${index}`} className={styles.detailItem}>
                         <div className={styles.detailHeader}>
                           <span
@@ -183,11 +205,13 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                           >
                             {change.status}
                           </span>
-                          <span className={styles.detailName}>{change.name}</span>
+                          <span className={styles.detailName}>
+                            {change.firstName} {change.lastName}
+                          </span>
                         </div>
                         <div className={styles.detailMeta}>Email: {change.email}</div>
-                        <div className={styles.detailMeta}>Phone: {change.phone}</div>
-                        {index < placeholderReview.changes.length - 1 && (
+                        <div className={styles.detailMeta}>Phone: {change.phoneNumber}</div>
+                        {index < csvParsedInfo.changes.length - 1 && (
                           <div className={styles.detailDivider} />
                         )}
                       </div>

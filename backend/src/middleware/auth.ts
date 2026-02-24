@@ -1,5 +1,4 @@
 import { auth } from "../firebase/admin";
-
 import type { NextFunction, Request, Response } from "express";
 
 // Extend Express Request to include user info
@@ -21,6 +20,7 @@ export const verifyToken = async (req: AuthRequest, res: Response, next: NextFun
     }
 
     const token = authHeader.split("Bearer ")[1];
+    const token = authHeader.split("Bearer ")[1];
 
     // Verify token with Firebase Admin
     const decodedToken = await auth.verifyIdToken(token);
@@ -30,7 +30,6 @@ export const verifyToken = async (req: AuthRequest, res: Response, next: NextFun
       uid: decodedToken.uid,
       email: decodedToken.email,
     };
-
     next();
   } catch (error) {
     console.error("Token verification failed:", error);

@@ -13,6 +13,12 @@ interface VolunteerProfileModalProps {
 const STATUS_TAGS = ["Returner", "Expert", "New"];
 const VOLUNTEER_TYPE_TAGS = ["Intern", "Outside Volunteer"];
 
+const getTagColorClass = (tag: string, styles: Record<string, string>) => {
+  if (tag === "Outside Volunteer") return styles.tagOrange;
+  if (tag.includes("More")) return styles.tagGreen;
+  return styles.tagTeal;
+};
+
 export default function VolunteerProfileModal({
   volunteer,
   isOpen,
@@ -26,8 +32,11 @@ export default function VolunteerProfileModal({
   const [phoneNumber, setPhoneNumber] = useState("");
   const [statusTags, setStatusTags] = useState<string[]>([]);
   const [typeTags, setTypeTags] = useState<string[]>([]);
+  const [eventTags, setEventTags] = useState<string[]>([]);
   const [statusInput, setStatusInput] = useState("");
   const [typeInput, setTypeInput] = useState("");
+  const [eventInput, setEventInput] = useState("");
+  const [additionalNotes, setAdditionalNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
@@ -38,12 +47,15 @@ export default function VolunteerProfileModal({
     setEmail(volunteer.email);
     setPhoneNumber(volunteer.phoneNumber);
 
-    const nextTypeTags = volunteer.tags.filter((tag) => VOLUNTEER_TYPE_TAGS.includes(tag));
-    const nextStatusTags = volunteer.tags.filter((tag) => !VOLUNTEER_TYPE_TAGS.includes(tag));
-    setTypeTags(nextTypeTags);
-    setStatusTags(nextStatusTags);
+    const fallbackTypeTags = volunteer.tags.filter((tag) => VOLUNTEER_TYPE_TAGS.includes(tag));
+    const fallbackStatusTags = volunteer.tags.filter((tag) => !VOLUNTEER_TYPE_TAGS.includes(tag));
+    setTypeTags(volunteer.volunteerTypeTags ?? fallbackTypeTags);
+    setStatusTags(volunteer.statusTags ?? fallbackStatusTags);
+    setEventTags(volunteer.events ?? []);
+    setAdditionalNotes(volunteer.additionalNotes ?? "");
     setStatusInput("");
     setTypeInput("");
+    setEventInput("");
     setSaveError("");
   }, [volunteer]);
 
@@ -66,12 +78,23 @@ export default function VolunteerProfileModal({
     setTypeInput("");
   };
 
+  const handleAddEventTag = () => {
+    const value = eventInput.trim();
+    if (!value || eventTags.includes(value)) return;
+    setEventTags((prev) => [...prev, value]);
+    setEventInput("");
+  };
+
   const handleRemoveStatusTag = (tag: string) => {
     setStatusTags((prev) => prev.filter((value) => value !== tag));
   };
 
   const handleRemoveTypeTag = (tag: string) => {
     setTypeTags((prev) => prev.filter((value) => value !== tag));
+  };
+
+  const handleRemoveEventTag = (tag: string) => {
+    setEventTags((prev) => prev.filter((value) => value !== tag));
   };
 
   const handleSave = async () => {
@@ -90,6 +113,10 @@ export default function VolunteerProfileModal({
           email,
           phoneNumber,
           tags: combinedTags,
+          statusTags,
+          volunteerTypeTags: typeTags,
+          events: eventTags,
+          additionalNotes,
         }),
       });
 
@@ -107,200 +134,270 @@ export default function VolunteerProfileModal({
     }
   };
 
-  const getTagColorClass = (tag: string) => {
-    if (tag === "Outside Volunteer") return styles.tagOrange;
-    if (tag.includes("More")) return styles.tagGreen;
-    return styles.tagTeal;
-  };
-
   if (!isOpen || !volunteer) return null;
 
   return (
-    <div className={styles.modal}>
-      <div className={styles.heading}>
-        <div className={styles.topper} />
-        <div className={styles.headerRow}>
-          <h5 className={styles.modalHeader}>View Volunteer</h5>
-          <button className={styles.closeButton} onClick={onClose} aria-label="Close">
-            <img src="/ic_close.svg" alt="" />
-          </button>
-        </div>
-      </div>
-
-      <div className={styles.tabs}>
-        <button
-          className={`${styles.tabButton} ${activeTab === "view" ? styles.tabActive : styles.tabInactive}`}
-          onClick={() => setActiveTab("view")}
-        >
-          View
-        </button>
-        <button
-          className={`${styles.tabButton} ${activeTab === "edit" ? styles.tabActive : styles.tabInactive}`}
-          onClick={() => setActiveTab("edit")}
-        >
-          Edit
-        </button>
-      </div>
-
-      <div className={styles.content}>
-        {activeTab === "view" ? (
-          <ViewContent volunteer={volunteer} />
-        ) : (
-          <div className={styles.editSection}>
-            <div className={styles.editField}>
-              <label className={styles.editLabel} htmlFor="edit-first-name">
-                First Name
-              </label>
-              <input
-                id="edit-first-name"
-                className={styles.editInput}
-                value={firstName}
-                onChange={(event) => setFirstName(event.target.value)}
-              />
-            </div>
-            <div className={styles.editField}>
-              <label className={styles.editLabel} htmlFor="edit-last-name">
-                Last Name
-              </label>
-              <input
-                id="edit-last-name"
-                className={styles.editInput}
-                value={lastName}
-                onChange={(event) => setLastName(event.target.value)}
-              />
-            </div>
-            <div className={styles.editField}>
-              <label className={styles.editLabel} htmlFor="edit-email">
-                Email
-              </label>
-              <input
-                id="edit-email"
-                className={styles.editInput}
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </div>
-            <div className={styles.editField}>
-              <label className={styles.editLabel} htmlFor="edit-phone">
-                Phone
-              </label>
-              <input
-                id="edit-phone"
-                className={styles.editInput}
-                value={phoneNumber}
-                onChange={(event) => setPhoneNumber(event.target.value)}
-              />
-            </div>
-
-            <div className={styles.tagsSection}>
-              <div className={styles.sectionHeaderWithHint}>
-                <span className={styles.sectionTitle}>Status</span>
-                <span className={styles.sectionHint}>Tap x to Remove</span>
-              </div>
-              <div className={styles.tagsRow}>
-                {statusTags.map((tag) => (
-                  <span key={`status-${tag}`} className={`${styles.tag} ${getTagColorClass(tag)}`}>
-                    {tag}
-                    <button
-                      type="button"
-                      className={styles.tagRemove}
-                      onClick={() => handleRemoveStatusTag(tag)}
-                      aria-label={`Remove ${tag}`}
-                    >
-                      <img src="/redx.svg" alt="" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-              <div className={styles.searchAddRow}>
-                <div className={styles.searchAddField}>
-                  <input
-                    className={styles.searchAddInput}
-                    placeholder="Add Text"
-                    value={statusInput}
-                    onChange={(event) => setStatusInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        handleAddStatusTag();
-                      }
-                    }}
-                  />
-                </div>
-                <button
-                  type="button"
-                  className={styles.addButton}
-                  onClick={handleAddStatusTag}
-                  aria-label="Add status tag"
-                >
-                  <img src="/plus.svg" alt="" />
-                </button>
-              </div>
-            </div>
-
-            <div className={styles.tagsSection}>
-              <div className={styles.sectionHeaderWithHint}>
-                <span className={styles.sectionTitle}>Volunteer Type</span>
-                <span className={styles.sectionHint}>Tap x to Remove</span>
-              </div>
-              <div className={styles.tagsRow}>
-                {typeTags.map((tag) => (
-                  <span key={`type-${tag}`} className={`${styles.tag} ${getTagColorClass(tag)}`}>
-                    {tag}
-                    <button
-                      type="button"
-                      className={styles.tagRemove}
-                      onClick={() => handleRemoveTypeTag(tag)}
-                      aria-label={`Remove ${tag}`}
-                    >
-                      <img src="/redx.svg" alt="" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-              <div className={styles.searchAddRow}>
-                <div className={styles.searchAddField}>
-                  <input
-                    className={styles.searchAddInput}
-                    placeholder="Add Text"
-                    value={typeInput}
-                    onChange={(event) => setTypeInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        handleAddTypeTag();
-                      }
-                    }}
-                  />
-                </div>
-                <button
-                  type="button"
-                  className={styles.addButton}
-                  onClick={handleAddTypeTag}
-                  aria-label="Add volunteer type tag"
-                >
-                  <img src="/plus.svg" alt="" />
-                </button>
-              </div>
-            </div>
-
-            {saveError ? <span className={styles.saveError}>{saveError}</span> : null}
-            <button
-              type="button"
-              className={styles.saveButton}
-              onClick={handleSave}
-              disabled={isSaving}
-            >
-              {isSaving ? "Saving..." : "Save Changes"}
+    <>
+      <div className={styles.backdrop} aria-hidden="true" />
+      <div className={styles.modal}>
+        <div className={styles.heading}>
+          <div className={styles.topper} />
+          <div className={styles.headerRow}>
+            <h5 className={styles.modalHeader}>View Volunteer</h5>
+            <button className={styles.closeButton} onClick={onClose} aria-label="Close">
+              <img src="/ic_close.svg" alt="" />
             </button>
           </div>
-        )}
+        </div>
+
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tabButton} ${activeTab === "view" ? styles.tabActive : styles.tabInactive}`}
+            onClick={() => setActiveTab("view")}
+          >
+            View
+          </button>
+          <button
+            className={`${styles.tabButton} ${activeTab === "edit" ? styles.tabActive : styles.tabInactive}`}
+            onClick={() => setActiveTab("edit")}
+          >
+            Edit
+          </button>
+        </div>
+
+        <div className={styles.content}>
+          {activeTab === "view" ? (
+            <ViewContent volunteer={volunteer} />
+          ) : (
+            <div className={styles.editSection}>
+              <div className={styles.editField}>
+                <label className={styles.editLabel} htmlFor="edit-first-name">
+                  First Name
+                </label>
+                <input
+                  id="edit-first-name"
+                  className={styles.editInput}
+                  value={firstName}
+                  onChange={(event) => setFirstName(event.target.value)}
+                />
+              </div>
+              <div className={styles.editField}>
+                <label className={styles.editLabel} htmlFor="edit-last-name">
+                  Last Name
+                </label>
+                <input
+                  id="edit-last-name"
+                  className={styles.editInput}
+                  value={lastName}
+                  onChange={(event) => setLastName(event.target.value)}
+                />
+              </div>
+              <div className={styles.editField}>
+                <label className={styles.editLabel} htmlFor="edit-email">
+                  Email
+                </label>
+                <input
+                  id="edit-email"
+                  className={styles.editInput}
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                />
+              </div>
+              <div className={styles.editField}>
+                <label className={styles.editLabel} htmlFor="edit-phone">
+                  Phone
+                </label>
+                <input
+                  id="edit-phone"
+                  className={styles.editInput}
+                  value={phoneNumber}
+                  onChange={(event) => setPhoneNumber(event.target.value)}
+                />
+              </div>
+
+              <div className={styles.tagsSection}>
+                <div className={styles.sectionHeaderWithHint}>
+                  <span className={styles.sectionTitle}>Status</span>
+                  <span className={styles.sectionHint}>Tap x to Remove</span>
+                </div>
+                <div className={styles.tagsRow}>
+                  {statusTags.map((tag) => (
+                    <span
+                      key={`status-${tag}`}
+                      className={`${styles.tag} ${getTagColorClass(tag, styles)}`}
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        className={styles.tagRemove}
+                        onClick={() => handleRemoveStatusTag(tag)}
+                        aria-label={`Remove ${tag}`}
+                      >
+                        <img src="/redx.svg" alt="" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className={styles.searchAddRow}>
+                  <div className={styles.searchAddField}>
+                    <input
+                      className={styles.searchAddInput}
+                      placeholder="Add Text"
+                      value={statusInput}
+                      onChange={(event) => setStatusInput(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          handleAddStatusTag();
+                        }
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.addButton}
+                    onClick={handleAddStatusTag}
+                    aria-label="Add status tag"
+                  >
+                    <img src="/plus.svg" alt="" />
+                  </button>
+                </div>
+              </div>
+
+              <div className={styles.tagsSection}>
+                <div className={styles.sectionHeaderWithHint}>
+                  <span className={styles.sectionTitle}>Volunteer Type</span>
+                  <span className={styles.sectionHint}>Tap x to Remove</span>
+                </div>
+                <div className={styles.tagsRow}>
+                  {typeTags.map((tag) => (
+                    <span
+                      key={`type-${tag}`}
+                      className={`${styles.tag} ${getTagColorClass(tag, styles)}`}
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        className={styles.tagRemove}
+                        onClick={() => handleRemoveTypeTag(tag)}
+                        aria-label={`Remove ${tag}`}
+                      >
+                        <img src="/redx.svg" alt="" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className={styles.searchAddRow}>
+                  <div className={styles.searchAddField}>
+                    <input
+                      className={styles.searchAddInput}
+                      placeholder="Add Text"
+                      value={typeInput}
+                      onChange={(event) => setTypeInput(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          handleAddTypeTag();
+                        }
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.addButton}
+                    onClick={handleAddTypeTag}
+                    aria-label="Add volunteer type tag"
+                  >
+                    <img src="/plus.svg" alt="" />
+                  </button>
+                </div>
+              </div>
+
+              <div className={styles.tagsSection}>
+                <div className={styles.sectionHeaderWithHint}>
+                  <span className={styles.sectionTitle}>Event</span>
+                  <span className={styles.sectionHint}>Tap x to Remove</span>
+                </div>
+                <div className={styles.tagsRow}>
+                  {eventTags.map((tag) => (
+                    <span
+                      key={`event-${tag}`}
+                      className={`${styles.tag} ${getTagColorClass(tag, styles)}`}
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        className={styles.tagRemove}
+                        onClick={() => handleRemoveEventTag(tag)}
+                        aria-label={`Remove ${tag}`}
+                      >
+                        <img src="/redx.svg" alt="" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className={styles.searchAddRow}>
+                  <div className={styles.searchAddField}>
+                    <input
+                      className={styles.searchAddInput}
+                      placeholder="Add Event"
+                      value={eventInput}
+                      onChange={(event) => setEventInput(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          handleAddEventTag();
+                        }
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.addButton}
+                    onClick={handleAddEventTag}
+                    aria-label="Add event tag"
+                  >
+                    <img src="/plus.svg" alt="" />
+                  </button>
+                </div>
+              </div>
+
+              <div className={styles.editField}>
+                <label className={styles.editLabel} htmlFor="edit-notes">
+                  Additional Notes
+                </label>
+                <input
+                  id="edit-notes"
+                  className={styles.editInput}
+                  value={additionalNotes}
+                  onChange={(event) => setAdditionalNotes(event.target.value)}
+                />
+              </div>
+
+              {saveError ? <span className={styles.saveError}>{saveError}</span> : null}
+              <button
+                type="button"
+                className={styles.saveButton}
+                onClick={handleSave}
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
 function ViewContent({ volunteer }: { volunteer: Volunteer }) {
+  const fallbackTypeTags = volunteer.tags.filter((tag) => VOLUNTEER_TYPE_TAGS.includes(tag));
+  const fallbackStatusTags = volunteer.tags.filter((tag) => !VOLUNTEER_TYPE_TAGS.includes(tag));
+  const statusTags = volunteer.statusTags ?? fallbackStatusTags;
+  const volunteerTypeTags = volunteer.volunteerTypeTags ?? fallbackTypeTags;
+  const events = volunteer.events ?? [];
+
   return (
     <>
       <div className={styles.infoSection}>
@@ -323,27 +420,50 @@ function ViewContent({ volunteer }: { volunteer: Volunteer }) {
       </div>
 
       <div className={styles.tagsSection}>
-        <span className={styles.sectionTitle}>Tags</span>
+        <span className={styles.sectionTitle}>Status</span>
         <div className={styles.tagsRow}>
-          {volunteer.tags.map((tag, index) => {
-            let colorClass = styles.tagTeal;
-            // Might want to automatically cycle through colors for more tags
-            if (tag == "Outside Volunteer") {
-              colorClass = styles.tagOrange;
-            }
-            if (tag.includes("More")) {
-              colorClass = styles.tagGreen;
-            }
-            return (
-              <span
-                key={`${volunteer._id}-${tag}-${index}`}
-                className={`${styles.tag} ${colorClass}`}
-              >
-                {tag}
-              </span>
-            );
-          })}
+          {statusTags.map((tag, index) => (
+            <span
+              key={`${volunteer._id}-status-${tag}-${index}`}
+              className={`${styles.tag} ${getTagColorClass(tag, styles)}`}
+            >
+              {tag}
+            </span>
+          ))}
         </div>
+      </div>
+
+      <div className={styles.tagsSection}>
+        <span className={styles.sectionTitle}>Volunteer Type</span>
+        <div className={styles.tagsRow}>
+          {volunteerTypeTags.map((tag, index) => (
+            <span
+              key={`${volunteer._id}-type-${tag}-${index}`}
+              className={`${styles.tag} ${getTagColorClass(tag, styles)}`}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.tagsSection}>
+        <span className={styles.sectionTitle}>Event</span>
+        <div className={styles.tagsRow}>
+          {events.map((tag, index) => (
+            <span
+              key={`${volunteer._id}-event-${tag}-${index}`}
+              className={`${styles.tag} ${getTagColorClass(tag, styles)}`}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.infoField}>
+        <span className={styles.fieldLabel}>Additional Notes</span>
+        <span className={styles.fieldValue}>{volunteer.additionalNotes ?? ""}</span>
       </div>
     </>
   );

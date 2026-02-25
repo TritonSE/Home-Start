@@ -12,6 +12,22 @@ const volunteerSchema = new Schema({
     default: [],
     required: true,
   },
+  statusTags: {
+    type: [String],
+    default: [],
+  },
+  volunteerTypeTags: {
+    type: [String],
+    default: [],
+  },
+  events: {
+    type: [String],
+    default: [],
+  },
+  additionalNotes: {
+    type: String,
+    default: "",
+  },
 });
 
 type Volunteer = InferSchemaType<typeof volunteerSchema>;

@@ -62,6 +62,10 @@ const makePhoneValidator = () =>
     });
 
 const tagsValidator = () => body("tags").optional().isArray();
+const statusTagsValidator = () => body("statusTags").optional().isArray();
+const volunteerTypeTagsValidator = () => body("volunteerTypeTags").optional().isArray();
+const eventsValidator = () => body("events").optional().isArray();
+const additionalNotesValidator = () => body("additionalNotes").optional().isString();
 
 export const createVolunteerValidator = [
   makeFirstNameValidator(),
@@ -69,6 +73,10 @@ export const createVolunteerValidator = [
   makeEmailValidator(),
   makePhoneValidator(),
   tagsValidator(),
+  statusTagsValidator(),
+  volunteerTypeTagsValidator(),
+  eventsValidator(),
+  additionalNotesValidator(),
 ];
 
 export const updateVolunteerValidator = [
@@ -78,6 +86,10 @@ export const updateVolunteerValidator = [
   makeEmailValidator(),
   makePhoneValidator(),
   tagsValidator(),
+  statusTagsValidator(),
+  volunteerTypeTagsValidator(),
+  eventsValidator(),
+  additionalNotesValidator(),
 ];
 
 export const updateVolunteerContactValidator = [

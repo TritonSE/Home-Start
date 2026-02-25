@@ -85,11 +85,25 @@ type CreateVolunteerBody = {
   email: string;
   phoneNumber: string;
   tags?: string[];
+  statusTags?: string[];
+  volunteerTypeTags?: string[];
+  events?: string[];
+  additionalNotes?: string;
 };
 
 export const createVolunteer: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);
-  const { firstName, lastName, email, phoneNumber, tags = [] } = req.body as CreateVolunteerBody;
+  const {
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    tags = [],
+    statusTags = [],
+    volunteerTypeTags = [],
+    events = [],
+    additionalNotes = "",
+  } = req.body as CreateVolunteerBody;
   try {
     validationErrorParser(errors);
 
@@ -104,6 +118,10 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
       email,
       phoneNumber,
       tags,
+      statusTags,
+      volunteerTypeTags,
+      events,
+      additionalNotes,
     });
     res.status(201).json(newVolunteer);
   } catch (err) {
@@ -117,12 +135,26 @@ type UpdateVolunteerBody = {
   email: string;
   phoneNumber: string;
   tags?: string[];
+  statusTags?: string[];
+  volunteerTypeTags?: string[];
+  events?: string[];
+  additionalNotes?: string;
 };
 
 export const updateVolunteer: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);
   const volunteerId = req.params.id;
-  const { firstName, lastName, email, phoneNumber, tags = [] } = req.body as UpdateVolunteerBody;
+  const {
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    tags = [],
+    statusTags = [],
+    volunteerTypeTags = [],
+    events = [],
+    additionalNotes = "",
+  } = req.body as UpdateVolunteerBody;
 
   try {
     validationErrorParser(errors);
@@ -135,6 +167,10 @@ export const updateVolunteer: RequestHandler = async (req, res, next) => {
         email,
         phoneNumber,
         tags,
+        statusTags,
+        volunteerTypeTags,
+        events,
+        additionalNotes,
       },
       { new: true, runValidators: true },
     );

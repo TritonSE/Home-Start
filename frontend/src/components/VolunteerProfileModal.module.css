@@ -1,5 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Viga&display=swap");
 
+.backdrop {
+  display: none;
+}
+
 .modal {
   display: flex;
   flex-direction: column;
@@ -338,4 +342,122 @@
 .saveButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 1;
+  }
+
+  .modal {
+    width: 100%;
+    left: 0;
+    right: 0;
+    top: 62px;
+    bottom: 16px;
+    padding: 0 0 16px;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -20px 60px rgba(118, 135, 165, 0.25);
+  }
+
+  .heading {
+    gap: 4px;
+    padding-bottom: 8px;
+  }
+
+  .topper {
+    height: 0;
+  }
+
+  .headerRow {
+    padding: 0 16px;
+  }
+
+  .modalHeader {
+    font-size: 20px;
+    line-height: 24px;
+    letter-spacing: 0.8px;
+    margin-top: 34px;
+  }
+
+  .tabs {
+    height: 36px;
+  }
+
+  .tabButton {
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .content {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .infoSection {
+    gap: 12px;
+  }
+
+  .fieldValue {
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  .editSection {
+    gap: 10px;
+  }
+
+  .editField {
+    gap: 6px;
+  }
+
+  .editInput {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .sectionTitle {
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  .sectionHint {
+    font-size: 11px;
+  }
+
+  .tagsRow {
+    gap: 6px;
+  }
+
+  .tag {
+    padding: 6px 10px;
+    font-size: 11px;
+    line-height: 14px;
+  }
+
+  .searchAddRow {
+    gap: 6px;
+  }
+
+  .searchAddField {
+    padding: 10px 12px;
+  }
+
+  .searchAddInput {
+    font-size: 12px;
+  }
+
+  .addButton {
+    width: 40px;
+    height: 44px;
+  }
+
+  .saveButton {
+    padding: 12px;
+    font-size: 13px;
+  }
 }

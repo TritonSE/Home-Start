@@ -291,6 +291,7 @@ const validateVolunteer = (volunteer: unknown) => {
 };
 
 const statusKeyToString = (key: string): string => {
+  key = key.trim().toUpperCase();
   if (key === "R") {
     return "returning";
   } else if (key === "N") {
@@ -301,13 +302,14 @@ const statusKeyToString = (key: string): string => {
 };
 
 const createCSVCreationBody = (data: Record<string, string>): CreateVolunteerBody => {
-  return {
+  const result = {
     firstName: data.First,
     lastName: data.Last,
     email: data.Email,
     phoneNumber: data.Phone,
-    status: statusKeyToString(data.New),
+    tags: [...(data.tags?.split(",") || []), statusKeyToString(data.New)],
   } as CreateVolunteerBody;
+  return result;
 };
 
 const parseVolunteersHelper = async (fileBuffer: Buffer) => {

@@ -60,6 +60,7 @@ export type VolunteerCsvParseResult = {
     lastName: string;
     email: string;
     phoneNumber: string;
+    tags?: string[];
   }[];
 };
 
@@ -100,11 +101,13 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
               lastName: string;
               email: string;
               phoneNumber: string;
+              tags?: string[];
             }) => ({
               firstName: item.firstName,
               lastName: item.lastName,
               email: item.email,
               phoneNumber: item.phoneNumber,
+              tags: item.tags,
             }),
           )
         : [],
@@ -124,7 +127,6 @@ type VolunteerCreationBody = {
   lastName: string;
   email: string;
   phoneNumber: string;
-  isReturning: boolean;
   tags?: string[];
 };
 

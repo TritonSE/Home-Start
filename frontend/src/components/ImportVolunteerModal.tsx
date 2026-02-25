@@ -16,6 +16,7 @@ type ParsedVolunteerChange = {
   lastName: string;
   email: string;
   phoneNumber: string;
+  tags: string[];
 };
 
 type ParsedCSVResult = {
@@ -51,6 +52,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
             lastName: volunteer.lastName,
             email: volunteer.email,
             phoneNumber: volunteer.phoneNumber,
+            tags: volunteer.tags,
           })),
         ] as ParsedVolunteerChange[],
       } as ParsedCSVResult;
@@ -79,7 +81,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
         lastName: change.lastName,
         email: change.email,
         phoneNumber: change.phoneNumber,
-        isReturning: false,
+        tags: change.tags,
       })),
     );
 

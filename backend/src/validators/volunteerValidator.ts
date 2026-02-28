@@ -8,14 +8,6 @@ const makeParamIDValidator = () =>
     .isMongoId()
     .withMessage("_id must be a MongoDB object ID");
 
-// const makeBodyIDValidator = () =>
-//   body("_id")
-//     .exists()
-//     .withMessage("_id is required")
-//     .bail()
-//     .isMongoId()
-//     .withMessage("_id must be a MongoDB object ID");
-
 const makeFirstNameValidator = () =>
   body("firstName")
     .exists()

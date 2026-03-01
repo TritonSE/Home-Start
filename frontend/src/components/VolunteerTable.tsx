@@ -72,14 +72,19 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
               <td>
                 <div className={styles.tagsContainer}>
                   {volunteer.tags
-                    ?.filter((tag) => tag.type === "volunteer type")
+                    ?.filter((tag) => tag.type === "Volunteer Type")
                     .map((tag, index) => {
                       const colorClass = styles.pillTag;
+                      const bgColor = tag?.color
+                        ? tag.color.startsWith("#")
+                          ? tag.color
+                          : `#${tag.color}`
+                        : undefined;
                       return (
                         <span
-                          key={`col1-${volunteer._id}-${tag}-${index}`}
+                          key={`col1-${volunteer._id}-${tag.name}-${index}`}
                           className={`${styles.pillTag} ${colorClass}`}
-                          style={{ backgroundColor: tag.color }}
+                          style={{ backgroundColor: bgColor }}
                         >
                           {tag.name}
                         </span>
@@ -90,14 +95,19 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
               <td>
                 <div className={styles.tagsContainer}>
                   {volunteer.tags
-                    ?.filter((tag) => tag.type === "event")
+                    ?.filter((tag) => tag.type === "Event")
                     .map((tag, index) => {
                       const colorClass = styles.pillTag;
+                      const bgColor = tag?.color
+                        ? tag.color.startsWith("#")
+                          ? tag.color
+                          : `#${tag.color}`
+                        : undefined;
                       return (
                         <span
-                          key={`col2-${volunteer._id}-${tag}-${index}`}
+                          key={`col2-${volunteer._id}-${tag.name}-${index}`}
                           className={`${styles.pillTag} ${colorClass}`}
-                          style={{ backgroundColor: tag.color }}
+                          style={{ backgroundColor: bgColor }}
                         >
                           {tag.name}
                         </span>

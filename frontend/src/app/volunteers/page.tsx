@@ -33,6 +33,7 @@ export default function Page() {
         const [volunteerData, tagData] = await Promise.all([fetchVolunteers(), fetchTags()]);
         setVolunteers(volunteerData);
         setTags(tagData);
+        console.log("raw tag data", tagData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -41,9 +42,9 @@ export default function Page() {
   }, []);
 
   // Filter tags by type
-  const eventTags = tags.filter((tag) => tag.type === "event").map((tag) => tag.name);
+  const eventTags = tags.filter((tag) => tag.type === "Event").map((tag) => tag.name);
   const volunteerTypeTags = tags
-    .filter((tag) => tag.type === "volunteer type")
+    .filter((tag) => tag.type === "Volunteer Type")
     .map((tag) => tag.name);
 
   // Combine all selected tag filters

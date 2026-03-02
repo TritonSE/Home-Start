@@ -1,21 +1,61 @@
 import { Volunteer } from "@/types/volunteer";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const toTagLabel = (tag: unknown): string | null => {
+  if (typeof tag === "string") {
+    return tag;
+  }
+
+  if (tag && typeof tag === "object" && "name" in tag) {
+    const name = (tag as { name?: unknown }).name;
+    return typeof name === "string" ? name : null;
+  }
+
+  return null;
+};
+
+const normalizeVolunteer = (volunteer: unknown): Volunteer => {
+  const source = (volunteer ?? {}) as Partial<Volunteer> & {
+    tags?: unknown;
+  };
+
+  const tags = Array.isArray(source.tags)
+    ? source.tags.map(toTagLabel).filter((tag): tag is string => Boolean(tag))
+    : [];
+
+  return {
+    _id: String(source._id ?? ""),
+    firstName: String(source.firstName ?? ""),
+    lastName: String(source.lastName ?? ""),
+    email: String(source.email ?? ""),
+    phoneNumber: String(source.phoneNumber ?? ""),
+    tags,
+  };
+};
 
 export async function fetchVolunteers(): Promise<Volunteer[]> {
   try {
-    console.log(`${API_URL}/api/volunteer`);
-
     let response: Response;
     try {
-      response = await fetch(`${API_URL}/api/volunteer`);
+      response = await fetch("/api/volunteer", {
+        credentials: "include",
+      });
     } catch (fetchError) {
       console.error("Fetch network error:", fetchError);
       throw new Error(`Network error during fetch: ${fetchError}`);
     }
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch volunteers: ${response.status} ${response.statusText}`);
+      let backendMessage = "";
+      try {
+        const errorBody = await response.json();
+        backendMessage = typeof errorBody?.error === "string" ? errorBody.error : "";
+      } catch {
+        backendMessage = "";
+      }
+
+      throw new Error(
+        `Failed to fetch volunteers: ${response.status} ${response.statusText}${backendMessage ? ` - ${backendMessage}` : ""}`,
+      );
     }
 
     const data = await response.json();
@@ -41,7 +81,7 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
       }
     });
 
-    const typedData: Volunteer[] = data;
+    const typedData: Volunteer[] = data.map(normalizeVolunteer);
     return typedData;
   } catch (error) {
     console.error("Error fetching volunteers: ", error);

@@ -3,6 +3,7 @@ import { PassThrough } from "node:stream";
 import csvParser from "csv-parser";
 import { validationResult } from "express-validator";
 import createError from "http-errors";
+import { Types } from "mongoose";
 
 import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
@@ -97,6 +98,11 @@ type CreateVolunteerBody = {
   email: string;
   phoneNumber: string;
   tags?: string[];
+  status?: "new" | "returning";
+};
+
+type UpsertVolunteerBody = Omit<CreateVolunteerBody, "tags"> & {
+  tags?: Types.ObjectId[];
 };
 
 export const createVolunteer: RequestHandler = async (req, res, next) => {
@@ -219,8 +225,24 @@ export const deleteVolunteer: RequestHandler = async (req, res, next) => {
 
 type UpdateVolunteerOp = {
   u: {
-    $set: CreateVolunteerBody;
+    $set: UpsertVolunteerBody;
   };
+};
+
+const toUpsertVolunteerBody = (body: CreateVolunteerBody): UpsertVolunteerBody => {
+  const upsertBody: UpsertVolunteerBody = {
+    firstName: body.firstName,
+    lastName: body.lastName,
+    email: body.email,
+    phoneNumber: body.phoneNumber,
+    status: body.status,
+  };
+
+  if (body.tags !== undefined) {
+    upsertBody.tags = body.tags.map((tagId) => new Types.ObjectId(tagId));
+  }
+
+  return upsertBody;
 };
 
 export const uploadVolunteerBatch: RequestHandler<
@@ -239,7 +261,7 @@ export const uploadVolunteerBatch: RequestHandler<
           $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
         },
         update: {
-          $set: body,
+          $set: toUpsertVolunteerBody(body),
         },
         upsert: true,
       },
@@ -397,7 +419,7 @@ export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
           $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
         },
         update: {
-          $set: body,
+          $set: toUpsertVolunteerBody(body),
         },
         upsert: true,
       },

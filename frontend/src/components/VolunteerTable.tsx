@@ -101,7 +101,7 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
               <td>{volunteer.email}</td>
               <td>
                 <div className={styles.tagsContainer}>
-                  {volunteer.tags.map((tag, index) => {
+                  {(Array.isArray(volunteer.tags) ? volunteer.tags : []).map((tag, index) => {
                     let colorClass = styles.greenPillTag;
 
                     if (tag === "Intern") {

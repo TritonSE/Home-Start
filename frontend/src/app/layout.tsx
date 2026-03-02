@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Montserrat, Viga, Open_Sans } from "next/font/google";
 import "./globals.css";
-import Sidebar from "./components/sidebar";
 import styles from "./layout.module.css";
-import { Open_Sans, Viga } from "next/font/google";
+
+const montserrat = Montserrat({
+  variable: "--font-title-bold",
+  subsets: ["latin"],
+  weight: ["800", "900"],
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,12 +42,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${openSans.variable} ${viga.variable} ${styles.body}`}
       >
-        <div className={styles.layout}>
-          <Sidebar />
-          <main className={styles.main}>
-            <div className={styles.contentArea}>{children}</div>
-          </main>
-        </div>
+        {children}
       </body>
     </html>
   );

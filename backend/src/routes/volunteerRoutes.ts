@@ -8,12 +8,17 @@ import * as VolunteerValidator from "../validators/volunteerValidator";
 
 import type { Multer } from "multer";
 
+const allowedMimeTypes = ["text/csv", "application/csv", "application/vnd.ms-excel", "text/plain"];
+
 const storage = multer.memoryStorage();
 const upload: Multer = multer({
   storage,
   limits: { fileSize: 1024 * 1024 * 5 }, // 5MB limit
   fileFilter: (req, file, cb) => {
-    if (file.mimetype !== "text/csv" || path.extname(file.originalname).toLowerCase() !== ".csv") {
+    if (
+      !allowedMimeTypes.includes(file.mimetype) ||
+      path.extname(file.originalname).toLowerCase() !== ".csv"
+    ) {
       return cb(new Error("Only CSV files are allowed"));
     }
     cb(null, true);

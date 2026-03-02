@@ -15,11 +15,13 @@ import type { Buffer } from "node:buffer";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_NUMBER_REGEX = /^\(?\d{3}\)?[-\s.]?\d{3}[-\s.]?\d{4}$/;
 
+const defaultPopulateConfig = [{ path: "tags" }];
+
 export const getVolunteer: RequestHandler = async (req, res, next) => {
   const volunteerId = req.params.id;
 
   try {
-    const volunteer = await VolunteerModel.findById(volunteerId);
+    const volunteer = await VolunteerModel.findById(volunteerId).populate(defaultPopulateConfig);
 
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
@@ -32,7 +34,7 @@ export const getVolunteer: RequestHandler = async (req, res, next) => {
 };
 export const getVolunteers: RequestHandler = async (req, res, next) => {
   try {
-    const volunteers = await VolunteerModel.find();
+    const volunteers = await VolunteerModel.find().populate(defaultPopulateConfig);
     res.status(200).json(volunteers);
   } catch (err) {
     next(err);
@@ -47,7 +49,7 @@ export const getVolunteerByEmail: RequestHandler = async (req, res, next) => {
   const { email } = req.body as VolunteerByEmailBody;
 
   try {
-    const volunteer = await VolunteerModel.findOne({ email });
+    const volunteer = await VolunteerModel.findOne({ email }).populate(defaultPopulateConfig);
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
     }
@@ -65,7 +67,7 @@ export const getVolunteerPhoneNumber: RequestHandler = async (req, res, next) =>
   const { phoneNumber } = req.body as VolunteerByPhoneNumberBody;
 
   try {
-    const volunteer = await VolunteerModel.findOne({ phoneNumber });
+    const volunteer = await VolunteerModel.findOne({ phoneNumber }).populate(defaultPopulateConfig);
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
     }
@@ -79,7 +81,7 @@ export const getTagsAssignedToVolunteer: RequestHandler = async (req, res, next)
   const volunteerId = req.params.id;
 
   try {
-    const volunteer = await VolunteerModel.findById(volunteerId);
+    const volunteer = await VolunteerModel.findById(volunteerId).populate("tags");
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
     }
@@ -137,7 +139,7 @@ export const updateVolunteerContact: RequestHandler = async (req, res, next) => 
     const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
       phoneNumber,
       email,
-    });
+    }).populate(defaultPopulateConfig);
 
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
@@ -163,7 +165,7 @@ export const assignTagsToVolunteer: RequestHandler = async (req, res, next) => {
     const { tags } = req.body as AssignTagsBody;
     const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
       $addToSet: { tags: { $each: tags } },
-    });
+    }).populate(defaultPopulateConfig);
 
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
@@ -189,7 +191,7 @@ export const removeTagsFromVolunteer: RequestHandler = async (req, res, next) =>
     const { tags } = req.body as RemoveTagsFromVolunteerBody;
     const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
       $pullAll: { tags },
-    });
+    }).populate(defaultPopulateConfig);
 
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
@@ -217,9 +219,7 @@ export const deleteVolunteer: RequestHandler = async (req, res, next) => {
 
 type UpdateVolunteerOp = {
   u: {
-    $set: {
-      email: string;
-    };
+    $set: CreateVolunteerBody;
   };
 };
 

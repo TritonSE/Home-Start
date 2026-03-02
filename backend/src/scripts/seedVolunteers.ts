@@ -81,7 +81,6 @@ async function seedVolunteers() {
     },
   ]);
 
-  console.log("Volunteers seeded");
   process.exit(0);
 }
 

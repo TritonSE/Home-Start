@@ -36,7 +36,7 @@ const EVENTS = [
   "Small Celebration",
 ];
 
-const STATUSES = ["New", "Returner"];
+const STATUSES = ["new", "returning"];
 
 export default function RecipientsPage() {
   const router = useRouter();

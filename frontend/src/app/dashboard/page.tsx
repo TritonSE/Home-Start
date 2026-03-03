@@ -39,9 +39,6 @@ export default function Dashboard() {
 
   const handleLogout = async () => {
     await signOut(auth);
-
-    // delete the login cookie created in LoginForm
-    document.cookie = "firebaseAuthToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
     window.location.href = "/login";
   };
 

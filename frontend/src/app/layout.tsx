@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Montserrat, Viga, Open_Sans } from "next/font/google";
 import "./globals.css";
 import styles from "./layout.module.css";
+import AuthProvider from "./components/AuthProvider";
 
 const montserrat = Montserrat({
   variable: "--font-title-bold",
@@ -42,7 +43,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${openSans.variable} ${viga.variable} ${styles.body}`}
       >
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

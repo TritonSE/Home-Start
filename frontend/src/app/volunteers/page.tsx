@@ -42,7 +42,9 @@ export default function Page() {
   }, []);
 
   // Extract unique tags from volunteers
-  const uniqueTags = Array.from(new Set(volunteers.flatMap((volunteer) => volunteer.tags)));
+  const uniqueTags = Array.from(
+    new Set(volunteers.flatMap((volunteer) => volunteer.tags.map((tag) => tag.name))),
+  );
 
   // Combine all selected tag filters
   const allSelectedTags = new Set([...selectedEvent, ...selectedStatus, ...selectedVolunteerType]);
@@ -51,7 +53,7 @@ export default function Page() {
   const filteredVolunteers = volunteers.filter((volunteer) => {
     // Tag filter
     if (allSelectedTags.size > 0) {
-      const hasMatchingTag = volunteer.tags.some((tag) => allSelectedTags.has(tag));
+      const hasMatchingTag = volunteer.tags.some((tag) => allSelectedTags.has(tag.name));
       if (!hasMatchingTag) return false;
     }
 

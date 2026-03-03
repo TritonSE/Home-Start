@@ -10,6 +10,7 @@ import validationErrorParser from "../util/validationErrorParser";
 import type { RequestHandler } from "express";
 import type { MongoBulkWriteError, WriteError } from "mongodb";
 import type { Buffer } from "node:buffer";
+import { Types } from "mongoose";
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -239,7 +240,7 @@ export const uploadVolunteerBatch: RequestHandler<
           $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
         },
         update: {
-          $set: body,
+          $set: normalizeVolunteerForBulkWrite(body),
         },
         upsert: true,
       },
@@ -287,6 +288,17 @@ const validateVolunteer = (volunteer: unknown) => {
     return false;
   }
   return true;
+};
+
+const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
+  const { tags, ...rest } = body;
+
+  return {
+    ...rest,
+    ...(tags && {
+      tags: tags.map((id) => new Types.ObjectId(id)),
+    }),
+  };
 };
 
 const statusKeyToString = (key: string): string => {
@@ -397,7 +409,7 @@ export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
           $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
         },
         update: {
-          $set: body,
+          $set: normalizeVolunteerForBulkWrite(body),
         },
         upsert: true,
       },

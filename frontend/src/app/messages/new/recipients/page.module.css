@@ -27,8 +27,8 @@
 }
 
 .backBtn {
-  width: 44px;
-  height: 44px;
+  width: 24px;
+  height: 24px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -37,16 +37,19 @@
 }
 
 .backIcon {
-  width: 20px;
-  height: 20px;
+  width: 12px;
+  height: 12px;
 }
 
 .title {
   margin: 0;
   text-align: center;
   font-family: var(--Font-family-Headings, Viga);
-  font-weight: 500;
-  font-size: 18px;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 1.2px;
   color: #000;
 }
 
@@ -58,7 +61,7 @@
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: calc(16px + 64px) 16px 160px;
+  padding: 16px 16px 160px;
 
   max-width: 720px;
   width: 100%;
@@ -82,7 +85,7 @@
 .searchWrap {
   height: 44px;
   border-radius: 10px;
-  border: 1px solid #d9e0e0;
+  border: 1px solid #E8E8E8;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -107,8 +110,8 @@
 }
 
 .searchInput::placeholder {
-  color: #9aa3a3;
-  -webkit-text-fill-color: #9aa3a3;
+  color: #979797;
+  -webkit-text-fill-color: #979797;
 }
 
 .filterBtn {
@@ -120,7 +123,7 @@
   display: grid;
   place-items: center;
   cursor: pointer;
-  color: #1d3a6b;
+  color: #1D3A6B;
 }
 
 .recipientsHeader {
@@ -140,7 +143,7 @@
 .selectAllLink {
   border: none;
   background: transparent;
-  color: #8a8a8a;
+  color: #979797;
   font-size: 14px;
   font-weight: 400;
   cursor: pointer;
@@ -158,31 +161,36 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 64px;
-  padding: 16px;
+  bottom: calc(64px + env(safe-area-inset-bottom));
+  z-index: 20;
+  padding: 0 16px;          
   background: transparent;
   display: flex;
   justify-content: center;
+  bottom: calc(120px + env(safe-area-inset-bottom));
 }
 
 .cta,
 .ctaDisabled {
-  width: min(720px, calc(100% - 32px));
-  height: 56px;
-  font-size: 18px;
-  font-weight: 400;
+  width: 100%;             
+  max-width: 720px;
+  min-height: 56px;
   border-radius: 12px;
   border: none;
+  font-size: 16px;     
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.5px;
 }
 
 .cta {
-  background: #163c73;
+  background: #1D3A6B;
   color: #ffffff;
   cursor: pointer;
 }
 
 .ctaDisabled {
-  background: #c9cdcd;
+  background: #E8E8E8;;
   color: #ffffff;
   cursor: not-allowed;
 }
@@ -264,16 +272,16 @@
   height: 36px;
   padding: 0 14px;
   border-radius: 999px;
-  border: 1.5px solid #1f3f78;
+  border: 1.5px solid #1D3A6B;
   background: #fff;
-  color: #1f3f78;
+  color: #1D3A6B;
   font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
 }
 
 .sheetChipOn {
-  background: #1f3f78;
+  background: #1D3A6B;
   color: #fff;
 }
 
@@ -303,7 +311,7 @@
   height: 46px;
   border-radius: 10px;
   border: none;
-  background: #163c73;
+  background: #1D3A6B;
   color: #fff;
   font-weight: 700;
   cursor: pointer;

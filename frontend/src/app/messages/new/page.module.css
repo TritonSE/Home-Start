@@ -122,7 +122,7 @@
   height: 48px;
   border: none;
   border-radius: 999px;
-  background: #163c73;
+  background: #1D3A6B;
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -147,7 +147,7 @@
   width: 100%;
   min-height: 52px;
   border-radius: 999px;
-  border: 1px solid #2d2d2d;
+  border: 1px solid #1D3A6B;
   background: #ffffff;
 
   display: flex;
@@ -170,6 +170,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  color: #676767;
 }
 
 .helperIcon {
@@ -224,7 +225,7 @@
   min-height: 56px;
   border-radius: 12px;
   border: none;
-  background: #163c73;
+  background: #1D3A6B;
   color: #ffffff;
   font-weight: 400;
   font-size: 18px;
@@ -248,7 +249,7 @@
   min-height: 56px;
   border-radius: 12px;
   border: none;
-  background: #c9cdcd;
+  background: #E8E8E8;
   color: #ffffff;
   font-weight: 400;
   font-size: 18px;
@@ -287,7 +288,7 @@
   width: 100%;
   height: 44px;
   border-radius: 10px;
-  background: #eef2f2;
+  background: #ECF3F3;
   padding: 4px;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -309,7 +310,7 @@
 
 .tabActive {
   background: #ffffff;
-  color: #1d3a6b;
+  color: #1D3A6B;
   font-weight: 700;
 }
 
@@ -341,7 +342,7 @@
 .selectRecipientsBtn {
   border: none;
   background: transparent;
-  color: #1d3a6b;
+  color: #1D3A6B;
   font-size: 16px;
   font-weight: 400;
   cursor: pointer;
@@ -382,7 +383,7 @@
   width: 100%;
   min-height: 52px;
   border-radius: 10px;
-  border: 1.5px solid #1d3a6b;
+  border: 1.5px solid #1D3A6B;
   background: #ffffff;
   display: flex;
   align-items: center;
@@ -390,7 +391,7 @@
   gap: 10px;
   font-weight: 400;
   font-size: 16px;
-  color: #1d3a6b;
+  color: #1D3A6B;
   cursor: pointer;
 }
 
@@ -437,7 +438,7 @@
 }
 
 .bottomText {
-  color: var(--Lofi-Gray-4, #676767);
+  color: var(--Lofi-Gray-4, #FBFFFF);
   /* Body/sm */
   font-family: var(--Font-family-Body, "Open Sans");
   font-size: var(--paragraph-sm-font-size, 14px);

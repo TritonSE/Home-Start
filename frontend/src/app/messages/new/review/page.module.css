@@ -10,7 +10,6 @@
   background: #ffffff;
   display: flex;
   flex-direction: column;
-  padding-top: calc(var(--header-h) + env(safe-area-inset-top));
   font-family: "Open Sans", sans-serif;
 }
 
@@ -19,28 +18,22 @@
 }
 
 .header {
-  position: fixed;
+  position: sticky;           
   top: 0;
-  left: 0;
-  right: 0;
-  z-index: 999;
-
-  padding-top: env(safe-area-inset-top);
-  height: calc(var(--header-h) + env(safe-area-inset-top));
-
+  z-index: 1000;
+  height: 64px;
   display: grid;
   grid-template-columns: 48px 1fr 48px;
   align-items: center;
-
-  padding-left: 16px;
-  padding-right: 16px;
-  background: #fff;
+  padding: 0 16px;
+  background: #ffffff;
   border-bottom: 1px solid #e6eaea;
+  overflow: hidden; 
 }
 
 .backBtn {
-  width: 44px;
-  height: 44px;
+  width: 24px;
+  height: 24px;
   border: none;
   background: transparent;
   display: grid;
@@ -49,17 +42,19 @@
 }
 
 .backIcon {
-  width: 24px;
-  height: 24px;
+  width: 12px;
+  height: 12px;
 }
 
 .headerTitle {
   margin: 0;
   text-align: center;
   font-family: var(--Font-family-Headings, Viga);
-  font-size: 18px;
-  line-height: 22px;
-  font-weight: 500;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 1.2px;
   color: #000;
 }
 
@@ -68,20 +63,15 @@
   height: 44px;
 }
 
+
 .content {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-
-  padding-top: calc(16px + 64px + env(safe-area-inset-top));
-  padding-left: 16px;
-  padding-right: 16px;
-  padding-bottom: 140px;
-
+  padding: 16px 16px 140px;  
   max-width: 720px;
   margin: 0 auto;
-  font-family: "Open Sans", sans-serif;
 }
 
 .section {
@@ -120,7 +110,8 @@
 .recipientsCard {
   width: 100%;
   border-radius: 12px;
-  background: #eef2f2;
+  background: #ffffff;                
+  border: 1px solid #B9B9B9;          
   padding: 14px 14px;
   display: flex;
   align-items: center;
@@ -151,7 +142,8 @@
 .previewCard {
   width: 100%;
   border-radius: 12px;
-  background: #eef2f2;
+  background: #ffffff;              
+  border: 1px solid #B9B9B9;        
   padding: 16px;
 }
 
@@ -198,24 +190,32 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 64px;
+  bottom: calc(120px + env(safe-area-inset-bottom));
   z-index: 20;
-  padding: 16px;
+  padding: 0 16px;
+  background: transparent;
   display: flex;
   justify-content: center;
-  background: transparent;
 }
 
 .sendBtn {
-  width: min(720px, calc(100% - 32px));
+  width: 100%;
+  max-width: 720px;
   min-height: 56px;
   border-radius: 12px;
   border: none;
   background: #163c73;
   color: #fff;
   font-weight: 400;
-  font-size: 18px;
+  font-size: 16px;         
+  line-height: 20px;
+  letter-spacing: 0.5px;
   cursor: pointer;
+}
+
+.sendBtn:disabled {
+  background: #E8E8E8;    
+  cursor: not-allowed;
 }
 
 @media (max-width: 767px) {

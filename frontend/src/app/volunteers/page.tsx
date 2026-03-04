@@ -1,7 +1,6 @@
 "use client";
 
-import { Volunteer } from "@/types/volunteer";
-import { Tag } from "@/types/tag";
+import { Volunteer, VolunteerTag } from "@/types/volunteer";
 import { fetchVolunteers } from "@/app/api/volunteer";
 import { fetchTags } from "@/app/api/tag";
 import VolunteerTable from "@/components/VolunteerTable";
@@ -9,12 +8,13 @@ import TitleBar from "@/components/TitleBar";
 import SearchBar from "@/components/SearchBar";
 import PageBar from "@/components/PageBar";
 import styles from "../page.module.css";
+import Sidebar from "../components/sidebar";
 import { useState, useEffect } from "react";
 
 export default function Page() {
   // Data state
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<VolunteerTag[]>([]);
 
   // Filter states
   const [search, setSearch] = useState("");
@@ -24,6 +24,8 @@ export default function Page() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [showImportSuccess, setShowImportSuccess] = useState(false);
   const itemsPerPage = 6;
 
   // Fetch volunteers and tags once on mount
@@ -46,6 +48,10 @@ export default function Page() {
   const volunteerTypeTags = tags
     .filter((tag) => tag.type === "Volunteer Type")
     .map((tag) => tag.name);
+  // Extract unique tags from volunteers
+  const uniqueTags = Array.from(
+    new Set(volunteers.flatMap((volunteer) => volunteer.tags.map((tag) => tag.name))),
+  );
 
   // Combine all selected tag filters
   const allSelectedTags = new Set([...selectedEvent, ...selectedStatus, ...selectedVolunteerType]);
@@ -72,30 +78,52 @@ export default function Page() {
   const endIndex = startIndex + itemsPerPage;
   const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
 
+  const handleImportComplete = () => {
+    setShowImportSuccess(true);
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <TitleBar />
-        <SearchBar
-          search={search}
-          setSearch={setSearch}
-          eventTags={eventTags}
-          volunteerTypeTags={volunteerTypeTags}
-          selectedEvent={selectedEvent}
-          setSelectedEvent={setSelectedEvent}
-          selectedStatus={selectedStatus}
-          setSelectedStatus={setSelectedStatus}
-          selectedVolunteerType={selectedVolunteerType}
-          setSelectedVolunteerType={setSelectedVolunteerType}
-        />
-        <VolunteerTable volunteers={displayedVolunteers} />
-        <PageBar
-          totalItems={filteredVolunteers.length}
-          currentPage={currentPage}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-        />
-      </main>
-    </div>
+    <Sidebar>
+      <div className={styles.page}>
+        <main className={styles.main}>
+          {showImportSuccess && (
+            <div className={styles.importSuccessBanner}>
+              <div className={styles.importSuccessContent}>
+                <img src="/success.svg" className={styles.importSuccessIcon} />
+                <span className={styles.importSuccessText}>CSV Successfully Uploaded</span>
+              </div>
+              <button
+                type="button"
+                className={styles.importSuccessClose}
+                onClick={() => setShowImportSuccess(false)}
+                aria-label="Dismiss success message"
+              >
+                ×
+              </button>
+            </div>
+          )}
+          <TitleBar onImportComplete={handleImportComplete} />
+          <SearchBar
+            search={search}
+            setSearch={setSearch}
+            eventTags={eventTags}
+            volunteerTypeTags={volunteerTypeTags}
+            selectedEvent={selectedEvent}
+            setSelectedEvent={setSelectedEvent}
+            selectedStatus={selectedStatus}
+            setSelectedStatus={setSelectedStatus}
+            selectedVolunteerType={selectedVolunteerType}
+            setSelectedVolunteerType={setSelectedVolunteerType}
+          />
+          <VolunteerTable volunteers={displayedVolunteers} />
+          <PageBar
+            totalItems={filteredVolunteers.length}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
+        </main>
+      </div>
+    </Sidebar>
   );
 }

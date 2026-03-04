@@ -1,28 +1,16 @@
-import "dotenv/config";
 import cors from "cors";
 import express from "express";
 import { isHttpError } from "http-errors";
 
+import "./firebase/admin";
+import { frontend_origin } from "./config";
+import { type AuthRequest, verifyToken } from "./middleware/auth";
 import tagRoutes from "./routes/tagRoutes";
 import volunteerRoutes from "./routes/volunteerRoutes";
 
 import type { NextFunction, Request, Response } from "express";
 
-const app = express();
-
-// Provide json body-parser middleware
-app.use(express.json());
-
-app.use(
-  cors({
-    origin: process.env.FRONTEND_ORIGIN,
-  }),
-);
-
-app.use("/api/volunteer", volunteerRoutes);
-app.use("/api/tag", tagRoutes);
-
-app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
+const handleError = (error: unknown, req: Request, res: Response, _next: NextFunction) => {
   // 500 is the "internal server error" error code, this will be our fallback
   let statusCode = 500;
   let errorMessage = "An error has occurred.";
@@ -39,6 +27,33 @@ app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
   }
 
   res.status(statusCode).json({ error: errorMessage });
+};
+
+const app = express();
+
+// Provide json body-parser middleware
+app.use(express.json());
+
+app.use(
+  cors({
+    origin: frontend_origin,
+  }),
+);
+
+// Example routes
+app.get("/api/public", (req, res) => {
+  res.json({ message: "This is a public endpoint" });
 });
+
+// Protected route - requires authentication
+app.get("/api/protected", verifyToken, (req, res) => {
+  const authReq = req as AuthRequest;
+  res.json({ message: "You are authenticated!", user: authReq.user });
+});
+
+app.use("/api/volunteer", verifyToken, volunteerRoutes);
+app.use("/api/tag", verifyToken, tagRoutes);
+
+app.use(handleError);
 
 export default app;

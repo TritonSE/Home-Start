@@ -1,4 +1,10 @@
-import { Tag } from "./tag";
+export type VolunteerTag = {
+  _id: string;
+  name: string;
+  color: string;
+  type: string;
+  __v?: number;
+};
 
 export type Volunteer = {
   _id: string;
@@ -6,5 +12,5 @@ export type Volunteer = {
   lastName: string;
   email: string;
   phoneNumber: string;
-  tags: Tag[];
+  tags: VolunteerTag[];
 };

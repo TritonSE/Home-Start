@@ -13,6 +13,10 @@ const volunteerSchema = new Schema({
     default: [],
     required: true,
   },
+  status: {
+    type: String,
+    enum: ["returning", "new"],
+  },
 });
 
 type Volunteer = InferSchemaType<typeof volunteerSchema>;

@@ -3,6 +3,7 @@ import { PassThrough } from "node:stream";
 import csvParser from "csv-parser";
 import { validationResult } from "express-validator";
 import createError from "http-errors";
+import { Types } from "mongoose";
 
 import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
@@ -16,11 +17,13 @@ import type { Buffer } from "node:buffer";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_NUMBER_REGEX = /^\(?\d{3}\)?[-\s.]?\d{3}[-\s.]?\d{4}$/;
 
+const defaultPopulateConfig = [{ path: "tags" }];
+
 export const getVolunteer: RequestHandler = async (req, res, next) => {
   const volunteerId = req.params.id;
 
   try {
-    const volunteer = await VolunteerModel.findById(volunteerId);
+    const volunteer = await VolunteerModel.findById(volunteerId).populate(defaultPopulateConfig);
 
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
@@ -33,7 +36,7 @@ export const getVolunteer: RequestHandler = async (req, res, next) => {
 };
 export const getVolunteers: RequestHandler = async (req, res, next) => {
   try {
-    const volunteers = await VolunteerModel.find();
+    const volunteers = await VolunteerModel.find().populate(defaultPopulateConfig);
     res.status(200).json(volunteers);
   } catch (err) {
     next(err);
@@ -48,7 +51,7 @@ export const getVolunteerByEmail: RequestHandler = async (req, res, next) => {
   const { email } = req.body as VolunteerByEmailBody;
 
   try {
-    const volunteer = await VolunteerModel.findOne({ email });
+    const volunteer = await VolunteerModel.findOne({ email }).populate(defaultPopulateConfig);
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
     }
@@ -66,7 +69,7 @@ export const getVolunteerPhoneNumber: RequestHandler = async (req, res, next) =>
   const { phoneNumber } = req.body as VolunteerByPhoneNumberBody;
 
   try {
-    const volunteer = await VolunteerModel.findOne({ phoneNumber });
+    const volunteer = await VolunteerModel.findOne({ phoneNumber }).populate(defaultPopulateConfig);
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
     }
@@ -80,7 +83,7 @@ export const getTagsAssignedToVolunteer: RequestHandler = async (req, res, next)
   const volunteerId = req.params.id;
 
   try {
-    const volunteer = await VolunteerModel.findById(volunteerId);
+    const volunteer = await VolunteerModel.findById(volunteerId).populate("tags");
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
     }
@@ -96,11 +99,19 @@ type CreateVolunteerBody = {
   email: string;
   phoneNumber: string;
   tags?: string[];
+  status?: "returning" | "new";
 };
 
 export const createVolunteer: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);
-  const { firstName, lastName, email, phoneNumber, tags = [] } = req.body as CreateVolunteerBody;
+  const {
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    tags = [],
+    status = "new",
+  } = req.body as CreateVolunteerBody;
   try {
     validationErrorParser(errors);
 
@@ -115,6 +126,7 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
       email,
       phoneNumber,
       tags,
+      status,
     });
     res.status(201).json(newVolunteer);
   } catch (err) {
@@ -138,7 +150,7 @@ export const updateVolunteerContact: RequestHandler = async (req, res, next) => 
     const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
       phoneNumber,
       email,
-    });
+    }).populate(defaultPopulateConfig);
 
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
@@ -164,7 +176,7 @@ export const assignTagsToVolunteer: RequestHandler = async (req, res, next) => {
     const { tags } = req.body as AssignTagsBody;
     const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
       $addToSet: { tags: { $each: tags } },
-    });
+    }).populate(defaultPopulateConfig);
 
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
@@ -190,7 +202,7 @@ export const removeTagsFromVolunteer: RequestHandler = async (req, res, next) =>
     const { tags } = req.body as RemoveTagsFromVolunteerBody;
     const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
       $pullAll: { tags },
-    });
+    }).populate(defaultPopulateConfig);
 
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
@@ -218,9 +230,7 @@ export const deleteVolunteer: RequestHandler = async (req, res, next) => {
 
 type UpdateVolunteerOp = {
   u: {
-    $set: {
-      email: string;
-    };
+    $set: CreateVolunteerBody;
   };
 };
 
@@ -240,7 +250,7 @@ export const uploadVolunteerBatch: RequestHandler<
           $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
         },
         update: {
-          $set: body,
+          $set: normalizeVolunteerForBulkWrite(body),
         },
         upsert: true,
       },
@@ -290,7 +300,18 @@ const validateVolunteer = (volunteer: unknown) => {
   return true;
 };
 
-const statusKeyToString = (key: string): string => {
+const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
+  const { tags, ...rest } = body;
+  const temp = {
+    ...rest,
+    ...(tags && {
+      tags: tags.map((id) => new Types.ObjectId(id)),
+    }),
+  };
+  return temp;
+};
+
+const statusKeyToEnum = (key: string): string => {
   key = key.trim().toUpperCase();
   if (key === "R") {
     return "returning";
@@ -307,7 +328,8 @@ const createCSVCreationBody = (data: Record<string, string>): CreateVolunteerBod
     lastName: data.Last,
     email: data.Email,
     phoneNumber: data.Phone,
-    tags: [...(data.tags?.split(",") || []), statusKeyToString(data.New)],
+    status: statusKeyToEnum(data.New),
+    tags: data.Tags ? data.Tags.split(",").map((tag) => tag.trim()) : [],
   } as CreateVolunteerBody;
   return result;
 };
@@ -325,7 +347,6 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
           return;
         }
         const creationBody = createCSVCreationBody(data);
-
         const valid = validateVolunteer(creationBody);
 
         if (!valid) {
@@ -408,7 +429,7 @@ export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
           $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
         },
         update: {
-          $set: body,
+          $set: normalizeVolunteerForBulkWrite(body),
         },
         upsert: true,
       },

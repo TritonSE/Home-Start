@@ -42,6 +42,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
         setStatus("error");
         return;
       }
+
       const data = {
         newCount: result.data.wouldCreateCount,
         updatedCount: result.data.wouldUpdateCount,
@@ -75,7 +76,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
     }
 
     if (!csvParsedInfo) return;
-    const result = await uploadVolunteerBatch(
+    await uploadVolunteerBatch(
       csvParsedInfo.changes.map((change) => ({
         firstName: change.firstName,
         lastName: change.lastName,
@@ -174,14 +175,14 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                     <img src="/ic_success.svg" className={styles.summaryIcon} />
                     <span>New Volunteers</span>
                   </div>
-                  <div className={styles.summaryCount}>{csvParsedInfo.newCount}</div>
+                  <div className={styles.summaryCount}>{csvParsedInfo?.newCount || 0}</div>
                 </div>
                 <div className={`${styles.summaryCard} ${styles.summaryCardUpdated}`}>
                   <div className={styles.summaryHeader}>
                     <img src="/ic_new.svg" className={styles.summaryIcon} />
                     <span>Updated Volunteers</span>
                   </div>
-                  <div className={styles.summaryCount}>{csvParsedInfo.updatedCount}</div>
+                  <div className={styles.summaryCount}>{csvParsedInfo?.updatedCount || 0}</div>
                 </div>
               </div>
 
@@ -189,7 +190,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                 <div className={styles.sectionTitle}>Detailed Changes</div>
                 <div className={styles.detailCard}>
                   <div className={styles.detailList}>
-                    {csvParsedInfo.changes.map((change, index) => (
+                    {csvParsedInfo?.changes?.map((change, index) => (
                       <div key={`${change.email}-${index}`} className={styles.detailItem}>
                         <div className={styles.detailHeader}>
                           <span
@@ -207,7 +208,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                         </div>
                         <div className={styles.detailMeta}>Email: {change.email}</div>
                         <div className={styles.detailMeta}>Phone: {change.phoneNumber}</div>
-                        {index < csvParsedInfo.changes.length - 1 && (
+                        {index < (csvParsedInfo?.changes.length || 0) - 1 && (
                           <div className={styles.detailDivider} />
                         )}
                       </div>

@@ -19,7 +19,7 @@
     "seed:volunteers": "ts-node src/scripts/seedVolunteers.ts"
   },
   "dependencies": {
-    "cors": "^2.8.5",
+    "cors": "^2.8.6",
     "csv-parser": "^3.2.0",
     "dotenv": "^17.2.3",
     "envalid": "^8.1.0",

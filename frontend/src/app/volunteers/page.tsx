@@ -28,10 +28,8 @@ export default function Page() {
 
   const loadVolunteers = async () => {
     try {
-      console.log("Attempting to fetch volunteers");
       const data = await fetchVolunteers();
       setVolunteers(data);
-      console.log("Volunteers fetched successfully");
     } catch (error) {
       console.error("Error fetching volunteers:", error);
     }
@@ -46,7 +44,9 @@ export default function Page() {
   }, []);
 
   // Extract unique tags from volunteers
-  const uniqueTags = Array.from(new Set(volunteers.flatMap((volunteer) => volunteer.tags)));
+  const uniqueTags = Array.from(
+    new Set(volunteers.flatMap((volunteer) => volunteer.tags.map((tag) => tag.name))),
+  );
 
   // Combine all selected tag filters
   const allSelectedTags = new Set([...selectedEvent, ...selectedStatus, ...selectedVolunteerType]);
@@ -55,7 +55,7 @@ export default function Page() {
   const filteredVolunteers = volunteers.filter((volunteer) => {
     // Tag filter
     if (allSelectedTags.size > 0) {
-      const hasMatchingTag = volunteer.tags.some((tag) => allSelectedTags.has(tag));
+      const hasMatchingTag = volunteer.tags.some((tag) => allSelectedTags.has(tag.name));
       if (!hasMatchingTag) return false;
     }
 

@@ -104,19 +104,19 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
                   {volunteer.tags.map((tag, index) => {
                     let colorClass = styles.greenPillTag;
 
-                    if (tag === "Intern") {
+                    if (tag.name === "Intern") {
                       colorClass = styles.bluePillTag;
                     }
 
-                    if (tag === "Outside Volunteer") {
+                    if (tag.name === "Outside Volunteer") {
                       colorClass = styles.orangePillTag;
                     }
                     return (
                       <span
-                        key={`col1-${volunteer._id}-${tag}-${index}`}
+                        key={`col1-${volunteer._id}-${tag._id}-${index}`}
                         className={`${styles.pillTag} ${colorClass}`}
                       >
-                        {tag}
+                        {tag.name}
                       </span>
                     );
                   })}

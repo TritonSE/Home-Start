@@ -1,27 +1,71 @@
-import { Volunteer } from "@/types/volunteer";
+import { Volunteer, VolunteerTag } from "@/types/volunteer";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const toVolunteerTag = (tag: unknown): VolunteerTag | null => {
+  if (!tag || typeof tag !== "object") {
+    return null;
+  }
+
+  const source = tag as Partial<VolunteerTag>;
+
+  if (typeof source._id !== "string" || typeof source.name !== "string") {
+    return null;
+  }
+
+  return {
+    _id: source._id,
+    name: source.name,
+    color: typeof source.color === "string" ? source.color : "",
+    type: typeof source.type === "string" ? source.type : "",
+    __v: typeof source.__v === "number" ? source.__v : undefined,
+  };
+};
+
+const normalizeVolunteer = (volunteer: unknown): Volunteer => {
+  const source = (volunteer ?? {}) as Partial<Volunteer> & {
+    tags?: unknown;
+  };
+
+  const tags = Array.isArray(source.tags)
+    ? source.tags.map(toVolunteerTag).filter((tag): tag is VolunteerTag => Boolean(tag))
+    : [];
+
+  return {
+    _id: String(source._id ?? ""),
+    firstName: String(source.firstName ?? ""),
+    lastName: String(source.lastName ?? ""),
+    email: String(source.email ?? ""),
+    phoneNumber: String(source.phoneNumber ?? ""),
+    tags,
+  };
+};
 
 export async function fetchVolunteers(): Promise<Volunteer[]> {
   try {
-    console.log(`${API_URL}/api/volunteer`);
-
     let response: Response;
     try {
-      response = await fetch(`${API_URL}/api/volunteer`);
+      response = await fetch("/api/volunteer", {
+        credentials: "include",
+      });
     } catch (fetchError) {
       console.error("Fetch network error:", fetchError);
       throw new Error(`Network error during fetch: ${fetchError}`);
     }
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch volunteers: ${response.status} ${response.statusText}`);
+      let backendMessage = "";
+      try {
+        const errorBody = await response.json();
+        backendMessage = typeof errorBody?.error === "string" ? errorBody.error : "";
+      } catch {
+        backendMessage = "";
+      }
+
+      throw new Error(
+        `Failed to fetch volunteers: ${response.status} ${response.statusText}${backendMessage ? ` - ${backendMessage}` : ""}`,
+      );
     }
 
     const data = await response.json();
-
-    // Log the raw data to see what's being returned
-    console.log("Raw data from API:", data);
 
     // Validate that data is an array
     if (!Array.isArray(data)) {
@@ -41,10 +85,9 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
       }
     });
 
-    const typedData: Volunteer[] = data;
+    const typedData: Volunteer[] = data.map(normalizeVolunteer);
     return typedData;
   } catch (error) {
-    console.error("Error fetching volunteers: ", error);
     throw error;
   }
 }
@@ -73,8 +116,9 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
     const formData = new FormData();
     formData.append("csv", csv);
 
-    const response = await fetch(`${API_URL}/api/volunteer/parse-csv`, {
+    const response = await fetch("/api/volunteer/parse-csv", {
       method: "POST",
+      credentials: "include",
       body: formData,
     });
 
@@ -114,7 +158,6 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
     };
     return { ok: true, data: result };
   } catch (error) {
-    console.error("Error parsing volunteers CSV: ", error);
     return {
       ok: false,
       error: error instanceof Error ? error.message : "Unknown error parsing CSV",
@@ -136,9 +179,10 @@ export async function uploadVolunteerBatch(
   data: VolunteerCreationBody[],
 ): Promise<UploadVolunteerBatchResponse> {
   try {
-    const response = await fetch(`${API_URL}/api/volunteer/batch`, {
+    const response = await fetch("/api/volunteer/batch", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ volunteers: data }),
     });
 
@@ -151,7 +195,6 @@ export async function uploadVolunteerBatch(
 
     return { ok: true };
   } catch (error) {
-    console.error("Error uploading volunteer batch: ", error);
     return {
       ok: false,
       error: error instanceof Error ? error.message : "Unknown error uploading volunteers",

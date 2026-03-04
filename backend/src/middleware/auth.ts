@@ -1,4 +1,5 @@
 import { auth } from "../firebase/admin";
+
 import type { NextFunction, Request, Response } from "express";
 
 // Extend Express Request to include user info
@@ -19,7 +20,6 @@ export const verifyToken = async (req: AuthRequest, res: Response, next: NextFun
       return;
     }
 
-    const token = authHeader.split("Bearer ")[1];
     const token = authHeader.split("Bearer ")[1];
 
     // Verify token with Firebase Admin

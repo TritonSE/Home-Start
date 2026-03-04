@@ -6,22 +6,15 @@ import "module-alias/register";
 import mongoose from "mongoose";
 
 import app from "./app";
-import env from "./util/validateEnv";
+import { database_url, port } from "./config";
 
 async function startServer() {
-  const PORT = env.PORT || 4000;
-  const DATABASE_URL = env.DATABASE_URL;
-
-  if (!DATABASE_URL) {
-    throw new Error("DATABASE_URL is not defined in .env");
-  }
-
   try {
-    await mongoose.connect(DATABASE_URL);
+    await mongoose.connect(database_url);
     console.info("Database Connected");
 
-    app.listen(PORT, () => {
-      console.info(`Listening on port ${PORT}`);
+    app.listen(port, () => {
+      console.info(`Listening on port ${port}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);

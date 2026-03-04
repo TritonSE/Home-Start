@@ -85,12 +85,6 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
       })),
     );
 
-    if (!result.ok) {
-      alert("Failed to upload volunteers: " + result.error);
-      return;
-    }
-
-    alert("Volunteers imported successfully!");
     onComplete();
     onClose();
   }

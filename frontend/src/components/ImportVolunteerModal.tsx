@@ -61,11 +61,6 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
       setCSVParsedInfo(data);
     });
 
-    if (!file.name.endsWith(".csv")) {
-      setStatus("error");
-      return;
-    }
-
     setStatus("success");
   }
 

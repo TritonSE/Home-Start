@@ -16,7 +16,7 @@ type ParsedVolunteerChange = {
   lastName: string;
   email: string;
   phoneNumber: string;
-  tags: string[];
+  tags?: string[];
 };
 
 type ParsedCSVResult = {

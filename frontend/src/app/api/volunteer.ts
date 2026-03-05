@@ -36,6 +36,7 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
     email: String(source.email ?? ""),
     phoneNumber: String(source.phoneNumber ?? ""),
     tags,
+    status: String(source.status ?? ""),
   };
 };
 

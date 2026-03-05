@@ -37,11 +37,12 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
         <colgroup>
-          <col style={{ width: "170px" }} />
-          <col style={{ width: "140px" }} />
-          <col style={{ width: "220px" }} />
-          <col style={{ width: "140px" }} />
-          <col style={{ width: "200px" }} />
+          <col style={{ width: "60px" }} />
+          <col style={{ width: "150px" }} />
+          <col style={{ width: "160px" }} />
+          <col style={{ width: "230px" }} />
+          <col style={{ width: "230px" }} />
+          <col style={{ width: "350px" }} />
         </colgroup>
         <thead>
           <tr>

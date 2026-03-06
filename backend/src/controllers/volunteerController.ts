@@ -3,6 +3,7 @@ import { PassThrough } from "node:stream";
 import csvParser from "csv-parser";
 import { validationResult } from "express-validator";
 import createError from "http-errors";
+import { Types } from "mongoose";
 
 import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
@@ -10,7 +11,6 @@ import validationErrorParser from "../util/validationErrorParser";
 import type { RequestHandler } from "express";
 import type { MongoBulkWriteError, WriteError } from "mongodb";
 import type { Buffer } from "node:buffer";
-import { Types } from "mongoose";
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

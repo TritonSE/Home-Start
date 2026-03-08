@@ -35,6 +35,15 @@ type TagCreationBody = {
   color: string;
   type: string;
 };
+export const getEventTags: RequestHandler = async (req, res, next) => {
+  try {
+    const eventTags = await TagModel.find({ type: "Event" }).select("name -_id");
+    const tagNames = eventTags.map((tag) => tag.name);
+    res.status(200).json(tagNames);
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const createTag: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);

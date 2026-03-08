@@ -210,21 +210,18 @@ export const deleteVolunteer: RequestHandler = async (req, res, next) => {
 
 export const getSelectedVolunteers: RequestHandler = async (req, res, next) => {
   const { events, statuses } = req.body as { events: string[]; statuses: string[] };
-  let processed_statuses = statuses && statuses.length > 0 ? statuses : ["returning", "new"];
   try {
-    const volunteerFilter: any = {
-      status: { $in: processed_statuses },
+    const tagEventsMap = await TagModel.find({
+      name: { $in: events },
+      type: "Event",
+    }).select("_id");
+
+    const tagEvents = tagEventsMap.map((tag) => tag._id);
+
+    const volunteerFilter = {
+      tags: { $in: tagEvents },
+      status: { $in: statuses },
     };
-    if (events && events.length > 0) {
-      const tagEventsMap = await TagModel.find({
-        name: { $in: events },
-        type: "Event",
-      }).select("_id");
-
-      const tagEvents = tagEventsMap.map((tag) => tag._id);
-
-      volunteerFilter.tags = { $in: tagEvents };
-    }
 
     const volunteersMap = await VolunteerModel.find(volunteerFilter).select(
       "_id firstName lastName email phoneNumber",

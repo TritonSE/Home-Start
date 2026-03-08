@@ -14,7 +14,7 @@ type VolunteerRow = {
 };
 
 type Recipient = {
-  id: string;
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -49,10 +49,13 @@ export default function RecipientsPage() {
   const toggleRecipient = useTextingFlowStore((s) => s.toggleRecipient);
   const setRecipientIds = useTextingFlowStore((s) => s.setRecipientIds);
   const setRecipients = useTextingFlowStore((s) => s.setRecipients);
+  const getRecipients = useTextingFlowStore((s) => s.getRecipients);
+  const clearRecipients = useTextingFlowStore((s) => s.clearRecipients);
 
   const [query, setQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
+  const [events, setEvents] = useState<string[]>([]);
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
 
@@ -74,13 +77,36 @@ export default function RecipientsPage() {
 
         const data: VolunteerRow[] = await res.json();
         if (!cancelled) setVolunteerRows(data);
-      } catch (e: any) {
-        if (!cancelled) setError(e.message ?? "Unknown error");
+      } catch (e: unknown) {
+        if (!cancelled) {
+          if (e instanceof Error) {
+            setError(e.message);
+          } else {
+            setError("Unknown error");
+          }
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
 
+    async function loadEvents() {
+      try {
+        const res = await fetch("http://localhost:4000/api/tag/getEventTags");
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+        const events: string[] = await res.json();
+
+        setEvents(events);
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError("Unknown error");
+        }
+      }
+    }
+
+    loadEvents();
     loadVolunteerRows();
 
     return () => {
@@ -159,8 +185,9 @@ export default function RecipientsPage() {
     });
 
     const data: Recipient[] = await res.json();
+    clearRecipients();
     for (const r of data) {
-      toggleRecipient(r.id);
+      toggleRecipient(r._id);
     }
 
     setRecipients(data);
@@ -278,7 +305,7 @@ export default function RecipientsPage() {
             <div className={styles.sheetSection}>
               <div className={styles.sheetSectionTitle}>Events</div>
               <div className={styles.sheetChips}>
-                {EVENTS.map((e) => {
+                {events.map((e) => {
                   const on = selectedEvents.includes(e);
                   return (
                     <button

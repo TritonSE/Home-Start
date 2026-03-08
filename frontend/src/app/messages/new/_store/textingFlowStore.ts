@@ -22,12 +22,13 @@ type TextingFlowState = {
   setRecipientIds: (ids: string[]) => void;
   setRecipients: (recipients: Recipient[]) => void;
   clearRecipients: () => void;
+  getRecipients: () => Recipient[];
 
   resetDraft: () => void;
 };
 
 type Recipient = {
-  id: string;
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -60,6 +61,7 @@ export const useTextingFlowStore = create<TextingFlowState>()(
       setRecipientIds: (ids) => set({ selectedRecipientIds: ids }),
       setRecipients: (recipients) => set({ selectedRecipients: recipients }),
       clearRecipients: () => set({ selectedRecipientIds: [] }),
+      getRecipients: () => get().selectedRecipients,
 
       resetDraft: () =>
         set({

@@ -5,6 +5,7 @@ import * as TagValidator from "../validators/tagValidator";
 
 const router = express.Router();
 
+router.get("/getEventTags", tag.getEventTags);
 router.get("/:id", tag.getTag);
 router.get("/", tag.getTags);
 router.delete("/:id", tag.deleteTag);

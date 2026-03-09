@@ -9,12 +9,12 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       try {
         if (user) {
           const token = await user.getIdToken();
-          document.cookie = `firebaseAuthToken=${token}; path=/`;
+          document.cookie = `firebaseAuthToken=${token}; path=/; Secure; SameSite=Strict`;
         } else {
-          document.cookie = `firebaseAuthToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+          document.cookie = `firebaseAuthToken=; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
         }
       } catch {
-        document.cookie = `firebaseAuthToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+        document.cookie = `firebaseAuthToken=; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
       }
     });
 

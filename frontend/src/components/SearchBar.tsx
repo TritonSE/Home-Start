@@ -11,8 +11,8 @@ interface SearchBarProps {
 
   selectedEvent: Set<string>;
   setSelectedEvent: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
-  selectedStatus: Set<string>;
-  setSelectedStatus: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  selectedStatus: string | null;
+  setSelectedStatus: (value: string | null) => void;
   selectedVolunteerType: Set<string>;
   setSelectedVolunteerType: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
 }
@@ -60,15 +60,8 @@ export default function SearchBar({
         return updated;
       });
     } else if (cat === "status") {
-      setSelectedStatus((prev) => {
-        const updated = new Set(prev);
-        if (updated.has(item)) {
-          updated.delete(item);
-        } else {
-          updated.add(item);
-        }
-        return updated;
-      });
+      const newStatus = selectedStatus === item ? null : item;
+      setSelectedStatus(newStatus);
     } else if (cat === "volunteerType") {
       setSelectedVolunteerType((prev) => {
         const updated = new Set(prev);
@@ -84,28 +77,34 @@ export default function SearchBar({
 
   function getSelectedSet(cat: "event" | "status" | "volunteerType") {
     if (cat === "event") return selectedEvent;
-    if (cat === "status") return selectedStatus;
+    if (cat === "status") return new Set(selectedStatus ? [selectedStatus] : []);
     return selectedVolunteerType;
   }
 
-  function renderDropdown(items: string[], cat: "event" | "status" | "volunteerType") {
+  function renderDropdown(
+    items: string[],
+    cat: "event" | "status" | "volunteerType",
+    hasSearch: boolean = true,
+  ) {
     if (open !== cat) return null;
     const selected = getSelectedSet(cat);
     return (
-      <div className={styles.dropdown} role="menu">
-        <div className={styles.inputField}>
-          <span className={styles.ic_search}>
-            <img src="/Union.svg" alt="Union logo" className={styles.union} />
-          </span>
-          <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
-            <input
-              type="text"
-              value={tagSearch}
-              onChange={(e) => setTagSearch(e.target.value)}
-              placeholder="Search"
-            />
-          </form>
-        </div>
+      <div className={`${styles.dropdown} ${!hasSearch ? styles.dropdownSmall : ""}`} role="menu">
+        {hasSearch && (
+          <div className={styles.inputField}>
+            <span className={styles.ic_search}>
+              <img src="/Union.svg" alt="Union logo" className={styles.union} />
+            </span>
+            <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
+              <input
+                type="text"
+                value={tagSearch}
+                onChange={(e) => setTagSearch(e.target.value)}
+                placeholder="Search"
+              />
+            </form>
+          </div>
+        )}
 
         <div className={styles.dropdownItemContainer}>
           {items
@@ -154,12 +153,13 @@ export default function SearchBar({
       <div className={styles.tagsContainer} ref={wrapperRef}>
         <div className={styles.pillWrapper}>
           <button
-            className={`${styles.pillTagStatus} ${selectedStatus.size > 0 ? styles.pillTagActive : ""}`}
+            className={`${styles.pillTagStatus} ${selectedStatus !== null ? styles.pillTagActive : ""}`}
             aria-expanded={open === "status"}
             onClick={() => toggle("status")}
           >
             <span className={styles.pillTagText}>Status</span>
           </button>
+          {renderDropdown(["returning", "new"], "status", false)}
         </div>
 
         <div className={styles.pillWrapper}>
@@ -189,7 +189,7 @@ export default function SearchBar({
             className={styles.clearFilterButton}
             onClick={() => {
               setSelectedEvent(new Set());
-              setSelectedStatus(new Set());
+              setSelectedStatus(null);
               setSelectedVolunteerType(new Set());
             }}
           >

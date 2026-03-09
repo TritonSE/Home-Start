@@ -137,6 +137,12 @@
   height: 260px;
 }
 
+.dropdownSmall {
+  width: 200px;
+  height: 120px;
+  padding: 12px;
+}
+
 .dropdownSearch {
   display: flex;
   flex-direction: column;

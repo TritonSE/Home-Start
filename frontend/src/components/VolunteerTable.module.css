@@ -82,6 +82,16 @@
   height: 40px;
 }
 
+.pillTagNew {
+  composes: pillTag;
+  background-color: lightblue;
+}
+
+.pillTagReturning {
+  composes: pillTag;
+  background-color: #efb446;
+}
+
 .tagsContainer {
   display: flex;
   gap: 8px;

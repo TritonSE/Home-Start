@@ -41,6 +41,7 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
           <col style={{ width: "150px" }} />
           <col style={{ width: "160px" }} />
           <col style={{ width: "230px" }} />
+          <col style={{ width: "180px" }} />
           <col style={{ width: "230px" }} />
           <col style={{ width: "350px" }} />
         </colgroup>
@@ -71,6 +72,14 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
             <th>
               <div className={styles.headerContent}>
                 <span>Email</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Status</span>
+                <span>
+                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
+                </span>
               </div>
             </th>
             <th>
@@ -111,6 +120,19 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
               </td>
               <td>{volunteer.phoneNumber}</td>
               <td>{volunteer.email}</td>
+
+              <td>
+                <div className={styles.tagsContainer}>
+                  <span
+                    className={
+                      volunteer.status === "new" ? styles.pillTagNew : styles.pillTagReturning
+                    }
+                  >
+                    {volunteer.status}
+                  </span>
+                </div>
+              </td>
+
               <td>
                 <div className={styles.tagsContainer}>
                   {volunteer.tags
@@ -124,7 +146,7 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
                         : undefined;
                       return (
                         <span
-                          key={`col1-${volunteer._id}-${tag.name}-${index}`}
+                          key={`col2-${volunteer._id}-${tag.name}-${index}`}
                           className={`${styles.pillTag} ${colorClass}`}
                           style={{ backgroundColor: bgColor }}
                         >
@@ -134,6 +156,7 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
                     })}
                 </div>
               </td>
+
               <td>
                 <div className={styles.tagsContainer}>
                   {volunteer.tags

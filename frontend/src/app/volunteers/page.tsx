@@ -19,7 +19,7 @@ export default function Page() {
   // Filter states
   const [search, setSearch] = useState("");
   const [selectedEvent, setSelectedEvent] = useState<Set<string>>(new Set());
-  const [selectedStatus, setSelectedStatus] = useState<Set<string>>(new Set());
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedVolunteerType, setSelectedVolunteerType] = useState<Set<string>>(new Set());
 
   // Pagination state
@@ -54,7 +54,7 @@ export default function Page() {
   );
 
   // Combine all selected tag filters
-  const allSelectedTags = new Set([...selectedEvent, ...selectedStatus, ...selectedVolunteerType]);
+  const allSelectedTags = new Set([...selectedEvent, ...selectedVolunteerType]);
 
   // Apply ALL filters here (search + tags)
   const filteredVolunteers = volunteers.filter((volunteer) => {
@@ -63,6 +63,9 @@ export default function Page() {
       const hasMatchingTag = volunteer.tags?.some((tag) => allSelectedTags.has(tag.name));
       if (!hasMatchingTag) return false;
     }
+
+    // Status filter
+    if (selectedStatus && volunteer.status !== selectedStatus) return false;
 
     // Search filter
     if (search.trim()) {

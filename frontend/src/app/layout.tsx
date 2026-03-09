@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Montserrat, Viga, Open_Sans } from "next/font/google";
 import "./globals.css";
 import styles from "./layout.module.css";
-import AuthProvider from "./components/AuthProvider";
+import AuthProvider from "../contexts/AuthProvider";
 
 const montserrat = Montserrat({
   variable: "--font-title-bold",

@@ -53,15 +53,20 @@ export default function Page() {
     new Set(volunteers.flatMap((volunteer) => volunteer.tags.map((tag) => tag.name))),
   );
 
-  // Combine all selected tag filters
-  const allSelectedTags = new Set([...selectedEvent, ...selectedVolunteerType]);
-
   // Apply ALL filters here (search + tags)
   const filteredVolunteers = volunteers.filter((volunteer) => {
-    // Tag filter
-    if (allSelectedTags.size > 0) {
-      const hasMatchingTag = volunteer.tags?.some((tag) => allSelectedTags.has(tag.name));
-      if (!hasMatchingTag) return false;
+    //Event filter
+    if (selectedEvent.size > 0) {
+      const hasMatchingEvent = volunteer.tags?.some((tag) => selectedEvent.has(tag.name));
+      if (!hasMatchingEvent) return false;
+    }
+
+    //Volunteer Type filter
+    if (selectedVolunteerType.size > 0) {
+      const hasMatchingVolunteerType = volunteer.tags?.some((tag) =>
+        selectedVolunteerType.has(tag.name),
+      );
+      if (!hasMatchingVolunteerType) return false;
     }
 
     // Status filter

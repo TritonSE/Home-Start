@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import RecipientRow from "../../../components/messages/RecipientRow";
 import { useTextingFlowStore } from "../_store/textingFlowStore";
+import Sidebar from "../../../components/sidebar";
 
 type VolunteerRow = {
   id: string;
@@ -68,9 +69,10 @@ export default function RecipientsPage() {
         setLoading(true);
         setError(null);
 
-        const res = await fetch("http://localhost:4000/api/volunteer/getVolunteerRows", {
+        const res = await fetch("/api/volunteer/getVolunteerRows", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
         });
 
         if (!res.ok) throw new Error(`Request failed: ${res.status}`);
@@ -92,7 +94,9 @@ export default function RecipientsPage() {
 
     async function loadEvents() {
       try {
-        const res = await fetch("http://localhost:4000/api/tag/getEventTags");
+        const res = await fetch("/api/tag/getEventTags", {
+          credentials: "include",
+        });
         if (!res.ok) throw new Error(`Request failed: ${res.status}`);
         const events: string[] = await res.json();
 
@@ -175,9 +179,10 @@ export default function RecipientsPage() {
   };
 
   const applyFilters = async () => {
-    const res = await fetch("http://localhost:4000/api/volunteer/getSelectedVolunteers", {
+    const res = await fetch("/api/volunteer/getSelectedVolunteers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
         events: selectedEvents,
         statuses: selectedStatuses,
@@ -195,6 +200,7 @@ export default function RecipientsPage() {
   };
 
   return (
+    <Sidebar>
     <div className={styles.page}>
       <header className={styles.header}>
         <button type="button" className={styles.backBtn} aria-label="Back" onClick={handleBack}>
@@ -360,5 +366,6 @@ export default function RecipientsPage() {
         </div>
       ) : null}
     </div>
+    </Sidebar>
   );
 }

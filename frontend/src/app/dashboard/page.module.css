@@ -1,13 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=Viga&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap");
-
 .dashboard {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  padding: 62px 16px;
 
+  height: 100%;
   width: 100%;
   min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
   background: var(--Surface-page, #fbffff);
 }
 

@@ -1,0 +1,142 @@
+.volunteerTable {
+  border: 1px solid #dcdcdc;
+  border-collapse: collapse;
+  width: 100%;
+  margin: 20px 0;
+  min-width: 1050px;
+  table-layout: fixed;
+}
+
+.volunteerTable th {
+  border: none;
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  gap: 10px;
+  text-align: left;
+  font-family: var(--font-open-sans);
+}
+
+.volunteerTable th {
+  background-color: #ecf3f3;
+  font-weight: 400;
+  font-style: regular;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #555;
+}
+
+.volunteerTable tbody tr {
+  border-bottom: 1px solid #b4b4b4;
+  background-color: #ffffff;
+}
+
+.volunteerTable tbody tr:hover {
+  background-color: #e8e8e8;
+}
+
+.volunteerTable td {
+  border: none;
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  gap: 10px;
+  text-align: left;
+  font-family: var(--font-open-sans);
+  background-color: #ffffff;
+  font-size: 15px;
+}
+
+.volunteerTable tbody tr:hover td {
+  background-color: inherit;
+}
+
+.sortIcon {
+  margin-left: auto;
+  width: 10px;
+  height: 16.67px;
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 16px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.pillTag {
+  display: inline-flex;
+  align-items: center;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 100px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.tagsContainer {
+  display: flex;
+  gap: 8px;
+}
+
+.bluePillTag {
+  background-color: #e6f2f3;
+  color: #007a8a;
+}
+
+.bluePillTag:hover {
+  background-color: #007a8ada;
+  color: #ffffff;
+}
+
+.orangePillTag {
+  background-color: #f9efe6;
+  color: #c46200;
+}
+
+.orangePillTag:hover {
+  background-color: #ffc370db;
+  color: #ffffff;
+}
+
+.greenPillTag {
+  background-color: #e6f2ec;
+  color: #007f3f;
+}
+
+.greenPillTag:hover {
+  background-color: #1fcb75cb;
+  color: #ffffff;
+}
+
+.tableWrapper {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  min-height: 400px;
+}
+
+.checkboxCell {
+  width: 44px;
+  text-align: center;
+  padding-left: 12px;
+  padding-right: 4px;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #1a3a5c;
+}
+
+.selectedRow td {
+  background-color: #eef4fb !important;
+}

@@ -9,22 +9,13 @@
   padding-bottom: 34px;
   flex: 0 0 auto;
 
-  border-top: 1px solid var(--Lofi-Gray-1, #e8e8e8);
-
   border-radius: 16px 16px 0 0;
-  border-top: 1px solid var(--Lofi-Gray-1, #e8e8e8);
-  background: var(--Surface-page, #fbffff);
+  border-top: 2px solid var(--Lofi-Gray-1, #E8E8E8);
+  background: var(--Surface-page, #FBFFFF);
+
 }
 
 .logoWrap {
-  display: flex;
-  justify-content: center;
-
-  margin-top: 4px;
-  margin-bottom: 34px;
-}
-
-.logo {
   display: none;
 }
 
@@ -119,6 +110,15 @@
 
     border-radius: 0 0 0 0;
   }
+
+  .logoWrap {
+    display: flex;
+    justify-content: center;
+
+    margin-top: 4px;
+    margin-bottom: 34px;
+  }
+
   .logo {
     width: 115px;
     height: auto;

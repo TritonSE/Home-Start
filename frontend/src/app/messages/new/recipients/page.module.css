@@ -2,11 +2,23 @@
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap");
 
 .page {
-  height: 100dvh;
+  position: relative;
+  padding: 62px 16px;
   background: #ffffff;
   display: flex;
   flex-direction: column;
   font-family: "Open Sans", sans-serif;
+}
+
+.page::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 62px;
+  background: #ffffff;
+  z-index: 999;
 }
 
 .page * {
@@ -15,7 +27,7 @@
 
 .header {
   position: sticky;
-  top: 0;
+  top: 62px;
   z-index: 10;
   height: 64px;
   display: grid;

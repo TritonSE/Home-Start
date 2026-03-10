@@ -8,6 +8,7 @@ import icCaretLeft from "../../../../public/ic_caretleft.svg";
 import blueChevronLeft from "../../../../public/blue_chevron_left.svg";
 import bluePlus from "../../../../public/blue_plus.svg";
 import Image from "next/image";
+import Sidebar from "../../components/sidebar";
 
 const TOKEN = "{{First Name}}";
 
@@ -123,6 +124,7 @@ export default function NewMessagePage() {
   };
 
   return (
+    <Sidebar>
     <div className={styles.page}>
       <header className={styles.header}>
         <Image src={icCaretLeft} alt="" />
@@ -228,5 +230,6 @@ export default function NewMessagePage() {
         </div>
       </main>
     </div>
+    </Sidebar>
   );
 }

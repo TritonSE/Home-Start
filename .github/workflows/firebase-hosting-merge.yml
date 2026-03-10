@@ -14,8 +14,8 @@ jobs:
         run: |
           cd frontend
           touch .env
-          echo "NEXT_PUBLIC_FIREBASE=$FIREBASE_FRONTEND" >> .env
-          echo "NEXT_PUBLIC_API_URL=/api" >> .env
+          printf 'NEXT_PUBLIC_FIREBASE=%s\n' "$FIREBASE_FRONTEND" >> .env
+          printf 'NEXT_PUBLIC_API_URL=%s\n' "/api" >> .env
           npm ci 
           npm run build
       - name: Install backend dependencies
@@ -31,6 +31,6 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VETERAN_SISTERS }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HOME_START }}
           channelId: live
           projectId: veteran-sisters

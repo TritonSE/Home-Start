@@ -12,10 +12,15 @@ jobs:
         env:
           FIREBASE_FRONTEND: ${{ secrets.FIREBASE_FRONTEND_KEYS }}
         run: |
+          if [ -z "$FIREBASE_FRONTEND" ]; then
+            echo "FIREBASE_FRONTEND_KEYS is not set."
+            exit 1
+          fi
           cd frontend
-          touch .env
-          printf 'NEXT_PUBLIC_FIREBASE=%s\n' "$FIREBASE_FRONTEND" >> .env
-          printf 'NEXT_PUBLIC_API_URL=%s\n' "/api" >> .env
+          cat > .env <<EOF
+          NEXT_PUBLIC_FIREBASE='$FIREBASE_FRONTEND'
+          NEXT_PUBLIC_API_URL=/api
+          EOF
           npm ci 
           npm run build
       - name: Install backend dependencies

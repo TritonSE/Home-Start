@@ -7,8 +7,10 @@ import createError from "http-errors";
 import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
 
-import type { RequestHandler } from "express";
 import { Types } from "mongoose";
+
+import type { RequestHandler } from "express";
+
 import type { MongoBulkWriteError, WriteError } from "mongodb";
 import type { Buffer } from "node:buffer";
 

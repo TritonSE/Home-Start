@@ -125,6 +125,11 @@
   cursor: pointer;
 }
 
+.uploadBoxDragging {
+  border-color: #1d3a6b;
+  background: #f1f7ff;
+}
+
 .uploadContent {
   display: flex;
   flex-direction: column;

@@ -1,13 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Montserrat, Viga, Open_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Viga, Open_Sans } from "next/font/google";
 import "./globals.css";
 import styles from "./layout.module.css";
-
-const montserrat = Montserrat({
-  variable: "--font-title-bold",
-  subsets: ["latin"],
-  weight: ["800", "900"],
-});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

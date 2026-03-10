@@ -1,7 +1,7 @@
 .searchBar {
   gap: 12px;
   height: 92px;
-  width: 1050px;
+  width: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -69,6 +69,11 @@
   gap: 12px;
 }
 
+.pillWrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .pillTag {
   display: flex;
   flex-direction: column;
@@ -83,25 +88,25 @@
   background: transparent;
 }
 
-.pillTagAll {
+.pillTagEvent {
   composes: pillTag;
-  width: 38px;
+  width: 60px;
 }
 
-.pillTagAll:hover,
-.pillTagType:hover,
-.pillTagAdded:hover {
+.pillTagEvent:hover,
+.pillTagStatus:hover,
+.pillTagVolunteerType:hover {
   background-color: #10203b;
   color: #ffffff;
   cursor: pointer;
 }
-.pillTagType {
+.pillTagStatus {
   composes: pillTag;
-  width: 114px;
+  width: 60px;
 }
-.pillTagAdded {
+.pillTagVolunteerType {
   composes: pillTag;
-  width: 83px;
+  width: 130px;
 }
 
 .pillTagText {
@@ -116,4 +121,115 @@
   font-size: 12px;
   line-height: 16px;
   letter-spacing: 0%;
+}
+
+.dropdown {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  background: #fbffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.12);
+  padding: 24px;
+  gap: 8px;
+  width: 391px;
+  height: 260px;
+}
+
+.dropdownSearch {
+  display: flex;
+  flex-direction: column;
+  width: 343px;
+  gap: 8px;
+}
+
+.dropdownItemContainer {
+  display: flex;
+  flex-direction: column;
+  height: 116px;
+  padding-top: 20px;
+  padding-bottom: 12px;
+  gap: 12px;
+}
+
+.dropdownItem {
+  display: flex;
+  flex-direction: row;
+  width: 199px;
+  height: 20px;
+  gap: 12px;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.checkBox {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid #494949;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.checkBoxChecked {
+  background-color: #1d3a6b;
+  border: 1px solid #1d3a6b;
+  color: white;
+}
+
+.checkIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.filterLabel {
+  width: 167px;
+  height: 20px;
+  font-family: var(--font-open-sans);
+  font-weight: 400;
+  font-style: regular;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.8px;
+  vertical-align: middle;
+  color: #000000;
+}
+
+.dropdownItemSelected .filterLabel {
+  font-weight: 700;
+}
+
+.clearFilterButtonCotainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 343px;
+  height: 32px;
+  gap: 8px;
+}
+
+.clearFilterButton {
+  display: flex;
+  flex-direction: row;
+  width: 90px;
+  height: 32px;
+  padding: 8px 12px;
+  gap: 16px;
+  border: none;
+  background-color: transparent;
+  font-family: var(--font-open-sans);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.8px;
+}
+.clearFilterButton:hover {
+  text-decoration: underline;
+  cursor: pointer;
 }

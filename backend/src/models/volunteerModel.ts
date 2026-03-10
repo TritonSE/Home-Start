@@ -8,7 +8,8 @@ const volunteerSchema = new Schema({
   email: { type: String, required: true },
   phoneNumber: { type: String, required: true },
   tags: {
-    type: [String],
+    type: [Schema.Types.ObjectId],
+    ref: "Tag",
     default: [],
     required: true,
   },
@@ -27,6 +28,11 @@ const volunteerSchema = new Schema({
   additionalNotes: {
     type: String,
     default: "",
+  },
+  status: {
+    type: String,
+    enum: ["returning", "new"],
+    default: "new",
   },
 });
 

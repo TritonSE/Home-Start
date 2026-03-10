@@ -1,7 +1,7 @@
 "use client";
 import { Volunteer } from "../types/volunteer";
 import styles from "./VolunteerProfileModal.module.css";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface VolunteerProfileModalProps {
   volunteer: Volunteer | null;
@@ -18,6 +18,8 @@ const getTagColorClass = (tag: string, styles: Record<string, string>) => {
   if (tag.includes("More")) return styles.tagGreen;
   return styles.tagTeal;
 };
+
+const getVolunteerTagNames = (volunteer: Volunteer) => volunteer.tags.map((tag) => tag.name);
 
 export default function VolunteerProfileModal({
   volunteer,
@@ -47,8 +49,11 @@ export default function VolunteerProfileModal({
     setEmail(volunteer.email);
     setPhoneNumber(volunteer.phoneNumber);
 
-    const fallbackTypeTags = volunteer.tags.filter((tag) => VOLUNTEER_TYPE_TAGS.includes(tag));
-    const fallbackStatusTags = volunteer.tags.filter((tag) => !VOLUNTEER_TYPE_TAGS.includes(tag));
+    const volunteerTagNames = getVolunteerTagNames(volunteer);
+    const fallbackTypeTags = volunteerTagNames.filter((tag) => VOLUNTEER_TYPE_TAGS.includes(tag));
+    const fallbackStatusTags = volunteerTagNames.filter(
+      (tag) => !VOLUNTEER_TYPE_TAGS.includes(tag),
+    );
     setTypeTags(volunteer.volunteerTypeTags ?? fallbackTypeTags);
     setStatusTags(volunteer.statusTags ?? fallbackStatusTags);
     setEventTags(volunteer.events ?? []);
@@ -58,11 +63,6 @@ export default function VolunteerProfileModal({
     setEventInput("");
     setSaveError("");
   }, [volunteer]);
-
-  const combinedTags = useMemo(() => {
-    const merged = [...statusTags, ...typeTags];
-    return merged.filter((tag, index) => merged.indexOf(tag) === index);
-  }, [statusTags, typeTags]);
 
   const handleAddStatusTag = () => {
     const value = statusInput.trim();
@@ -112,7 +112,6 @@ export default function VolunteerProfileModal({
           lastName,
           email,
           phoneNumber,
-          tags: combinedTags,
           statusTags,
           volunteerTypeTags: typeTags,
           events: eventTags,
@@ -392,8 +391,9 @@ export default function VolunteerProfileModal({
 }
 
 function ViewContent({ volunteer }: { volunteer: Volunteer }) {
-  const fallbackTypeTags = volunteer.tags.filter((tag) => VOLUNTEER_TYPE_TAGS.includes(tag));
-  const fallbackStatusTags = volunteer.tags.filter((tag) => !VOLUNTEER_TYPE_TAGS.includes(tag));
+  const volunteerTagNames = getVolunteerTagNames(volunteer);
+  const fallbackTypeTags = volunteerTagNames.filter((tag) => VOLUNTEER_TYPE_TAGS.includes(tag));
+  const fallbackStatusTags = volunteerTagNames.filter((tag) => !VOLUNTEER_TYPE_TAGS.includes(tag));
   const statusTags = volunteer.statusTags ?? fallbackStatusTags;
   const volunteerTypeTags = volunteer.volunteerTypeTags ?? fallbackTypeTags;
   const events = volunteer.events ?? [];

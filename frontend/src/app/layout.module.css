@@ -1,0 +1,41 @@
+.layout {
+  display: flex;
+  flex-direction: column-reverse;
+  width: 100vw;
+  height: 100vh;
+}
+
+@media (min-width: 748px) {
+  .layout {
+    flex-direction: row;
+    height: 100vh;
+  }
+}
+
+.contentArea {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding-top: 62px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 748px) {
+  .contentArea {
+    padding: 60px 80px;
+  }
+}
+
+.main {
+  flex: 1;
+  background: #fff;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+}

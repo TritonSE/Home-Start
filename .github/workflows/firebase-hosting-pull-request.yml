@@ -41,8 +41,8 @@ jobs:
           npm run lint-check
       - uses: FirebaseExtended/action-hosting-deploy@v0
         env:
-          BACKEND_FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VETERAN_SISTERS }}
+          BACKEND_FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VETERAN_SISTERS }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           projectId: veteran-sisters

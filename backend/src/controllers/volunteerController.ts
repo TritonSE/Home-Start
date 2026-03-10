@@ -8,8 +8,8 @@ import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
 
 import type { RequestHandler } from "express";
-import type { MongoBulkWriteError, WriteError } from "mongodb";
 import { Types } from "mongoose";
+import type { MongoBulkWriteError, WriteError } from "mongodb";
 import type { Buffer } from "node:buffer";
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking

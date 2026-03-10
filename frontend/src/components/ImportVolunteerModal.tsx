@@ -31,10 +31,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
   const [step, setStep] = useState<Step>("upload");
   const [csvParsedInfo, setCSVParsedInfo] = useState<ParsedCSVResult | null>(null);
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  function processFile(file: File) {
     setFileName(file.name);
 
     parseVolunteersCsv(file).then((result) => {
@@ -62,6 +59,19 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
     });
 
     setStatus("success");
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processFile(file);
+  }
+
+  function handleFileDrop(e: React.DragEvent) {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    processFile(file);
   }
 
   async function handleContinue() {
@@ -121,7 +131,11 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
 
               {status === "idle" && (
                 <>
-                  <label className={styles.uploadBox}>
+                  <label
+                    className={styles.uploadBox}
+                    onDrop={handleFileDrop}
+                    onDragOver={(e) => e.preventDefault()}
+                  >
                     <input type="file" accept=".csv" hidden onChange={handleFileChange} />
                     <div className={styles.uploadContent}>
                       <img src="/upload.svg" className={styles.uploadIcon} />
@@ -140,7 +154,12 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
               )}
 
               {status === "error" && (
-                <div className={`${styles.uploadBox} ${styles.uploadBoxError}`}>
+                <label
+                  className={`${styles.uploadBox} ${styles.uploadBoxError}`}
+                  onDrop={handleFileDrop}
+                  onDragOver={(e) => e.preventDefault()}
+                >
+                  <input type="file" accept=".csv" hidden onChange={handleFileChange} />
                   <div className={styles.uploadContent}>
                     <img src="/ic_error.svg" className={styles.errorIcon} />
                     <div className={styles.errorText}>Unsupported file uploaded</div>
@@ -148,16 +167,21 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                       Make sure the headers for the CSV are correct!
                     </div>
                   </div>
-                </div>
+                </label>
               )}
 
               {status === "success" && (
-                <div className={`${styles.uploadBox} ${styles.uploadBoxSuccess}`}>
+                <label
+                  className={`${styles.uploadBox} ${styles.uploadBoxSuccess}`}
+                  onDrop={handleFileDrop}
+                  onDragOver={(e) => e.preventDefault()}
+                >
+                  <input type="file" accept=".csv" hidden onChange={handleFileChange} />
                   <div className={styles.uploadContent}>
                     <img src="/ic_success.svg" className={styles.successIcon} />
                     <div className={styles.successText}>{fileName} successfully uploaded</div>
                   </div>
-                </div>
+                </label>
               )}
             </>
           )}

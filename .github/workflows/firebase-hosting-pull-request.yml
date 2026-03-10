@@ -15,15 +15,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install frontend dependencies
         env:
-          FIREBASE_FRONTEND: ${{ secrets.FIREBASE_FRONTEND_KEYS }}
+          NEXT_PUBLIC_FIREBASE: ${{ secrets.NEXT_PUBLIC_FIREBASE }}
         run: |
-          if [ -z "$FIREBASE_FRONTEND" ]; then
-            echo "FIREBASE_FRONTEND_KEYS is not set."
+          if [ -z "$NEXT_PUBLIC_FIREBASE" ]; then
+            echo "NEXT_PUBLIC_FIREBASE is not set."
             exit 1
           fi
           cd frontend
           cat > .env <<EOF
-          NEXT_PUBLIC_FIREBASE='$FIREBASE_FRONTEND'
+          NEXT_PUBLIC_FIREBASE='$NEXT_PUBLIC_FIREBASE'
           NEXT_PUBLIC_API_URL=/api
           EOF
           npm ci 

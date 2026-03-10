@@ -1,6 +1,7 @@
 "use client";
 
 import styles from "./PageBar.module.css";
+import Image from "next/image";
 
 interface PageBarProps {
   totalItems: number;
@@ -48,7 +49,13 @@ export default function PageBar({
       <div className={styles.pagination}>
         <div className={styles.previous} onClick={() => onPageChange(Math.max(1, currentPage - 1))}>
           <div className={styles.ic_container}>
-            <img src="/caret.svg" alt="Upload logo" className={styles.caretIconLeft} />
+            <Image
+              src="/caret.svg"
+              alt="Upload logo"
+              className={styles.caretIconLeft}
+              width={24}
+              height={24}
+            />
           </div>
         </div>
 
@@ -69,7 +76,13 @@ export default function PageBar({
           onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
         >
           <div className={styles.ic_container}>
-            <img src="/caret.svg" alt="Upload logo" className={styles.caretIconRight} />
+            <Image
+              src="/caret.svg"
+              alt="Upload logo"
+              className={styles.caretIconRight}
+              width={24}
+              height={24}
+            />
           </div>
         </div>
       </div>

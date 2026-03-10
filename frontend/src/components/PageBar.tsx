@@ -51,7 +51,7 @@ export default function PageBar({
           <div className={styles.ic_container}>
             <Image
               src="/caret.svg"
-              alt="Upload logo"
+              alt="Caret Left"
               className={styles.caretIconLeft}
               width={24}
               height={24}
@@ -78,7 +78,7 @@ export default function PageBar({
           <div className={styles.ic_container}>
             <Image
               src="/caret.svg"
-              alt="Upload logo"
+              alt="Caret Right"
               className={styles.caretIconRight}
               width={24}
               height={24}

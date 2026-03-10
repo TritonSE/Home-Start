@@ -13,11 +13,11 @@ export default function ImportButton({ onClick }: ImportButtonProps) {
           src="/upload.svg"
           alt="Upload logo"
           className={styles.uploadIcon}
-          width={24}
-          height={24}
+          width={13.333}
+          height={14.167}
         />
       </span>
-      <div className={styles.importText}>Upload CSV</div>
+      <div className={styles.importText}>Import CSV</div>
     </button>
   );
 }

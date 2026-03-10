@@ -18,7 +18,7 @@ jobs:
           fi
           cd frontend
           cat > .env <<EOF
-          NEXT_PUBLIC_FIREBASE='$NEXT_PUBLIC_FIREBASE'
+          NEXT_PUBLIC_FIREBASE=$NEXT_PUBLIC_FIREBASE
           NEXT_PUBLIC_API_URL=/api
           EOF
           npm ci 
@@ -36,6 +36,6 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HOME_START }}
           channelId: live
-          projectId: veteran-sisters
+          projectId: home-start

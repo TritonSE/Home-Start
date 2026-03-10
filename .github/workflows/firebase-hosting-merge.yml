@@ -23,19 +23,21 @@ jobs:
           EOF
           npm ci 
           npm run build
-      - name: Install backend dependencies
-        env:
-          MONGO_URL: ${{ secrets.MONGO_URL_PRODUCTION }}
-          FIREBASE_SERVICE: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BACKEND }}
-        run: |
-          cd backend
-          touch .env
-          echo "DATABASE_URL=$MONGO_URL" >> .env
-          echo "BACKEND_FIREBASE_SERVICE_ACCOUNT=$FIREBASE_SERVICE" >> .env
-          npm ci
+      # - name: Install backend dependencies
+      #   env:
+      #     MONGO_URL: ${{ secrets.MONGO_URL_PRODUCTION }}
+      #     FIREBASE_SERVICE: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BACKEND }}
+      #   run: |
+      #     cd backend
+      #     touch .env
+      #     echo "DATABASE_URL=$MONGO_URL" >> .env
+      #     echo "BACKEND_FIREBASE_SERVICE_ACCOUNT=$FIREBASE_SERVICE" >> .env
+      #     npm ci
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HOME_START }}
           channelId: live
           projectId: home-start-80e0a
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks

@@ -21,6 +21,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
   const [status, setStatus] = useState<Status>("idle");
   const [fileName, setFileName] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("upload");
+  const [isDragging, setIsDragging] = useState(false);
 
   // Placeholder data until CSV processing is implemented.
   const placeholderReview = {
@@ -48,18 +49,43 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
     ] as PlaceholderChange[],
   };
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  function processUploadedFile(file: File) {
     setFileName(file.name);
 
-    if (!file.name.endsWith(".csv")) {
+    if (!file.name.toLowerCase().endsWith(".csv")) {
       setStatus("error");
       return;
     }
 
     setStatus("success");
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    processUploadedFile(file);
+  }
+
+  function handleDragOver(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    if (!isDragging) {
+      setIsDragging(true);
+    }
+  }
+
+  function handleDragLeave(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    processUploadedFile(file);
   }
 
   function handleContinue() {
@@ -108,7 +134,12 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
 
               {status === "idle" && (
                 <>
-                  <label className={styles.uploadBox}>
+                  <label
+                    className={`${styles.uploadBox} ${isDragging ? styles.uploadBoxDragging : ""}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
                     <input type="file" accept=".csv" hidden onChange={handleFileChange} />
                     <div className={styles.uploadContent}>
                       <Image

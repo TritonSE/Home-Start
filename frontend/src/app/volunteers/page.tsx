@@ -26,6 +26,30 @@ export default function Page() {
   const [showImportSuccess, setShowImportSuccess] = useState(false);
   const itemsPerPage = 6;
 
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setCurrentPage(1);
+  };
+
+  const handleSelectedEventChange = (value: Set<string> | ((prev: Set<string>) => Set<string>)) => {
+    setSelectedEvent(value);
+    setCurrentPage(1);
+  };
+
+  const handleSelectedStatusChange = (
+    value: Set<string> | ((prev: Set<string>) => Set<string>),
+  ) => {
+    setSelectedStatus(value);
+    setCurrentPage(1);
+  };
+
+  const handleSelectedVolunteerTypeChange = (
+    value: Set<string> | ((prev: Set<string>) => Set<string>),
+  ) => {
+    setSelectedVolunteerType(value);
+    setCurrentPage(1);
+  };
+
   // Fetch volunteers once on mount
   useEffect(() => {
     async function loadVolunteers() {
@@ -59,7 +83,17 @@ export default function Page() {
 
     // Search filter
     if (search.trim()) {
-      const matchesSearch = volunteer.firstName.toLowerCase().includes(search.toLowerCase());
+      const query = search.trim().toLowerCase();
+      const firstName = volunteer.firstName.toLowerCase();
+      const lastName = volunteer.lastName.toLowerCase();
+      const fullName = `${firstName} ${lastName}`;
+      const reverseFullName = `${lastName} ${firstName}`;
+
+      const matchesSearch =
+        firstName.includes(query) ||
+        lastName.includes(query) ||
+        fullName.includes(query) ||
+        reverseFullName.includes(query);
       if (!matchesSearch) return false;
     }
 
@@ -104,14 +138,14 @@ export default function Page() {
           <TitleBar onImportComplete={handleImportComplete} />
           <SearchBar
             search={search}
-            setSearch={setSearch}
+            setSearch={handleSearchChange}
             tags={uniqueTags}
             selectedEvent={selectedEvent}
-            setSelectedEvent={setSelectedEvent}
+            setSelectedEvent={handleSelectedEventChange}
             selectedStatus={selectedStatus}
-            setSelectedStatus={setSelectedStatus}
+            setSelectedStatus={handleSelectedStatusChange}
             selectedVolunteerType={selectedVolunteerType}
-            setSelectedVolunteerType={setSelectedVolunteerType}
+            setSelectedVolunteerType={handleSelectedVolunteerTypeChange}
           />
           <VolunteerTable volunteers={displayedVolunteers} />
           <PageBar

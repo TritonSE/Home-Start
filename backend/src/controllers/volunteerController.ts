@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 import { PassThrough } from "node:stream";
 
 import csvParser from "csv-parser";
@@ -7,10 +9,7 @@ import createError from "http-errors";
 import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
 
-import { Types } from "mongoose";
-
 import type { RequestHandler } from "express";
-
 import type { MongoBulkWriteError, WriteError } from "mongodb";
 import type { Buffer } from "node:buffer";
 

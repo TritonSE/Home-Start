@@ -5,9 +5,10 @@ import styles from "./VolunteerTable.module.css";
 
 interface VolunteerTableProps {
   volunteers: Volunteer[];
+  onVolunteerSelect?: (volunteer: Volunteer) => void;
 }
 
-export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
+export default function VolunteerTable({ volunteers, onVolunteerSelect }: VolunteerTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const allSelected = volunteers.length > 0 && volunteers.every((v) => selectedIds.has(v._id));
@@ -84,6 +85,8 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
             <tr
               key={volunteer._id}
               className={selectedIds.has(volunteer._id) ? styles.selectedRow : ""}
+              onClick={() => onVolunteerSelect?.(volunteer)}
+              style={{ cursor: onVolunteerSelect ? "pointer" : "default" }}
             >
               <td className={styles.checkboxCell}>
                 <input
@@ -91,6 +94,7 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
                   className={styles.checkbox}
                   checked={selectedIds.has(volunteer._id)}
                   onChange={() => toggleOne(volunteer._id)}
+                  onClick={(event) => event.stopPropagation()}
                   aria-label={`Select ${volunteer.firstName} ${volunteer.lastName}`}
                 />
               </td>

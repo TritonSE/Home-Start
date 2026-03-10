@@ -3,6 +3,7 @@
 import { Volunteer } from "@/types/volunteer";
 import { fetchVolunteers } from "@/app/api/volunteer";
 import VolunteerTable from "@/components/VolunteerTable";
+import VolunteerProfileModal from "@/components/VolunteerProfileModal";
 import TitleBar from "@/components/TitleBar";
 import SearchBar from "@/components/SearchBar";
 import PageBar from "@/components/PageBar";
@@ -22,8 +23,9 @@ export default function Page() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   const [showImportSuccess, setShowImportSuccess] = useState(false);
+  const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const itemsPerPage = 6;
 
   // Fetch volunteers once on mount
@@ -75,6 +77,10 @@ export default function Page() {
     setShowImportSuccess(true);
   };
 
+  const handleSheetClose = () => {
+    setIsSheetOpen(false);
+  };
+
   return (
     <Sidebar>
       <div className={styles.page}>
@@ -107,7 +113,13 @@ export default function Page() {
             selectedVolunteerType={selectedVolunteerType}
             setSelectedVolunteerType={setSelectedVolunteerType}
           />
-          <VolunteerTable volunteers={displayedVolunteers} />
+          <VolunteerTable
+            volunteers={displayedVolunteers}
+            onVolunteerSelect={(volunteer) => {
+              setSelectedVolunteer(volunteer);
+              setIsSheetOpen(true);
+            }}
+          />
           <PageBar
             totalItems={filteredVolunteers.length}
             currentPage={currentPage}
@@ -115,6 +127,19 @@ export default function Page() {
             onPageChange={setCurrentPage}
           />
         </main>
+        <VolunteerProfileModal
+          volunteer={selectedVolunteer}
+          isOpen={isSheetOpen}
+          onClose={handleSheetClose}
+          onVolunteerUpdated={(updatedVolunteer) => {
+            setSelectedVolunteer(updatedVolunteer);
+            setVolunteers((prev) =>
+              prev.map((volunteer) =>
+                volunteer._id === updatedVolunteer._id ? updatedVolunteer : volunteer,
+              ),
+            );
+          }}
+        />
       </div>
     </Sidebar>
   );

@@ -10,7 +10,6 @@ interface VolunteerProfileModalProps {
   onVolunteerUpdated?: (volunteer: Volunteer) => void;
 }
 
-const STATUS_TAGS = ["Returner", "Expert", "New"];
 const VOLUNTEER_TYPE_TAGS = ["Intern", "Outside Volunteer"];
 
 const getTagColorClass = (tag: string, styles: Record<string, string>) => {
@@ -102,7 +101,7 @@ export default function VolunteerProfileModal({
     setIsSaving(true);
     setSaveError("");
     try {
-      const response = await fetch(`http://localhost:4000/api/volunteer/${volunteer._id}`, {
+      const response = await fetch(`/api/volunteer/${volunteer._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

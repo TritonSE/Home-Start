@@ -162,31 +162,35 @@ export const updateVolunteer: RequestHandler = async (req, res, next) => {
     lastName,
     email,
     phoneNumber,
-    tags = [],
-    statusTags = [],
-    volunteerTypeTags = [],
-    events = [],
-    additionalNotes = "",
+    tags,
+    statusTags,
+    volunteerTypeTags,
+    events,
+    additionalNotes,
   } = req.body as UpdateVolunteerBody;
 
   try {
     validationErrorParser(errors);
 
-    const volunteer = await VolunteerModel.findByIdAndUpdate(
-      volunteerId,
-      {
-        firstName,
-        lastName,
-        email,
-        phoneNumber,
-        tags,
-        statusTags,
-        volunteerTypeTags,
-        events,
-        additionalNotes,
-      },
-      { new: true, runValidators: true },
-    );
+    const updatePayload: Record<string, unknown> = {
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      statusTags,
+      volunteerTypeTags,
+      events,
+      additionalNotes,
+    };
+
+    if (Array.isArray(tags)) {
+      updatePayload.tags = tags;
+    }
+
+    const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, updatePayload, {
+      new: true,
+      runValidators: true,
+    }).populate(defaultPopulateConfig);
 
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });

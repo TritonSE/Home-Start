@@ -38,4 +38,4 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HOME_START }}
           channelId: live
-          projectId: home-start
+          projectId: home-start-80e0a

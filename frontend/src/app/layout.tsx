@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Montserrat, Viga, Open_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Viga, Open_Sans } from "next/font/google";
 import "./globals.css";
 import styles from "./layout.module.css";
 

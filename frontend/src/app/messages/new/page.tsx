@@ -125,111 +125,111 @@ export default function NewMessagePage() {
 
   return (
     <Sidebar>
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <Image src={icCaretLeft} alt="" />
-        <h1 className={styles.headerTitle}>New Message</h1>
-        <div></div>
-      </header>
+      <div className={styles.page}>
+        <header className={styles.header}>
+          <Image src={icCaretLeft} alt="" />
+          <h1 className={styles.headerTitle}>New Message</h1>
+          <div></div>
+        </header>
 
-      <main className={styles.content}>
-        {/* Tabs */}
-        <div className={styles.tabsWrap} role="tablist" aria-label="Message type">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "text"}
-            className={`${styles.tab} ${mode === "text" ? styles.tabActive : ""}`}
-            onClick={() => setMode("text")}
-          >
-            Text
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "email"}
-            className={`${styles.tab} ${mode === "email" ? styles.tabActive : ""}`}
-            onClick={() => setMode("email")}
-          >
-            Email
-          </button>
-        </div>
-
-        {/* To row (new design) */}
-        <section className={styles.toSectionNew}>
-          <div className={styles.toRowNew}>
-            <span className={styles.toLabelNew}>To:</span>
-
+        <main className={styles.content}>
+          {/* Tabs */}
+          <div className={styles.tabsWrap} role="tablist" aria-label="Message type">
             <button
               type="button"
-              className={styles.selectRecipientsBtn}
-              onClick={() => {
-                setMessage(readPlainTextFromEditor());
-                router.push("/messages/new/recipients");
-              }}
+              role="tab"
+              aria-selected={mode === "text"}
+              className={`${styles.tab} ${mode === "text" ? styles.tabActive : ""}`}
+              onClick={() => setMode("text")}
             >
-              {recipientsCount > 0 ? `${recipientsCount} selected` : "Select Recipients"}
-              <Image src={blueChevronLeft} alt="" />
+              Text
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "email"}
+              className={`${styles.tab} ${mode === "email" ? styles.tabActive : ""}`}
+              onClick={() => setMode("email")}
+            >
+              Email
             </button>
           </div>
-        </section>
 
-        {/* Subject (Email only) */}
-        {mode === "email" ? (
-          <section className={styles.subjectSection}>
-            <input
-              className={styles.subjectInput}
-              placeholder="Subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-            />
+          {/* To row (new design) */}
+          <section className={styles.toSectionNew}>
+            <div className={styles.toRowNew}>
+              <span className={styles.toLabelNew}>To:</span>
+
+              <button
+                type="button"
+                className={styles.selectRecipientsBtn}
+                onClick={() => {
+                  setMessage(readPlainTextFromEditor());
+                  router.push("/messages/new/recipients");
+                }}
+              >
+                {recipientsCount > 0 ? `${recipientsCount} selected` : "Select Recipients"}
+                <Image src={blueChevronLeft} alt="" />
+              </button>
+            </div>
           </section>
-        ) : null}
 
-        {/* Message */}
-        <div className={styles.messageBox}>
-          <section className={styles.messageSectionNew}>
-            <div
-              ref={editorRef}
-              className={styles.richEditor}
-              contentEditable
-              role="textbox"
-              aria-multiline="true"
-              data-placeholder="Compose your message..."
-              onInput={() => setDraftText(editorRef.current?.innerText ?? "")}
-            />
-          </section>
-        </div>
+          {/* Subject (Email only) */}
+          {mode === "email" ? (
+            <section className={styles.subjectSection}>
+              <input
+                className={styles.subjectInput}
+                placeholder="Subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+              />
+            </section>
+          ) : null}
 
-        {/* Insert First Name */}
-        <section className={styles.insertSectionNew}>
-          <button type="button" className={styles.insertBtnNew} onClick={insertFirstName}>
-            <Image src={bluePlus} alt="" />
-            Insert First Name
-          </button>
-
-          <div className={styles.helper}>
-            <img src="/mdi_information.svg" alt="" className={styles.helperIcon} />
-            <span className={styles.bottomText}>
-              Tap the button to insert a volunteer’s name wherever you want it to appear.
-            </span>
+          {/* Message */}
+          <div className={styles.messageBox}>
+            <section className={styles.messageSectionNew}>
+              <div
+                ref={editorRef}
+                className={styles.richEditor}
+                contentEditable
+                role="textbox"
+                aria-multiline="true"
+                data-placeholder="Compose your message..."
+                onInput={() => setDraftText(editorRef.current?.innerText ?? "")}
+              />
+            </section>
           </div>
-        </section>
-        <div className={styles.reviewFixed}>
-          <button
-            type="button"
-            className={canReview ? styles.reviewBtn : styles.reviewBtnDisabled}
-            disabled={!canReview}
-            onClick={() => {
-              setMessage(readPlainTextFromEditor());
-              router.push("/messages/new/review");
-            }}
-          >
-            <span className={styles.reviewBtnText}>Review and Send</span>
-          </button>
-        </div>
-      </main>
-    </div>
+
+          {/* Insert First Name */}
+          <section className={styles.insertSectionNew}>
+            <button type="button" className={styles.insertBtnNew} onClick={insertFirstName}>
+              <Image src={bluePlus} alt="" />
+              Insert First Name
+            </button>
+
+            <div className={styles.helper}>
+              <img src="/mdi_information.svg" alt="" className={styles.helperIcon} />
+              <span className={styles.bottomText}>
+                Tap the button to insert a volunteer’s name wherever you want it to appear.
+              </span>
+            </div>
+          </section>
+          <div className={styles.reviewFixed}>
+            <button
+              type="button"
+              className={canReview ? styles.reviewBtn : styles.reviewBtnDisabled}
+              disabled={!canReview}
+              onClick={() => {
+                setMessage(readPlainTextFromEditor());
+                router.push("/messages/new/review");
+              }}
+            >
+              <span className={styles.reviewBtnText}>Review and Send</span>
+            </button>
+          </div>
+        </main>
+      </div>
     </Sidebar>
   );
 }

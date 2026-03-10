@@ -1,10 +1,12 @@
 "use client";
 
+import { routerServerGlobal } from "next/dist/server/lib/router-utils/router-server-context";
+import { signInWithOutlook, initMsal } from "../../auth/msal";
 import { FirebaseError } from "firebase/app";
 import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import microsoft from "../../../public/ic_microsoft.svg";
 
 import { auth } from "@/firebase/firebase";
@@ -26,6 +28,14 @@ function LoginFormContent() {
   const [error, setError] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const initLogin = async () => {
+      const account = await initMsal();
+      if (account) router.push("/dashboard");
+    };
+    initLogin();
+  }, [router]);
 
   const handleLogin = async () => {
     try {
@@ -189,7 +199,11 @@ function LoginFormContent() {
             <span className={styles.dividerText}>or</span>
             <span className={styles.dividerLine}></span>
           </div>
-          <button className={styles.signInWithMicrosoftButton} type="button" onClick={() => alert("Microsoft login coming soon!")}>
+          <button
+            className={styles.signInWithMicrosoftButton}
+            type="button"
+            onClick={() => signInWithOutlook()}
+          >
             <Image src={microsoft} alt="Microsoft logo"></Image>
             <p className={styles.microsoftButtonText}>Continue with Microsoft</p>
           </button>

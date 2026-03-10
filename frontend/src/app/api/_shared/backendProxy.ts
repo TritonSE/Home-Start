@@ -27,7 +27,6 @@ export async function proxyBackendRequest({
     return NextResponse.json({ error: "Not authkkenticated" }, { status: 401 });
   }
 
-
   try {
     const headers: Record<string, string> = {
       Authorization: `Bearer ${token}`,
@@ -52,6 +51,9 @@ export async function proxyBackendRequest({
 
     return NextResponse.json(payload, { status: response.status });
   } catch {
-    return NextResponse.json({ error: `Unable to reach backend ${serviceName} service` }, { status: 502 });
+    return NextResponse.json(
+      { error: `Unable to reach backend ${serviceName} service` },
+      { status: 502 },
+    );
   }
 }

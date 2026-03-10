@@ -10,9 +10,8 @@
   flex: 0 0 auto;
 
   border-radius: 16px 16px 0 0;
-  border-top: 2px solid var(--Lofi-Gray-1, #E8E8E8);
-  background: var(--Surface-page, #FBFFFF);
-
+  border-top: 2px solid var(--Lofi-Gray-1, #e8e8e8);
+  background: var(--Surface-page, #fbffff);
 }
 
 .logoWrap {

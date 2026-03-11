@@ -12,16 +12,15 @@ const makeTitleValidator = () =>
     .withMessage("title cannot be empty")
     .bail();
 
-const makeBodyValidator = () => {
+const makeBodyValidator = () =>
   body("message")
     .exists()
     .withMessage("message is required")
     .bail()
     .isString()
     .withMessage("message must be a string");
-};
 
-const makeTypeValidator = () => {
+const makeTypeValidator = () =>
   body("type")
     .exists()
     .withMessage("type is required")
@@ -32,9 +31,8 @@ const makeTypeValidator = () => {
     .notEmpty()
     .withMessage("type cannot be empty")
     .bail();
-};
 
-const makeSubjectValidator = () => {
+const makeSubjectValidator = () =>
   body("subject")
     .if(body("type").equals("email"))
     .exists()
@@ -42,11 +40,10 @@ const makeSubjectValidator = () => {
     .bail()
     .isString()
     .withMessage("subject must be a string");
-};
 
 export const createTemplateValidator = [
-  makeTitleValidator,
-  makeBodyValidator,
-  makeTypeValidator,
-  makeSubjectValidator,
+  makeTitleValidator(),
+  makeBodyValidator(),
+  makeTypeValidator(),
+  makeSubjectValidator(),
 ];

@@ -39,7 +39,7 @@ jobs:
           echo "BACKEND_FIREBASE_SERVICE_ACCOUNT=$FIREBASE_SERVICE" >> .env
           npm ci
           npm run lint-check
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: FirebaseExtended/action-hosting-deploy@v0.9.0
         env:
           BACKEND_FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           FIREBASE_CLI_EXPERIMENTS: webframeworks

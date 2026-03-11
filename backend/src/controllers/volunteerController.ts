@@ -98,7 +98,7 @@ type CreateVolunteerBody = {
   email: string;
   phoneNumber: string;
   tags?: string[];
-  statusTags?: string[];
+  status?: "returning" | "new";
   volunteerTypeTags?: string[];
   events?: string[];
   additionalNotes?: string;
@@ -112,7 +112,7 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
     email,
     phoneNumber,
     tags = [],
-    statusTags = [],
+    status = "new",
     volunteerTypeTags = [],
     events = [],
     additionalNotes = "",
@@ -131,7 +131,7 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
       email,
       phoneNumber,
       tags,
-      statusTags,
+      status,
       volunteerTypeTags,
       events,
       additionalNotes,
@@ -148,7 +148,7 @@ type UpdateVolunteerBody = {
   email: string;
   phoneNumber: string;
   tags?: string[];
-  statusTags?: string[];
+  status?: "returning" | "new";
   volunteerTypeTags?: string[];
   events?: string[];
   additionalNotes?: string;
@@ -163,7 +163,7 @@ export const updateVolunteer: RequestHandler = async (req, res, next) => {
     email,
     phoneNumber,
     tags,
-    statusTags,
+    status,
     volunteerTypeTags,
     events,
     additionalNotes,
@@ -177,7 +177,6 @@ export const updateVolunteer: RequestHandler = async (req, res, next) => {
       lastName,
       email,
       phoneNumber,
-      statusTags,
       volunteerTypeTags,
       events,
       additionalNotes,
@@ -185,6 +184,9 @@ export const updateVolunteer: RequestHandler = async (req, res, next) => {
 
     if (Array.isArray(tags)) {
       updatePayload.tags = tags;
+    }
+    if (status === "new" || status === "returning") {
+      updatePayload.status = status;
     }
 
     const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, updatePayload, {

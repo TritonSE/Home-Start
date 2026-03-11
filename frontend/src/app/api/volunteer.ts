@@ -35,6 +35,14 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
     lastName: String(source.lastName ?? ""),
     email: String(source.email ?? ""),
     phoneNumber: String(source.phoneNumber ?? ""),
+    status: source.status === "returning" ? "returning" : "new",
+    volunteerTypeTags: Array.isArray(source.volunteerTypeTags)
+      ? source.volunteerTypeTags.filter((tag): tag is string => typeof tag === "string")
+      : [],
+    events: Array.isArray(source.events)
+      ? source.events.filter((tag): tag is string => typeof tag === "string")
+      : [],
+    additionalNotes: typeof source.additionalNotes === "string" ? source.additionalNotes : "",
     tags,
   };
 };

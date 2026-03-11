@@ -13,7 +13,7 @@ export type Volunteer = {
   email: string;
   phoneNumber: string;
   tags: VolunteerTag[];
-  statusTags?: string[];
+  status?: "new" | "returning";
   volunteerTypeTags?: string[];
   events?: string[];
   additionalNotes?: string;

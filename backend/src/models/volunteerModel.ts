@@ -13,10 +13,6 @@ const volunteerSchema = new Schema({
     default: [],
     required: true,
   },
-  statusTags: {
-    type: [String],
-    default: [],
-  },
   volunteerTypeTags: {
     type: [String],
     default: [],

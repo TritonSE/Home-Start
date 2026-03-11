@@ -11,6 +11,7 @@ interface VolunteerProfileModalProps {
 }
 
 const VOLUNTEER_TYPE_TAGS = ["Intern", "Outside Volunteer"];
+const RETURNING_STATUS_LABELS = new Set(["returner", "returning", "expert"]);
 
 const getTagColorClass = (tag: string, styles: Record<string, string>) => {
   if (tag === "Outside Volunteer") return styles.tagOrange;
@@ -19,6 +20,20 @@ const getTagColorClass = (tag: string, styles: Record<string, string>) => {
 };
 
 const getVolunteerTagNames = (volunteer: Volunteer) => volunteer.tags.map((tag) => tag.name);
+
+const deriveStatus = (volunteer: Volunteer): "new" | "returning" => {
+  if (volunteer.status === "new" || volunteer.status === "returning") {
+    return volunteer.status;
+  }
+
+  const statusCandidates = volunteer.tags.map((tag) => tag.name.toLowerCase());
+  return statusCandidates.some((candidate) => RETURNING_STATUS_LABELS.has(candidate))
+    ? "returning"
+    : "new";
+};
+
+const formatStatus = (status: "new" | "returning") =>
+  status === "returning" ? "Returning" : "New";
 
 export default function VolunteerProfileModal({
   volunteer,
@@ -31,10 +46,9 @@ export default function VolunteerProfileModal({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [statusTags, setStatusTags] = useState<string[]>([]);
+  const [status, setStatus] = useState<"new" | "returning">("new");
   const [typeTags, setTypeTags] = useState<string[]>([]);
   const [eventTags, setEventTags] = useState<string[]>([]);
-  const [statusInput, setStatusInput] = useState("");
   const [typeInput, setTypeInput] = useState("");
   const [eventInput, setEventInput] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
@@ -50,25 +64,14 @@ export default function VolunteerProfileModal({
 
     const volunteerTagNames = getVolunteerTagNames(volunteer);
     const fallbackTypeTags = volunteerTagNames.filter((tag) => VOLUNTEER_TYPE_TAGS.includes(tag));
-    const fallbackStatusTags = volunteerTagNames.filter(
-      (tag) => !VOLUNTEER_TYPE_TAGS.includes(tag),
-    );
+    setStatus(deriveStatus(volunteer));
     setTypeTags(volunteer.volunteerTypeTags ?? fallbackTypeTags);
-    setStatusTags(volunteer.statusTags ?? fallbackStatusTags);
     setEventTags(volunteer.events ?? []);
     setAdditionalNotes(volunteer.additionalNotes ?? "");
-    setStatusInput("");
     setTypeInput("");
     setEventInput("");
     setSaveError("");
   }, [volunteer]);
-
-  const handleAddStatusTag = () => {
-    const value = statusInput.trim();
-    if (!value || statusTags.includes(value)) return;
-    setStatusTags((prev) => [...prev, value]);
-    setStatusInput("");
-  };
 
   const handleAddTypeTag = () => {
     const value = typeInput.trim();
@@ -82,10 +85,6 @@ export default function VolunteerProfileModal({
     if (!value || eventTags.includes(value)) return;
     setEventTags((prev) => [...prev, value]);
     setEventInput("");
-  };
-
-  const handleRemoveStatusTag = (tag: string) => {
-    setStatusTags((prev) => prev.filter((value) => value !== tag));
   };
 
   const handleRemoveTypeTag = (tag: string) => {
@@ -111,7 +110,7 @@ export default function VolunteerProfileModal({
           lastName,
           email,
           phoneNumber,
-          statusTags,
+          status,
           volunteerTypeTags: typeTags,
           events: eventTags,
           additionalNotes,
@@ -213,53 +212,16 @@ export default function VolunteerProfileModal({
                 />
               </div>
 
-              <div className={styles.tagsSection}>
-                <div className={styles.sectionHeaderWithHint}>
-                  <span className={styles.sectionTitle}>Status</span>
-                  <span className={styles.sectionHint}>Tap x to Remove</span>
-                </div>
-                <div className={styles.tagsRow}>
-                  {statusTags.map((tag) => (
-                    <span
-                      key={`status-${tag}`}
-                      className={`${styles.tag} ${getTagColorClass(tag, styles)}`}
-                    >
-                      {tag}
-                      <button
-                        type="button"
-                        className={styles.tagRemove}
-                        onClick={() => handleRemoveStatusTag(tag)}
-                        aria-label={`Remove ${tag}`}
-                      >
-                        <img src="/redx.svg" alt="" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-                <div className={styles.searchAddRow}>
-                  <div className={styles.searchAddField}>
-                    <input
-                      className={styles.searchAddInput}
-                      placeholder="Add Text"
-                      value={statusInput}
-                      onChange={(event) => setStatusInput(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                          handleAddStatusTag();
-                        }
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className={styles.addButton}
-                    onClick={handleAddStatusTag}
-                    aria-label="Add status tag"
-                  >
-                    <img src="/plus.svg" alt="" />
-                  </button>
-                </div>
+              <div className={styles.editField}>
+                <label className={styles.editLabel} htmlFor="edit-status">
+                  Status
+                </label>
+                <input
+                  id="edit-status"
+                  className={styles.editInput}
+                  value={formatStatus(status)}
+                  disabled
+                />
               </div>
 
               <div className={styles.tagsSection}>
@@ -392,8 +354,7 @@ export default function VolunteerProfileModal({
 function ViewContent({ volunteer }: { volunteer: Volunteer }) {
   const volunteerTagNames = getVolunteerTagNames(volunteer);
   const fallbackTypeTags = volunteerTagNames.filter((tag) => VOLUNTEER_TYPE_TAGS.includes(tag));
-  const fallbackStatusTags = volunteerTagNames.filter((tag) => !VOLUNTEER_TYPE_TAGS.includes(tag));
-  const statusTags = volunteer.statusTags ?? fallbackStatusTags;
+  const status = deriveStatus(volunteer);
   const volunteerTypeTags = volunteer.volunteerTypeTags ?? fallbackTypeTags;
   const events = volunteer.events ?? [];
 
@@ -421,14 +382,7 @@ function ViewContent({ volunteer }: { volunteer: Volunteer }) {
       <div className={styles.tagsSection}>
         <span className={styles.sectionTitle}>Status</span>
         <div className={styles.tagsRow}>
-          {statusTags.map((tag, index) => (
-            <span
-              key={`${volunteer._id}-status-${tag}-${index}`}
-              className={`${styles.tag} ${getTagColorClass(tag, styles)}`}
-            >
-              {tag}
-            </span>
-          ))}
+          <span className={`${styles.tag} ${styles.tagTeal}`}>{formatStatus(status)}</span>
         </div>
       </div>
 

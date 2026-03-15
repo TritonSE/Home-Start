@@ -18,7 +18,7 @@
 }
 
 .header {
-  position: sticky;           
+  position: sticky;
   top: 0;
   z-index: 1000;
   height: 64px;
@@ -28,7 +28,7 @@
   padding: 0 16px;
   background: #ffffff;
   border-bottom: 1px solid #e6eaea;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .backBtn {
@@ -49,9 +49,8 @@
 .headerTitle {
   margin: 0;
   text-align: center;
-  font-family: var(--Font-family-Headings, Viga);
+  font-family: "Viga", sans-serif;
   font-size: 24px;
-  font-style: normal;
   font-weight: 400;
   line-height: 24px;
   letter-spacing: 1.2px;
@@ -63,13 +62,12 @@
   height: 44px;
 }
 
-
 .content {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 16px 140px;  
+  padding: 16px 16px 140px;
   max-width: 720px;
   margin: 0 auto;
 }
@@ -110,8 +108,8 @@
 .recipientsCard {
   width: 100%;
   border-radius: 12px;
-  background: #ffffff;                
-  border: 1px solid #B9B9B9;          
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
   padding: 14px 14px;
   display: flex;
   align-items: center;
@@ -134,7 +132,7 @@
 }
 
 .recipientsText {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #000;
 }
@@ -142,8 +140,8 @@
 .previewCard {
   width: 100%;
   border-radius: 12px;
-  background: #ffffff;              
-  border: 1px solid #B9B9B9;        
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
   padding: 16px;
 }
 
@@ -178,7 +176,7 @@
 
 .personalizedSub {
   font-size: 14px;
-  color: #3a3a3a;
+  color: #979797;
   margin-top: 2px;
 }
 
@@ -207,15 +205,23 @@
   background: #163c73;
   color: #fff;
   font-weight: 400;
-  font-size: 16px;         
+  font-size: 16px;
   line-height: 20px;
   letter-spacing: 0.5px;
   cursor: pointer;
 }
 
 .sendBtn:disabled {
-  background: #E8E8E8;    
+  background: #e8e8e8;
   cursor: not-allowed;
+}
+
+.desktopMain {
+  display: none;
+}
+
+.tabsWrap {
+  display: none;
 }
 
 @media (max-width: 767px) {
@@ -227,41 +233,108 @@
   }
 }
 
-@media (min-width: 768px) {
-  .content {
-    max-width: 920px;
-    padding-top: 24px;
-    padding-bottom: 140px;
-  }
-
-  .header {
-    position: sticky;
-    top: 0;
-    left: auto;
-    right: auto;
-
-    max-width: 920px;
-    margin: 0 auto;
-
-    height: var(--header-h);
-    padding-top: 0;
-    z-index: 50;
+@media (min-width: 1024px) {
+  .header,
+  .content,
+  .bottomCta {
+    display: none;
   }
 
   .page {
-    padding-top: 0;
     height: 100vh;
     overflow: hidden;
   }
 
-  .content {
-    height: calc(100vh - var(--header-h));
+  .desktopMain {
+    display: block;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
-    -webkit-overflow-scrolling: auto;
+    padding: 0 24px;
+  }
+
+  .desktopGrid {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: start;
+  }
+
+  .leftPane,
+  .rightPane {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: auto;
+  }
+
+  .leftScroll,
+  .rightScroll {
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: visible;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .leftScroll {
+    padding-right: 8px;
+  }
+
+  .rightPane {
+    padding-right: 12px;
+  }
+
+  .rightScroll {
+    max-width: 800px;
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  .tabsWrap {
+    width: 100%;
+    height: 44px;
+    min-height: 44px;
+    border-radius: 10px;
+    background: #ecf3f3;
+    padding: 4px;
+    display: flex;
+    gap: 4px;
+    box-sizing: border-box;
+    align-items: stretch;
+    margin-bottom: 28px;
+  }
+
+  .tab {
+    flex: 1;
+    height: 100%;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 400;
+    color: #6f7878;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 20px;
+    box-sizing: border-box;
+  }
+
+  .tabActive {
+    background: #ffffff;
+    color: #1d3a6b;
+    font-weight: 700;
+  }
+
+  .section {
+    margin-bottom: 28px;
   }
 
   .sectionTitle {
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 700;
   }
 
@@ -270,45 +343,35 @@
   }
 
   .recipientsCard {
-    padding: 18px 18px;
+    padding: 14px;
     border-radius: 14px;
   }
 
   .recipientsText {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
   }
 
   .previewCard {
-    padding: 18px;
+    padding: 18px 22px;
     border-radius: 14px;
   }
 
   .previewText {
-    font-size: 17px;
+    font-size: 16px;
     line-height: 24px;
   }
 
-  .bottomCta {
-    position: fixed;
-    left: 270px;
-    right: 0;
-    bottom: 24px;
-
-    padding: 0 16px;
-    z-index: 200;
-
+  .desktopSend {
+    margin-top: 16px;
     display: flex;
     justify-content: center;
-
-    pointer-events: none;
   }
 
-  .sendBtn {
-    pointer-events: auto;
-
-    width: min(920px, calc(100% - 32px));
-    max-width: 920px;
+  .desktopSend .sendBtn {
+    width: 100%;
     min-height: 56px;
+    border-radius: 12px;
+    max-width: 800px;
   }
 }

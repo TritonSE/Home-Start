@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styles from "./ImportVolunteerModal.module.css";
+import Image from "next/image";
 
 type ImportVolunteerModalProps = {
   onClose: () => void;
@@ -20,6 +21,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
   const [status, setStatus] = useState<Status>("idle");
   const [fileName, setFileName] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("upload");
+  const [isDragging, setIsDragging] = useState(false);
 
   // Placeholder data until CSV processing is implemented.
   const placeholderReview = {
@@ -47,18 +49,43 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
     ] as PlaceholderChange[],
   };
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  function processUploadedFile(file: File) {
     setFileName(file.name);
 
-    if (!file.name.endsWith(".csv")) {
+    if (!file.name.toLowerCase().endsWith(".csv")) {
       setStatus("error");
       return;
     }
 
     setStatus("success");
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    processUploadedFile(file);
+  }
+
+  function handleDragOver(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    if (!isDragging) {
+      setIsDragging(true);
+    }
+  }
+
+  function handleDragLeave(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    processUploadedFile(file);
   }
 
   function handleContinue() {
@@ -107,10 +134,21 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
 
               {status === "idle" && (
                 <>
-                  <label className={styles.uploadBox}>
+                  <label
+                    className={`${styles.uploadBox} ${isDragging ? styles.uploadBoxDragging : ""}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
                     <input type="file" accept=".csv" hidden onChange={handleFileChange} />
                     <div className={styles.uploadContent}>
-                      <img src="/upload.svg" className={styles.uploadIcon} />
+                      <Image
+                        src="/upload.svg"
+                        alt="Upload icon"
+                        className={styles.uploadIcon}
+                        width={24}
+                        height={24}
+                      />
                       <div className={styles.uploadText}>
                         Drag and drop your CSV file here, or click to browse
                       </div>
@@ -119,7 +157,13 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                   </label>
 
                   <div className={styles.warning}>
-                    <img src="/ic_warning.svg" className={styles.warningIcon} />
+                    <Image
+                      src="/ic_warning.svg"
+                      alt="Warning icon"
+                      className={styles.warningIcon}
+                      width={24}
+                      height={24}
+                    />
                     <div>Make sure the CSV is in this order: Name, Phone Number, Email, etc.</div>
                   </div>
                 </>
@@ -128,7 +172,13 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
               {status === "error" && (
                 <div className={`${styles.uploadBox} ${styles.uploadBoxError}`}>
                   <div className={styles.uploadContent}>
-                    <img src="/ic_error.svg" className={styles.errorIcon} />
+                    <Image
+                      src="/ic_error.svg"
+                      alt="Error icon"
+                      className={styles.errorIcon}
+                      width={24}
+                      height={24}
+                    />
                     <div className={styles.errorText}>Unsupported file uploaded</div>
                     <div className={styles.uploadSubtext}>
                       Make sure the headers for the CSV are correct!
@@ -140,7 +190,13 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
               {status === "success" && (
                 <div className={`${styles.uploadBox} ${styles.uploadBoxSuccess}`}>
                   <div className={styles.uploadContent}>
-                    <img src="/ic_success.svg" className={styles.successIcon} />
+                    <Image
+                      src="/ic_success.svg"
+                      alt="Success icon"
+                      className={styles.successIcon}
+                      width={24}
+                      height={24}
+                    />
                     <div className={styles.successText}>{fileName} successfully uploaded</div>
                   </div>
                 </div>
@@ -153,14 +209,26 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
               <div className={styles.summaryRow}>
                 <div className={`${styles.summaryCard} ${styles.summaryCardNew}`}>
                   <div className={styles.summaryHeader}>
-                    <img src="/ic_success.svg" className={styles.summaryIcon} />
+                    <Image
+                      src="/ic_success.svg"
+                      alt="Success icon"
+                      className={styles.summaryIcon}
+                      width={24}
+                      height={24}
+                    />
                     <span>New Volunteers</span>
                   </div>
                   <div className={styles.summaryCount}>{placeholderReview.newCount}</div>
                 </div>
                 <div className={`${styles.summaryCard} ${styles.summaryCardUpdated}`}>
                   <div className={styles.summaryHeader}>
-                    <img src="/ic_new.svg" className={styles.summaryIcon} />
+                    <Image
+                      src="/ic_new.svg"
+                      alt="New icon"
+                      className={styles.summaryIcon}
+                      width={24}
+                      height={24}
+                    />
                     <span>Updated Volunteers</span>
                   </div>
                   <div className={styles.summaryCount}>{placeholderReview.updatedCount}</div>

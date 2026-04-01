@@ -2,6 +2,7 @@
 
 import styles from "./SearchBar.module.css";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 interface SearchBarProps {
   search: string;
@@ -121,7 +122,13 @@ export default function SearchBar({
                   type="button"
                 >
                   {selected.has(item) && (
-                    <img src="/Checkbox.svg" alt="checked" className={styles.checkIcon} />
+                    <Image
+                      src="/Checkbox.svg"
+                      alt="checked"
+                      className={styles.checkIcon}
+                      width={16}
+                      height={16}
+                    />
                   )}
                 </button>
                 <div className={styles.filterLabel}>{item}</div>
@@ -137,7 +144,13 @@ export default function SearchBar({
       <div className={styles.searchField}>
         <div className={styles.inputField}>
           <span className={styles.ic_search}>
-            <img src="/Union.svg" alt="Union logo" className={styles.union} />
+            <Image
+              src="/Union.svg"
+              alt="Union logo"
+              className={styles.union}
+              width={24}
+              height={24}
+            />
           </span>
           <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
             <input

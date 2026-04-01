@@ -1,4 +1,12 @@
-"use client";
-export default function Page() {
-  return <div>Main page placeholder. add a /login to the url to login</div>;
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+
+export default async function Page() {
+  const token = (await cookies()).get("firebaseAuthToken");
+
+  if (token) {
+    redirect("/dashboard");
+  }
+
+  redirect("/login");
 }

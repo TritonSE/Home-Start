@@ -77,25 +77,16 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
             <th>
               <div className={styles.headerContent}>
                 <span>Status</span>
-                <span>
-                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
-                </span>
               </div>
             </th>
             <th>
               <div className={styles.headerContent}>
                 <span>Volunteer Type</span>
-                <span>
-                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
-                </span>
               </div>
             </th>
             <th>
               <div className={styles.headerContent}>
                 <span>Event</span>
-                <span>
-                  <img src="/sort-arrow.svg" alt="" className={styles.sortIcon} />
-                </span>
               </div>
             </th>
           </tr>
@@ -128,7 +119,7 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
                       volunteer.status === "new" ? styles.pillTagNew : styles.pillTagReturning
                     }
                   >
-                    {volunteer.status}
+                    {volunteer.status.charAt(0).toUpperCase() + volunteer.status.slice(1)}
                   </span>
                 </div>
               </td>

@@ -1,4 +1,7 @@
 import { Volunteer, VolunteerTag } from "@/types/volunteer";
+import { auth } from "@/firebase/firebase";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const toVolunteerTag = (tag: unknown): VolunteerTag | null => {
   if (!tag || typeof tag !== "object") {
@@ -42,10 +45,24 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
 
 export async function fetchVolunteers(): Promise<Volunteer[]> {
   try {
+    if (!API_URL) {
+      throw new Error("API_URL is not configured");
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error("User is not authenticated");
+    }
+
+    const token = await user.getIdToken();
     let response: Response;
     try {
-      response = await fetch("/api/volunteer", {
-        credentials: "include",
+      response = await fetch(`${API_URL}/api/volunteer`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
     } catch (fetchError) {
       console.error("Fetch network error:", fetchError);

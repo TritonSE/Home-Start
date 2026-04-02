@@ -11,6 +11,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { join } from "path";
 import Sidebar from "../../components/sidebar";
 import TemplateActionPopup from "@/app/components/TemplateActionPopup";
+import { TemplatePreview } from "@/app/components/TemplatePreview";
 
 export default function TemplatePage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function TemplatePage() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | undefined>(undefined);
   const [openPopup, setOpenPopup] = useState(false);
+  const [previewTemplate, setPreviewTemplate] = useState(false);
 
   const fetchTemplates = () => {
     getTemplates()
@@ -66,33 +68,56 @@ export default function TemplatePage() {
     }
   };
 
+  const handleBackClicked = () => {
+    if (previewTemplate) {
+      setPreviewTemplate(false);
+    } else {
+      router.back();
+    }
+  };
+
   return (
     <Sidebar>
       <div className={styles.page}>
         <header className={styles.header}>
-          <Image src={icCaretLeft} alt="" onClick={() => router.back()} />
+          <Image src={icCaretLeft} alt="" onClick={handleBackClicked} />
           <h1 className={styles.headerTitle}>Templates</h1>
-          <div className={styles.plusCircle} onClick={handleAddTemplateClicked}>
-            <Image src={icAdd} alt="" />
-          </div>
+          {!previewTemplate && (
+            <div className={styles.plusCircle} onClick={handleAddTemplateClicked}>
+              <Image src={icAdd} alt="" />
+            </div>
+          )}
         </header>
-        <TemplateList
-          templates={templates}
-          onMoreActions={(template) => {
-            setSelectedTemplate(template);
-            setOpenPopup(true);
-          }}
-        />
-        <TemplateActionPopup
-          templateTitle={selectedTemplate?.title}
-          open={openPopup}
-          onClose={() => {
-            setSelectedTemplate(undefined);
-            setOpenPopup(false);
-          }}
-          onEdit={handleEditTemplateClicked}
-          onDelete={handleDeleteTemplateClicked}
-        />
+        {previewTemplate && selectedTemplate ? (
+          <TemplatePreview template={selectedTemplate} />
+        ) : (
+          <>
+            <TemplateList
+              templates={templates}
+              onTemplateClick={(template) => {
+                setSelectedTemplate(template);
+                setPreviewTemplate(true);
+                setOpenPopup(false);
+              }}
+              onMoreActions={(template) => {
+                setSelectedTemplate(template);
+                setOpenPopup(true);
+                setPreviewTemplate(false);
+              }}
+            />
+            <TemplateActionPopup
+              templateTitle={selectedTemplate?.title}
+              open={openPopup}
+              onClose={() => {
+                setSelectedTemplate(undefined);
+                setOpenPopup(false);
+                setPreviewTemplate(false);
+              }}
+              onEdit={handleEditTemplateClicked}
+              onDelete={handleDeleteTemplateClicked}
+            />
+          </>
+        )}
       </div>
     </Sidebar>
   );

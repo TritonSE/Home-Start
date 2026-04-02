@@ -82,7 +82,9 @@ export default function TemplatePage() {
         <header className={styles.header}>
           <Image src={icCaretLeft} alt="" onClick={handleBackClicked} />
           <h1 className={styles.headerTitle}>Templates</h1>
-          {!previewTemplate && (
+          {previewTemplate ? (
+            <span style={{ height: "40px", width: "40px" }}></span>
+          ) : (
             <div className={styles.plusCircle} onClick={handleAddTemplateClicked}>
               <Image src={icAdd} alt="" />
             </div>

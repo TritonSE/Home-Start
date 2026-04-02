@@ -36,9 +36,6 @@
   font-weight: 400;
   line-height: var(--h5-font-size, 24px); /* 100% */
   letter-spacing: var(--h5-letter-spacing, 1.2px);
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 .plusCircle {

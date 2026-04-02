@@ -50,7 +50,7 @@ export default function CreateTemplatePage() {
         <header className={styles.header}>
           <Image src={icCaretLeft} alt="" onClick={() => router.back()} />
           <h1 className={styles.headerTitle}>Compose Template</h1>
-          <div></div>
+          <span style={{ height: "40px" }}></span>
         </header>
         <TemplateCreate onSave={onSave} />
       </div>

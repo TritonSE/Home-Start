@@ -52,7 +52,7 @@ export default function EditTemplatePage() {
         <header className={styles.header}>
           <Image src={icCaretLeft} alt="" onClick={() => router.back()} />
           <h1 className={styles.headerTitle}>Edit</h1>
-          <div></div>
+          <span style={{ height: "40px", width: "40px" }}></span>
         </header>
         <TemplateCreate onSave={onSave} templateId={templateId} />
       </div>

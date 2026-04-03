@@ -48,7 +48,8 @@ const makePhoneValidator = (path = "phoneNumber") =>
     .isMobilePhone("any")
     .withMessage("phoneNumber must be a valid mobile phone number")
     .customSanitizer((value: string) => value.replace(/\D/g, ""));
-
+/*
+ * makeStatusValidator is not currently used, but we may want to add a route in the future
 const makeStatusValidator = (path = "status") =>
   body(path)
     .optional()
@@ -57,6 +58,7 @@ const makeStatusValidator = (path = "status") =>
     .bail()
     .isIn(["returning", "new"])
     .withMessage("status must be either 'returning' or 'new'");
+*/
 
 const tagsValidator = () => body("tags").optional().isArray();
 

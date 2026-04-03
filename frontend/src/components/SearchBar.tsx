@@ -82,6 +82,11 @@ export default function SearchBar({
     return selectedVolunteerType;
   }
 
+  function formatOptionLabel(item: string, cat: "event" | "status" | "volunteerType") {
+    if (cat !== "status") return item;
+    return item.charAt(0).toUpperCase() + item.slice(1);
+  }
+
   function renderDropdown(
     items: string[],
     cat: "event" | "status" | "volunteerType",
@@ -131,7 +136,7 @@ export default function SearchBar({
                     />
                   )}
                 </button>
-                <div className={styles.filterLabel}>{item}</div>
+                <div className={styles.filterLabel}>{formatOptionLabel(item, cat)}</div>
               </div>
             ))}
         </div>

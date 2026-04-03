@@ -1,7 +1,7 @@
 "use client";
 import { Volunteer } from "../types/volunteer";
 import styles from "./VolunteerTable.module.css";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface VolunteerTableProps {
   volunteers: Volunteer[];

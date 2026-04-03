@@ -66,8 +66,6 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
     const headers = await getAuthHeaders();
 
     let response: Response;
-    console.log(headers);
-    console.log(API_URL);
     try {
       response = await fetch(`${API_URL}/api/volunteer`, {
         headers,

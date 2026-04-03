@@ -15,12 +15,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install frontend dependencies
         env:
-          FIREBASE_FRONTEND: ${{ secrets.FIREBASE_FRONTEND_KEYS }}
+          NEXT_PUBLIC_FIREBASE: ${{ secrets.NEXT_PUBLIC_FIREBASE }}
         run: |
+          if [ -z "$NEXT_PUBLIC_FIREBASE" ]; then
+            echo "NEXT_PUBLIC_FIREBASE is not set."
+            exit 1
+          fi
           cd frontend
-          touch .env
-          echo "NEXT_PUBLIC_FIREBASE=$FIREBASE_FRONTEND" >> .env
-          echo "NEXT_PUBLIC_API_URL=/api" >> .env
+          cat > .env <<EOF
+          NEXT_PUBLIC_FIREBASE='$NEXT_PUBLIC_FIREBASE'
+          NEXT_PUBLIC_API_URL=/api
+          EOF
           npm ci 
           npm run build
       - name: Install backend dependencies
@@ -34,10 +39,11 @@ jobs:
           echo "BACKEND_FIREBASE_SERVICE_ACCOUNT=$FIREBASE_SERVICE" >> .env
           npm ci
           npm run lint-check
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: FirebaseExtended/action-hosting-deploy@v0.9.0
         env:
-          BACKEND_FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VETERAN_SISTERS }}
+          BACKEND_FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_VETERAN_SISTERS }}
-          projectId: veteran-sisters
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HOME_START }}
+          projectId: home-start-80e0a

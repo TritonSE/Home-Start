@@ -1,4 +1,26 @@
+import { auth } from "@/firebase/firebase";
 import { Volunteer, VolunteerTag } from "@/types/volunteer";
+import { onAuthStateChanged } from "firebase/auth";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+function waitForAuth(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      if (user) {
+        user.getIdToken().then(resolve).catch(reject);
+      } else {
+        reject(new Error("Not authenticated"));
+      }
+    });
+  });
+}
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const token = await waitForAuth();
+  return { Authorization: `Bearer ${token}` };
+}
 
 const toVolunteerTag = (tag: unknown): VolunteerTag | null => {
   if (!tag || typeof tag !== "object") {
@@ -41,10 +63,14 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
 
 export async function fetchVolunteers(): Promise<Volunteer[]> {
   try {
+    const headers = await getAuthHeaders();
+
     let response: Response;
+    console.log(headers);
+    console.log(API_URL);
     try {
-      response = await fetch("/api/volunteer", {
-        credentials: "include",
+      response = await fetch(`${API_URL}/api/volunteer`, {
+        headers,
       });
     } catch (fetchError) {
       console.error("Fetch network error:", fetchError);
@@ -67,12 +93,10 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
 
     const data = await response.json();
 
-    // Validate that data is an array
     if (!Array.isArray(data)) {
       throw new Error(`Expected array but got ${typeof data}`);
     }
 
-    // Validate each volunteer has required fields
     data.forEach((volunteer, index) => {
       if (
         !volunteer._id ||
@@ -113,12 +137,13 @@ export type VolunteerCsvParseResponse =
 
 export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseResponse> {
   try {
+    const headers = await getAuthHeaders();
     const formData = new FormData();
     formData.append("csv", csv);
 
-    const response = await fetch("/api/volunteer/parse-csv", {
+    const response = await fetch(`${API_URL}/api/volunteer/parse-csv`, {
       method: "POST",
-      credentials: "include",
+      headers,
       body: formData,
     });
 
@@ -135,9 +160,7 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
       wouldUpdateCount: data.wouldUpdateCount,
       wouldCreate: data.wouldCreate,
       wouldUpdate: data.wouldUpdate,
-
       totalCount: data.total,
-
       volunteerInfo: Array.isArray(data.volunteerInfo)
         ? data.volunteerInfo.map(
             (item: {
@@ -179,10 +202,11 @@ export async function uploadVolunteerBatch(
   data: VolunteerCreationBody[],
 ): Promise<UploadVolunteerBatchResponse> {
   try {
-    const response = await fetch("/api/volunteer/batch", {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_URL}/api/volunteer/batch`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
+      headers: { ...headers, "Content-Type": "application/json" },
       body: JSON.stringify({ volunteers: data }),
     });
 

@@ -33,7 +33,6 @@ type Recipient = {
   lastName: string;
   email: string;
   phoneNumber: string;
-  tags: string[];
 };
 
 export const useTextingFlowStore = create<TextingFlowState>()(

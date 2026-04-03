@@ -6,6 +6,8 @@ import styles from "./page.module.css";
 import RecipientRow from "../../../components/messages/RecipientRow";
 import { useTextingFlowStore } from "../_store/textingFlowStore";
 import Sidebar from "../../../components/sidebar";
+import { getVolunteerRows, getSelectedVolunteers } from "@/app/api/volunteer";
+import { getEventTags } from "@/app/api/tag";
 
 type VolunteerRow = {
   id: string;
@@ -20,7 +22,6 @@ type Recipient = {
   lastName: string;
   email: string;
   phoneNumber: string;
-  tags: string[];
 };
 
 const mockRecipients: VolunteerRow[] = Array.from({ length: 3 }).map((_, i) => ({
@@ -69,23 +70,14 @@ export default function RecipientsPage() {
         setLoading(true);
         setError(null);
 
-        const res = await fetch("/api/volunteer/getVolunteerRows", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
+        getVolunteerRows().then((data) => {
+          if (!cancelled) setVolunteerRows(data);
         });
-
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-
-        const data: VolunteerRow[] = await res.json();
-        if (!cancelled) setVolunteerRows(data);
       } catch (e: unknown) {
-        if (!cancelled) {
-          if (e instanceof Error) {
-            setError(e.message);
-          } else {
-            setError("Unknown error");
-          }
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError("Unknown error");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -94,13 +86,9 @@ export default function RecipientsPage() {
 
     async function loadEvents() {
       try {
-        const res = await fetch("/api/tag/getEventTags", {
-          credentials: "include",
+        getEventTags().then((data) => {
+          if (!cancelled) setEvents(data);
         });
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-        const events: string[] = await res.json();
-
-        setEvents(events);
       } catch (e: unknown) {
         if (e instanceof Error) {
           setError(e.message);
@@ -179,24 +167,24 @@ export default function RecipientsPage() {
   };
 
   const applyFilters = async () => {
-    const res = await fetch("/api/volunteer/getSelectedVolunteers", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
+    try {
+      const data: Recipient[] = await getSelectedVolunteers({
         events: selectedEvents,
         statuses: selectedStatuses,
-      }),
-    });
-
-    const data: Recipient[] = await res.json();
-    clearRecipients();
-    for (const r of data) {
-      toggleRecipient(r._id);
+      });
+      clearRecipients();
+      setRecipients(data);
+      setFiltersOpen(false);
+      for (const r of data) {
+        toggleRecipient(r._id);
+      }
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("Unknown error applying filters");
+      }
     }
-
-    setRecipients(data);
-    setFiltersOpen(false);
   };
 
   return (

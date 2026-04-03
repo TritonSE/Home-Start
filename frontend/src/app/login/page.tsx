@@ -7,7 +7,6 @@ import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/aut
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import React, { Suspense, useState, useEffect } from "react";
-import microsoft from "../../../public/ic_microsoft.svg";
 
 import { auth } from "@/firebase/firebase";
 import SuccessNotification from "../components/SuccessNotification";
@@ -28,14 +27,6 @@ function LoginFormContent() {
   const [error, setError] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    const initLogin = async () => {
-      const account = await initMsal();
-      if (account) router.push("/dashboard");
-    };
-    initLogin();
-  }, [router]);
 
   const handleLogin = async () => {
     try {
@@ -193,19 +184,6 @@ function LoginFormContent() {
 
           <button className={styles.signInButton} type="submit">
             Log In
-          </button>
-          <div className={styles.divider}>
-            <span className={styles.dividerLine}></span>
-            <span className={styles.dividerText}>or</span>
-            <span className={styles.dividerLine}></span>
-          </div>
-          <button
-            className={styles.signInWithMicrosoftButton}
-            type="button"
-            onClick={() => signInWithOutlook()}
-          >
-            <Image src={microsoft} alt="Microsoft logo"></Image>
-            <p className={styles.microsoftButtonText}>Continue with Microsoft</p>
           </button>
         </form>
         {showResetPassword ? (

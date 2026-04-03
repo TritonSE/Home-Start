@@ -224,3 +224,89 @@ export async function uploadVolunteerBatch(
     };
   }
 }
+
+export async function getVolunteerRows(): Promise<
+  { id: string; firstName: string; lastName: string; tags: string[] }[]
+> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_URL}/api/volunteer/getVolunteerRows`, {
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch volunteer rows: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new Error(`Expected array but got ${typeof data}`);
+    }
+
+    return data.map((item) => ({
+      id: String(item.id ?? ""),
+      firstName: String(item.firstName ?? ""),
+      lastName: String(item.lastName ?? ""),
+      tags: item.tags ?? "",
+    }));
+  } catch (error) {
+    console.error("Error fetching volunteer rows: ", error);
+    throw error;
+  }
+}
+
+type Recipient = {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+};
+
+export async function getSelectedVolunteers({
+  events,
+  statuses,
+}: {
+  events: string[];
+  statuses: string[];
+}): Promise<Recipient[]> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_URL}/api/volunteer/getSelectedVolunteers`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+      body: JSON.stringify({ events, statuses }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch selected volunteers: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new Error(`Expected array but got ${typeof data}`);
+    }
+
+    const recipients: Recipient[] = data.map((item) => ({
+      _id: String(item._id ?? ""),
+      firstName: String(item.firstName ?? ""),
+      lastName: String(item.lastName ?? ""),
+      email: String(item.email ?? ""),
+      phoneNumber: String(item.phoneNumber ?? ""),
+    }));
+
+    return recipients;
+  } catch (error) {
+    console.error("Error fetching selected volunteers: ", error);
+    throw error;
+  }
+}

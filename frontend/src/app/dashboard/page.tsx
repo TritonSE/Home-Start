@@ -7,30 +7,51 @@ import icCaretRight from "../../../public/chevron_backward.svg";
 import Link from "next/link";
 import Image from "next/image";
 import LogoutButton from "../components/LogoutButton";
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import LogoutModal from "../components/LogoutModal";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase/firebase";
 import Sidebar from "../components/sidebar";
+import { signInWithOutlook, initMsal } from "@/auth/msal";
+import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
+  const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const sendEmails = async () => {
+    const account = await initMsal();
+    if (account) {
+      router.push("/communication");
+      return;
+    }
+
+    await signInWithOutlook();
+  };
+
+  const handleSendEmailCardClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    void sendEmails();
+  };
 
   const CARDS = [
     {
       href: "some-route",
+      onClick: () => {},
       majorText: "Send Text",
       minorText: "Reach volunteers instantly via SMS",
       icon: icMessage,
     },
     {
-      href: "some-route2",
+      href: "/communication",
+      onClick: handleSendEmailCardClick,
       majorText: "Send Email",
       minorText: "Send detailed announcements",
       icon: mail,
     },
     {
       href: "some-route3",
+      onClick: () => {},
       majorText: "Import/Export data",
       minorText: "Manage volunteer information",
       icon: importExport,
@@ -65,6 +86,7 @@ export default function Dashboard() {
                 <Link
                   key={card.href}
                   href={card.href}
+                  onClick={card.onClick}
                   className={styles.card}
                   aria-current={undefined}
                 >

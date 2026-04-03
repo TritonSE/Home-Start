@@ -1,4 +1,5 @@
 import { PublicClientApplication } from "@azure/msal-browser";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 const msal = new PublicClientApplication({
   auth: {
@@ -12,25 +13,50 @@ const request = {
   scopes: ["User.Read", "Mail.Send"],
 };
 
+let initialized = false;
+
 export async function initMsal() {
-  await msal.initialize();
-  const result = await msal.handleRedirectPromise().catch((e) => {
-    console.error("MSAL Redirect Error:", e);
-  });
-  if (result?.account) {
-    msal.setActiveAccount(result.account);
-    return result.account;
-  } else {
-    const accounts = msal.getAllAccounts();
-    if (accounts.length) {
-      msal.setActiveAccount(accounts[0]);
-      return accounts[0];
+  if (!initialized) {
+    await msal.initialize();
+
+    let account;
+
+    try {
+      const result = await msal.handleRedirectPromise({
+        navigateToLoginRequestUrl: false,
+      });
+      account = result?.account;
+    } catch (e) {
+      console.error("MSAL Redirect Error:", e);
     }
+
+    if (!account) {
+      const accounts = msal.getAllAccounts();
+      account = accounts[0];
+    }
+
+    if (account) {
+      msal.setActiveAccount(account);
+    }
+
+    initialized = true;
+    return account;
   }
+
+  const activeAccount = msal.getActiveAccount();
+  if (activeAccount) return activeAccount;
+
+  const accounts = msal.getAllAccounts();
+  if (accounts.length) {
+    msal.setActiveAccount(accounts[0]);
+    return accounts[0];
+  }
+
+  return undefined;
 }
 
 export async function signInWithOutlook() {
-  console.log("Initiating Microsoft login");
+  await initMsal();
   await msal.loginRedirect(request);
 }
 

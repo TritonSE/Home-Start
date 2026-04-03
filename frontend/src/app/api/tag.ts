@@ -51,3 +51,23 @@ export async function fetchTags(): Promise<
       : new Error("An unknown error occurred while fetching tags");
   }
 }
+
+export async function getEventTags(): Promise<string[]> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_URL}/api/tag/getEventTags`, {
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch event tags: ${response.status} ${response.statusText}`);
+    }
+
+    const events: string[] = await response.json();
+    return events;
+  } catch (error) {
+    console.error("Error fetching event tags:", error);
+    throw error;
+  }
+}

@@ -7,6 +7,7 @@ import { Types } from "mongoose";
 
 import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
+import { batchCreateVolunteerValidator } from "../validators/volunteerValidator";
 
 import type { RequestHandler } from "express";
 import type { MongoBulkWriteError, WriteError } from "mongodb";
@@ -98,11 +99,19 @@ type CreateVolunteerBody = {
   email: string;
   phoneNumber: string;
   tags?: string[];
+  status?: "returning" | "new";
 };
 
 export const createVolunteer: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);
-  const { firstName, lastName, email, phoneNumber, tags = [] } = req.body as CreateVolunteerBody;
+  const {
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    tags = [],
+    status = "new",
+  } = req.body as CreateVolunteerBody;
   try {
     validationErrorParser(errors);
 
@@ -117,6 +126,7 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
       email,
       phoneNumber,
       tags,
+      status,
     });
     res.status(201).json(newVolunteer);
   } catch (err) {
@@ -224,17 +234,6 @@ type UpdateVolunteerOp = {
   };
 };
 
-const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
-  const { tags, ...rest } = body;
-
-  return {
-    ...rest,
-    ...(tags && {
-      tags: tags.map((id) => new Types.ObjectId(id)),
-    }),
-  };
-};
-
 export const uploadVolunteerBatch: RequestHandler<
   object,
   object,
@@ -301,7 +300,19 @@ const validateVolunteer = (volunteer: unknown) => {
   return true;
 };
 
-const statusKeyToString = (key: string): string => {
+const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
+  const { tags, ...rest } = body;
+  const temp = {
+    ...rest,
+    ...(tags && {
+      tags: tags.map((id) => new Types.ObjectId(id)),
+    }),
+  };
+  return temp;
+};
+
+const statusKeyToEnum = (key: string): string => {
+  key = key.trim().toUpperCase();
   if (key === "R") {
     return "returning";
   } else if (key === "N") {
@@ -312,13 +323,15 @@ const statusKeyToString = (key: string): string => {
 };
 
 const createCSVCreationBody = (data: Record<string, string>): CreateVolunteerBody => {
-  return {
+  const result = {
     firstName: data.First,
     lastName: data.Last,
     email: data.Email,
     phoneNumber: data.Phone,
-    status: statusKeyToString(data.New),
+    status: statusKeyToEnum(data.New),
+    tags: data.Tags ? data.Tags.split(",").map((tag) => tag.trim()) : [],
   } as CreateVolunteerBody;
+  return result;
 };
 
 const parseVolunteersHelper = async (fileBuffer: Buffer) => {
@@ -334,7 +347,6 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
           return;
         }
         const creationBody = createCSVCreationBody(data);
-
         const valid = validateVolunteer(creationBody);
 
         if (!valid) {
@@ -359,6 +371,14 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
     }
 
     const parsedVolunteers = await parseVolunteersHelper(req.file.buffer);
+
+    const mockReq = { body: { volunteers: parsedVolunteers } } as unknown as Request;
+    await Promise.all(batchCreateVolunteerValidator.map(async (v) => v.run(mockReq)));
+
+    const errors = validationResult(mockReq);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
     const emails = parsedVolunteers.map((v) => v.email);
     const phoneNumbers = parsedVolunteers.map((v) => v.phoneNumber);

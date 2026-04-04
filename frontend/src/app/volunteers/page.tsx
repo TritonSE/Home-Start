@@ -26,6 +26,15 @@ export default function Page() {
   const [showImportSuccess, setShowImportSuccess] = useState(false);
   const itemsPerPage = 6;
 
+  const loadVolunteers = async () => {
+    try {
+      const data = await fetchVolunteers();
+      setVolunteers(data);
+    } catch (error) {
+      console.error("Error fetching volunteers:", error);
+    }
+  };
+
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setCurrentPage(1);
@@ -50,19 +59,12 @@ export default function Page() {
     setCurrentPage(1);
   };
 
-  // Fetch volunteers once on mount
   useEffect(() => {
-    async function loadVolunteers() {
-      try {
-        console.log("Attempting to fetch volunteers");
-        const data = await fetchVolunteers();
-        setVolunteers(data);
-        console.log("Volunteers fetched successfully");
-      } catch (error) {
-        console.error("Error fetching volunteers:", error);
-      }
-    }
-    loadVolunteers();
+    const loadInitialVolunteers = async () => {
+      await loadVolunteers();
+    };
+
+    void loadInitialVolunteers();
   }, []);
 
   // Extract unique tags from volunteers
@@ -106,6 +108,7 @@ export default function Page() {
   const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
 
   const handleImportComplete = () => {
+    loadVolunteers();
     setShowImportSuccess(true);
   };
 

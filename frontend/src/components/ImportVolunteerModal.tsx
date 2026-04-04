@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { parseVolunteersCsv, uploadVolunteerBatch } from "../app/api/volunteer";
 import styles from "./ImportVolunteerModal.module.css";
 import Image from "next/image";
 
@@ -10,11 +11,19 @@ type ImportVolunteerModalProps = {
 type Status = "idle" | "error" | "success";
 type Step = "upload" | "review";
 
-type PlaceholderChange = {
+type ParsedVolunteerChange = {
   status: "New" | "Updated";
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone: string;
+  phoneNumber: string;
+  tags?: string[];
+};
+
+type ParsedCSVResult = {
+  newCount: number;
+  updatedCount: number;
+  changes: ParsedVolunteerChange[];
 };
 
 export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolunteerModalProps) {
@@ -23,39 +32,34 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
   const [step, setStep] = useState<Step>("upload");
   const [isDragging, setIsDragging] = useState(false);
 
-  // Placeholder data until CSV processing is implemented.
-  const placeholderReview = {
-    newCount: 24,
-    updatedCount: 10,
-    changes: [
-      {
-        status: "New",
-        name: "William, Seymore",
-        email: "wseymore@gmail.com",
-        phone: "720-672-8098",
-      },
-      {
-        status: "New",
-        name: "Kaya, Toast",
-        email: "kayatoast@gmail.com",
-        phone: "830-298-9085",
-      },
-      {
-        status: "Updated",
-        name: "Mariana, Lee",
-        email: "mariana.lee@gmail.com",
-        phone: "415-555-2452",
-      },
-    ] as PlaceholderChange[],
-  };
+  const [csvParsedInfo, setCSVParsedInfo] = useState<ParsedCSVResult | null>(null);
 
   function processUploadedFile(file: File) {
     setFileName(file.name);
 
-    if (!file.name.toLowerCase().endsWith(".csv")) {
-      setStatus("error");
-      return;
-    }
+    parseVolunteersCsv(file).then((result) => {
+      if (!result.ok) {
+        setStatus("error");
+        return;
+      }
+
+      const data = {
+        newCount: result.data.wouldCreateCount,
+        updatedCount: result.data.wouldUpdateCount,
+        changes: [
+          ...result.data.volunteerInfo.map((volunteer) => ({
+            status: result.data.wouldCreate.includes(volunteer.email) ? "New" : "Updated",
+            firstName: volunteer.firstName,
+            lastName: volunteer.lastName,
+            email: volunteer.email,
+            phoneNumber: volunteer.phoneNumber,
+            tags: volunteer.tags,
+          })),
+        ] as ParsedVolunteerChange[],
+      } as ParsedCSVResult;
+
+      setCSVParsedInfo(data);
+    });
 
     setStatus("success");
   }
@@ -88,11 +92,22 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
     processUploadedFile(file);
   }
 
-  function handleContinue() {
+  async function handleContinue() {
     if (step === "upload" && status === "success") {
       setStep("review");
       return;
     }
+
+    if (!csvParsedInfo) return;
+    await uploadVolunteerBatch(
+      csvParsedInfo.changes.map((change) => ({
+        firstName: change.firstName,
+        lastName: change.lastName,
+        email: change.email,
+        phoneNumber: change.phoneNumber,
+        tags: change.tags,
+      })),
+    );
 
     onComplete();
     onClose();
@@ -218,7 +233,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                     />
                     <span>New Volunteers</span>
                   </div>
-                  <div className={styles.summaryCount}>{placeholderReview.newCount}</div>
+                  <div className={styles.summaryCount}>{csvParsedInfo?.newCount || 0}</div>
                 </div>
                 <div className={`${styles.summaryCard} ${styles.summaryCardUpdated}`}>
                   <div className={styles.summaryHeader}>
@@ -231,7 +246,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                     />
                     <span>Updated Volunteers</span>
                   </div>
-                  <div className={styles.summaryCount}>{placeholderReview.updatedCount}</div>
+                  <div className={styles.summaryCount}>{csvParsedInfo?.updatedCount || 0}</div>
                 </div>
               </div>
 
@@ -239,7 +254,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                 <div className={styles.sectionTitle}>Detailed Changes</div>
                 <div className={styles.detailCard}>
                   <div className={styles.detailList}>
-                    {placeholderReview.changes.map((change, index) => (
+                    {csvParsedInfo?.changes?.map((change, index) => (
                       <div key={`${change.email}-${index}`} className={styles.detailItem}>
                         <div className={styles.detailHeader}>
                           <span
@@ -251,11 +266,13 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                           >
                             {change.status}
                           </span>
-                          <span className={styles.detailName}>{change.name}</span>
+                          <span className={styles.detailName}>
+                            {change.firstName} {change.lastName}
+                          </span>
                         </div>
                         <div className={styles.detailMeta}>Email: {change.email}</div>
-                        <div className={styles.detailMeta}>Phone: {change.phone}</div>
-                        {index < placeholderReview.changes.length - 1 && (
+                        <div className={styles.detailMeta}>Phone: {change.phoneNumber}</div>
+                        {index < (csvParsedInfo?.changes.length || 0) - 1 && (
                           <div className={styles.detailDivider} />
                         )}
                       </div>

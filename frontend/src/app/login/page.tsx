@@ -7,7 +7,7 @@ import Image from "next/image";
 import React, { Suspense, useState } from "react";
 
 import { auth } from "@/firebase/firebase";
-import SuccessNotification from "../components/SuccessNotification";
+import SuccessNotification from "@/components/SuccessNotification";
 
 import styles from "./page.module.css";
 

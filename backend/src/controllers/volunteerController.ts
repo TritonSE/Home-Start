@@ -26,7 +26,7 @@ export const getVolunteer: RequestHandler = async (req, res, next) => {
     const volunteer = await VolunteerModel.findById(volunteerId).populate(defaultPopulateConfig);
 
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
 
     res.status(200).json(volunteer);
@@ -53,7 +53,7 @@ export const getVolunteerByEmail: RequestHandler = async (req, res, next) => {
   try {
     const volunteer = await VolunteerModel.findOne({ email }).populate(defaultPopulateConfig);
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
     res.status(200).json(volunteer);
   } catch (err) {
@@ -71,7 +71,7 @@ export const getVolunteerPhoneNumber: RequestHandler = async (req, res, next) =>
   try {
     const volunteer = await VolunteerModel.findOne({ phoneNumber }).populate(defaultPopulateConfig);
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
     res.status(200).json(volunteer);
   } catch (err) {
@@ -85,7 +85,7 @@ export const getTagsAssignedToVolunteer: RequestHandler = async (req, res, next)
   try {
     const volunteer = await VolunteerModel.findById(volunteerId).populate("tags");
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
     res.status(200).json(volunteer.tags);
   } catch (err) {
@@ -117,7 +117,7 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
 
     const volunteer = await VolunteerModel.findOne({ email });
     if (volunteer) {
-      return res.status(409).json({ error: "Volunteer with this email already exists" });
+      throw createError(409, "Volunteer with this email already exists");
     }
 
     const newVolunteer = await VolunteerModel.create({
@@ -153,7 +153,7 @@ export const updateVolunteerContact: RequestHandler = async (req, res, next) => 
     }).populate(defaultPopulateConfig);
 
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
 
     res.status(200).json(volunteer);
@@ -179,7 +179,7 @@ export const assignTagsToVolunteer: RequestHandler = async (req, res, next) => {
     }).populate(defaultPopulateConfig);
 
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
 
     res.status(200).json(volunteer);
@@ -205,7 +205,7 @@ export const removeTagsFromVolunteer: RequestHandler = async (req, res, next) =>
     }).populate(defaultPopulateConfig);
 
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
 
     res.status(200).json(volunteer);
@@ -220,7 +220,7 @@ export const deleteVolunteer: RequestHandler = async (req, res, next) => {
   try {
     const volunteer = await VolunteerModel.findByIdAndDelete(volunteerId);
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
     res.status(200).json({ message: "Volunteer deleted successfully" });
   } catch (err) {
@@ -367,7 +367,7 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
 export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
   try {
     if (req.file === undefined) {
-      return res.status(400).json({ error: "No CSV file attached" });
+      throw createError(400, "No CSV file attached");
     }
 
     const parsedVolunteers = await parseVolunteersHelper(req.file.buffer);
@@ -418,7 +418,7 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
 export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
   try {
     if (req.file === undefined) {
-      return res.status(400).json({ error: "No CSV file attached" });
+      throw createError(400, "No CSV file attached");
     }
 
     const volunteerCreationBodies = await parseVolunteersHelper(req.file.buffer);

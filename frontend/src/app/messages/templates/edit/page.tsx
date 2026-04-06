@@ -7,10 +7,10 @@ import { TemplateCreate } from "@/app/components/TemplateCreate";
 import Sidebar from "@/app/components/sidebar";
 import { updateTemplate } from "@/app/api/template";
 import SuccessToast from "@/app/components/messages/SuccessToast";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function EditTemplatePage() {
+function EditTemplateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const templateId = searchParams.get("templateId") ?? "";
@@ -57,5 +57,13 @@ export default function EditTemplatePage() {
         <TemplateCreate onSave={onSave} templateId={templateId} />
       </div>
     </Sidebar>
+  );
+}
+
+export default function EditTemplatePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <EditTemplateContent />
+    </Suspense>
   );
 }

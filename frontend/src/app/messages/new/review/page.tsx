@@ -5,10 +5,17 @@ import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import { useTextingFlowStore } from "../_store/textingFlowStore";
 import SuccessToast from "../../../components/messages/SuccessToast";
+import { getGraphToken, signInWithOutlook } from "@/auth/msal";
+import { auth } from "@/firebase/firebase";
+import { fetchVolunteers } from "@/app/api/volunteer";
+
+const FIRST_NAME_TOKEN = "{{First Name}}";
 
 export default function ReviewAndSendPage() {
   const router = useRouter();
 
+  const mode = useTextingFlowStore((s) => s.mode);
+  const subject = useTextingFlowStore((s) => s.subject);
   const message = useTextingFlowStore((s) => s.message);
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
   const resetDraft = useTextingFlowStore((s) => s.resetDraft);
@@ -24,27 +31,68 @@ export default function ReviewAndSendPage() {
   }, [router]);
 
   const previewText = useMemo(() => {
-    const firstName = "[First name]";
-    return (message || "").replaceAll("{{first_name}}", firstName);
+    return (message || "").replaceAll(FIRST_NAME_TOKEN, "[First name]");
   }, [message]);
 
   const personalized = useMemo(() => {
-    return (message || "").includes("{{first_name}}");
+    return (message || "").includes(FIRST_NAME_TOKEN);
   }, [message]);
 
   const canSend = recipientsCount > 0 && (message || "").trim().length > 0;
 
   const [sending, setSending] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   const handleSend = async () => {
     if (!canSend || sending) return;
 
     setSending(true);
+    setSendError(null);
 
     try {
-      // TODO
-      await new Promise((r) => setTimeout(r, 250));
+      if (mode === "email") {
+        let graphToken: string;
+        try {
+          graphToken = await getGraphToken();
+        } catch {
+          await signInWithOutlook();
+          return;
+        }
+
+        const firebaseToken = await auth.currentUser?.getIdToken();
+        if (!firebaseToken) {
+          setSendError("You must be logged in to send emails.");
+          return;
+        }
+
+        const allVolunteers = await fetchVolunteers();
+        const recipients = allVolunteers.filter((v) => selectedRecipientIds.includes(v._id));
+        if (recipients.length === 0) {
+          setSendError("Could not find recipient data. Please re-select your recipients.");
+          return;
+        }
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/messages/send-email`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${firebaseToken}`,
+          },
+          body: JSON.stringify({
+            graphToken,
+            recipients,
+            subject,
+            message,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = (await res.json()) as { error?: string };
+          setSendError(err.error ?? "Failed to send emails. Please try again.");
+          return;
+        }
+      }
 
       setShowSuccess(true);
     } finally {
@@ -136,13 +184,14 @@ export default function ReviewAndSendPage() {
       </main>
 
       <div className={styles.bottomCta}>
+        {sendError && <p className={styles.sendError}>{sendError}</p>}
         <button
           type="button"
           className={styles.sendBtn}
           disabled={!canSend || sending}
           onClick={handleSend}
         >
-          {sending ? "Sending..." : "Send Text"}
+          {sending ? "Sending..." : mode === "email" ? "Send Email" : "Send Text"}
         </button>
       </div>
     </div>

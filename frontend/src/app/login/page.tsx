@@ -8,6 +8,9 @@ import React, { Suspense, useState } from "react";
 
 import { auth } from "@/firebase/firebase";
 import SuccessNotification from "../components/SuccessNotification";
+import homeStartLogo from "@/assets/homestart_logo.svg";
+import icShow from "@/assets/ic_show.svg";
+import icHide from "@/assets/ic_hide.svg";
 
 import styles from "./page.module.css";
 
@@ -85,13 +88,7 @@ function LoginFormContent() {
     <main className={styles.page}>
       <div className={styles.form}>
         <div className={styles.logoContainer}>
-          <Image
-            src="/homestart_logo.svg"
-            alt="Home Start Logo"
-            width={120}
-            height={120}
-            priority
-          />
+          <Image src={homeStartLogo} alt="Home Start Logo" width={120} height={120} priority />
         </div>
         <div className={styles.subtitle}>
           {showResetPassword ? (
@@ -140,9 +137,9 @@ function LoginFormContent() {
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    <Image src="/ic_show.svg" alt="to hide password" width={20} height={20} />
+                    <Image src={icShow} alt="to hide password" width={20} height={20} />
                   ) : (
-                    <Image src="/ic_hide.svg" alt="to show password" width={20} height={20} />
+                    <Image src={icHide} alt="to show password" width={20} height={20} />
                   )}
                 </button>
               </div>

@@ -10,6 +10,7 @@ import styles from "../page.module.css";
 import Sidebar from "../components/sidebar";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import successSvg from "@/assets/success.svg";
 
 export default function Page() {
   // Data state
@@ -120,7 +121,7 @@ export default function Page() {
             <div className={styles.importSuccessBanner}>
               <div className={styles.importSuccessContent}>
                 <Image
-                  src="/success.svg"
+                  src={successSvg}
                   alt="Success"
                   className={styles.importSuccessIcon}
                   width={24}

@@ -1,9 +1,9 @@
 "use client";
 import styles from "./page.module.css";
-import icMessage from "../../../public/ic_message.svg";
-import mail from "../../../public/mail.svg";
-import importExport from "../../../public/ion_document.svg";
-import icCaretRight from "../../../public/chevron_backward.svg";
+import icMessage from "@/assets/ic_message.svg";
+import mail from "@/assets/mail.svg";
+import importExport from "@/assets/ion_document.svg";
+import icCaretRight from "@/assets/chevron_backward.svg";
 import Link from "next/link";
 import Image from "next/image";
 import LogoutButton from "../components/LogoutButton";

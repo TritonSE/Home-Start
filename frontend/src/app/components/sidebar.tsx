@@ -5,6 +5,10 @@ import { usePathname } from "next/navigation";
 import { Open_Sans } from "next/font/google";
 import styles from "./sidebar.module.css";
 import layoutStyles from "../layout.module.css";
+import icDashboard from "@/assets/ic_dashboard.svg";
+import icCommunication from "@/assets/ic_dashboard.svg";
+import icVolunteers from "@/assets/ic_dashboard.svg";
+import mainVertical from "@/assets/Main Vertical USE 1.svg";
 import Image from "next/image";
 
 const openSans = Open_Sans({
@@ -13,9 +17,9 @@ const openSans = Open_Sans({
 });
 
 const NAV = [
-  { label: "Dashboard", href: "/dashboard", icon: "/ic_dashboard.svg" },
-  { label: "Communication", href: "/communication", icon: "/ic_communication.svg" },
-  { label: "Volunteers", href: "/volunteers", icon: "/ic_volunteers.svg" },
+  { label: "Dashboard", href: "/dashboard", icon: icDashboard },
+  { label: "Communication", href: "/communication", icon: icCommunication },
+  { label: "Volunteers", href: "/volunteers", icon: icVolunteers },
 ] as const;
 
 export default function Sidebar({ children }: { children: React.ReactNode }) {
@@ -26,11 +30,12 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
       <aside className={`${styles.sidebar} ${openSans.className}`}>
         <div className={styles.logoWrap}>
           <Image
-            src="/Main Vertical USE 1.svg"
+            src={mainVertical}
             alt="Home Start"
             className={styles.logo}
             width={100}
             height={100}
+            loading="eager"
           />
         </div>
 

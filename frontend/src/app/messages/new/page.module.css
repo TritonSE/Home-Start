@@ -342,7 +342,7 @@
   .desktopMain {
     flex: 1;
     min-height: 0;
-    overflow-y: auto;
+    overflow: hidden;
     padding: 0 24px;
     margin: 0;
   }
@@ -353,46 +353,59 @@
     gap: 40px;
     max-width: 1200px;
     margin: 0 auto;
-    align-items: start;
+    height: 100%;
+    min-height: 0;
+    align-items: stretch;
     box-sizing: border-box;
     padding-bottom: 0;
   }
 
-  .leftPane,
-  .rightPane {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    height: auto;
-  }
+.leftPane,
+.rightPane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
 
-  .leftScroll,
-  .rightScroll {
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: visible;
-    -webkit-overflow-scrolling: touch;
-  }
+.leftPane {
+  overflow: hidden;
+}
 
-  .leftScroll {
-    padding-right: 8px;
-  }
+.rightPane {
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 12px;
+}
 
-  .rightPane {
-    padding-right: 12px;
-  }
+.leftScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 8px;
+}
 
-  .rightScroll {
-    max-width: 760px;
-    padding-top: 0;
-    margin-top: 0;
-  }
+.rightScroll {
+  flex: 0 0 auto;
+  min-height: auto;
+  overflow: visible;
+  max-width: 760px;
+  padding-top: 0;
+  margin-top: 0;
+}
 
-  .desktopReview {
-    margin-top: 16px;
-    display: flex;
-    justify-content: center;
-  }
+.desktopReview {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  flex: 0 0 auto;
+  max-width: 760px;
+}
 
   .desktopReview .reviewBtn,
   .desktopReview .reviewBtnDisabled {

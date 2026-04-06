@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import styles from "./RecipientsPanel.module.css";
 import RecipientRow from "./RecipientRow";
 import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
+import Image from "next/image";
+import unionIcon from "../../../../public/Union.svg";
 
 type Mode = "page" | "panel";
 type FilterMenu = "event" | "status" | "volunteerType" | null;
@@ -147,17 +149,15 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
   return (
     <div className={mode === "panel" ? styles.panel : styles.pageBody}>
       <div className={styles.searchRow}>
-        <div className={styles.searchWrap}>
-          <span className={styles.searchIcon} aria-hidden>
-            🔍
-          </span>
-          <input
+      <div className={styles.searchWrap}>
+        <Image src={unionIcon} alt="" aria-hidden className={styles.searchIcon} />
+        <input
             className={styles.searchInput}
             placeholder="Search Volunteer"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
+        />
+      </div>
 
         {!isDesktop ? (
           <button

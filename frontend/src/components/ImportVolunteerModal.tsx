@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { parseVolunteersCsv, uploadVolunteerBatch } from "../app/api/volunteer";
 import styles from "./ImportVolunteerModal.module.css";
+import Image from "next/image";
 
 type ImportVolunteerModalProps = {
   onClose: () => void;
@@ -9,63 +11,103 @@ type ImportVolunteerModalProps = {
 type Status = "idle" | "error" | "success";
 type Step = "upload" | "review";
 
-type PlaceholderChange = {
+type ParsedVolunteerChange = {
   status: "New" | "Updated";
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone: string;
+  phoneNumber: string;
+  tags?: string[];
+};
+
+type ParsedCSVResult = {
+  newCount: number;
+  updatedCount: number;
+  changes: ParsedVolunteerChange[];
 };
 
 export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolunteerModalProps) {
   const [status, setStatus] = useState<Status>("idle");
   const [fileName, setFileName] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("upload");
+  const [isDragging, setIsDragging] = useState(false);
 
-  // Placeholder data until CSV processing is implemented.
-  const placeholderReview = {
-    newCount: 24,
-    updatedCount: 10,
-    changes: [
-      {
-        status: "New",
-        name: "William, Seymore",
-        email: "wseymore@gmail.com",
-        phone: "720-672-8098",
-      },
-      {
-        status: "New",
-        name: "Kaya, Toast",
-        email: "kayatoast@gmail.com",
-        phone: "830-298-9085",
-      },
-      {
-        status: "Updated",
-        name: "Mariana, Lee",
-        email: "mariana.lee@gmail.com",
-        phone: "415-555-2452",
-      },
-    ] as PlaceholderChange[],
-  };
+  const [csvParsedInfo, setCSVParsedInfo] = useState<ParsedCSVResult | null>(null);
+
+  function processUploadedFile(file: File) {
+    setFileName(file.name);
+
+    parseVolunteersCsv(file).then((result) => {
+      if (!result.ok) {
+        setStatus("error");
+        return;
+      }
+
+      const data = {
+        newCount: result.data.wouldCreateCount,
+        updatedCount: result.data.wouldUpdateCount,
+        changes: [
+          ...result.data.volunteerInfo.map((volunteer) => ({
+            status: result.data.wouldCreate.includes(volunteer.email) ? "New" : "Updated",
+            firstName: volunteer.firstName,
+            lastName: volunteer.lastName,
+            email: volunteer.email,
+            phoneNumber: volunteer.phoneNumber,
+            tags: volunteer.tags,
+          })),
+        ] as ParsedVolunteerChange[],
+      } as ParsedCSVResult;
+
+      setCSVParsedInfo(data);
+    });
+
+    setStatus("success");
+  }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setFileName(file.name);
-
-    if (!file.name.endsWith(".csv")) {
-      setStatus("error");
-      return;
-    }
-
-    setStatus("success");
+    processUploadedFile(file);
   }
 
-  function handleContinue() {
+  function handleDragOver(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    if (!isDragging) {
+      setIsDragging(true);
+    }
+  }
+
+  function handleDragLeave(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    processUploadedFile(file);
+  }
+
+  async function handleContinue() {
     if (step === "upload" && status === "success") {
       setStep("review");
       return;
     }
+
+    if (!csvParsedInfo) return;
+    await uploadVolunteerBatch(
+      csvParsedInfo.changes.map((change) => ({
+        firstName: change.firstName,
+        lastName: change.lastName,
+        email: change.email,
+        phoneNumber: change.phoneNumber,
+        tags: change.tags,
+      })),
+    );
 
     onComplete();
     onClose();
@@ -107,10 +149,21 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
 
               {status === "idle" && (
                 <>
-                  <label className={styles.uploadBox}>
+                  <label
+                    className={`${styles.uploadBox} ${isDragging ? styles.uploadBoxDragging : ""}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
                     <input type="file" accept=".csv" hidden onChange={handleFileChange} />
                     <div className={styles.uploadContent}>
-                      <img src="/upload.svg" className={styles.uploadIcon} />
+                      <Image
+                        src="/upload.svg"
+                        alt="Upload icon"
+                        className={styles.uploadIcon}
+                        width={24}
+                        height={24}
+                      />
                       <div className={styles.uploadText}>
                         Drag and drop your CSV file here, or click to browse
                       </div>
@@ -119,7 +172,13 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                   </label>
 
                   <div className={styles.warning}>
-                    <img src="/ic_warning.svg" className={styles.warningIcon} />
+                    <Image
+                      src="/ic_warning.svg"
+                      alt="Warning icon"
+                      className={styles.warningIcon}
+                      width={24}
+                      height={24}
+                    />
                     <div>Make sure the CSV is in this order: Name, Phone Number, Email, etc.</div>
                   </div>
                 </>
@@ -128,7 +187,13 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
               {status === "error" && (
                 <div className={`${styles.uploadBox} ${styles.uploadBoxError}`}>
                   <div className={styles.uploadContent}>
-                    <img src="/ic_error.svg" className={styles.errorIcon} />
+                    <Image
+                      src="/ic_error.svg"
+                      alt="Error icon"
+                      className={styles.errorIcon}
+                      width={24}
+                      height={24}
+                    />
                     <div className={styles.errorText}>Unsupported file uploaded</div>
                     <div className={styles.uploadSubtext}>
                       Make sure the headers for the CSV are correct!
@@ -140,7 +205,13 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
               {status === "success" && (
                 <div className={`${styles.uploadBox} ${styles.uploadBoxSuccess}`}>
                   <div className={styles.uploadContent}>
-                    <img src="/ic_success.svg" className={styles.successIcon} />
+                    <Image
+                      src="/ic_success.svg"
+                      alt="Success icon"
+                      className={styles.successIcon}
+                      width={24}
+                      height={24}
+                    />
                     <div className={styles.successText}>{fileName} successfully uploaded</div>
                   </div>
                 </div>
@@ -153,17 +224,29 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
               <div className={styles.summaryRow}>
                 <div className={`${styles.summaryCard} ${styles.summaryCardNew}`}>
                   <div className={styles.summaryHeader}>
-                    <img src="/ic_success.svg" className={styles.summaryIcon} />
+                    <Image
+                      src="/ic_success.svg"
+                      alt="Success icon"
+                      className={styles.summaryIcon}
+                      width={24}
+                      height={24}
+                    />
                     <span>New Volunteers</span>
                   </div>
-                  <div className={styles.summaryCount}>{placeholderReview.newCount}</div>
+                  <div className={styles.summaryCount}>{csvParsedInfo?.newCount || 0}</div>
                 </div>
                 <div className={`${styles.summaryCard} ${styles.summaryCardUpdated}`}>
                   <div className={styles.summaryHeader}>
-                    <img src="/ic_new.svg" className={styles.summaryIcon} />
+                    <Image
+                      src="/ic_new.svg"
+                      alt="New icon"
+                      className={styles.summaryIcon}
+                      width={24}
+                      height={24}
+                    />
                     <span>Updated Volunteers</span>
                   </div>
-                  <div className={styles.summaryCount}>{placeholderReview.updatedCount}</div>
+                  <div className={styles.summaryCount}>{csvParsedInfo?.updatedCount || 0}</div>
                 </div>
               </div>
 
@@ -171,7 +254,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                 <div className={styles.sectionTitle}>Detailed Changes</div>
                 <div className={styles.detailCard}>
                   <div className={styles.detailList}>
-                    {placeholderReview.changes.map((change, index) => (
+                    {csvParsedInfo?.changes?.map((change, index) => (
                       <div key={`${change.email}-${index}`} className={styles.detailItem}>
                         <div className={styles.detailHeader}>
                           <span
@@ -183,11 +266,13 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                           >
                             {change.status}
                           </span>
-                          <span className={styles.detailName}>{change.name}</span>
+                          <span className={styles.detailName}>
+                            {change.firstName} {change.lastName}
+                          </span>
                         </div>
                         <div className={styles.detailMeta}>Email: {change.email}</div>
-                        <div className={styles.detailMeta}>Phone: {change.phone}</div>
-                        {index < placeholderReview.changes.length - 1 && (
+                        <div className={styles.detailMeta}>Phone: {change.phoneNumber}</div>
+                        {index < (csvParsedInfo?.changes.length || 0) - 1 && (
                           <div className={styles.detailDivider} />
                         )}
                       </div>

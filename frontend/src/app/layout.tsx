@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Montserrat, Viga, Open_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Viga, Open_Sans } from "next/font/google";
 import "./globals.css";
 import styles from "./layout.module.css";
-
-const montserrat = Montserrat({
-  variable: "--font-title-bold",
-  subsets: ["latin"],
-  weight: ["800", "900"],
-});
+import AuthProvider from "../contexts/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,7 +37,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${openSans.variable} ${viga.variable} ${styles.body}`}
       >
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

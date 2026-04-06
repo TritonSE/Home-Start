@@ -8,6 +8,7 @@ import SearchBar from "@/components/SearchBar";
 import PageBar from "@/components/PageBar";
 import styles from "../page.module.css";
 import Sidebar from "../components/sidebar";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 
 export default function Page() {
@@ -22,23 +23,48 @@ export default function Page() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   const [showImportSuccess, setShowImportSuccess] = useState(false);
   const itemsPerPage = 6;
 
-  // Fetch volunteers once on mount
-  useEffect(() => {
-    async function loadVolunteers() {
-      try {
-        console.log("Attempting to fetch volunteers");
-        const data = await fetchVolunteers();
-        setVolunteers(data);
-        console.log("Volunteers fetched successfully");
-      } catch (error) {
-        console.error("Error fetching volunteers:", error);
-      }
+  const loadVolunteers = async () => {
+    try {
+      const data = await fetchVolunteers();
+      setVolunteers(data);
+    } catch (error) {
+      console.error("Error fetching volunteers:", error);
     }
-    loadVolunteers();
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setCurrentPage(1);
+  };
+
+  const handleSelectedEventChange = (value: Set<string> | ((prev: Set<string>) => Set<string>)) => {
+    setSelectedEvent(value);
+    setCurrentPage(1);
+  };
+
+  const handleSelectedStatusChange = (
+    value: Set<string> | ((prev: Set<string>) => Set<string>),
+  ) => {
+    setSelectedStatus(value);
+    setCurrentPage(1);
+  };
+
+  const handleSelectedVolunteerTypeChange = (
+    value: Set<string> | ((prev: Set<string>) => Set<string>),
+  ) => {
+    setSelectedVolunteerType(value);
+    setCurrentPage(1);
+  };
+
+  useEffect(() => {
+    const loadInitialVolunteers = async () => {
+      await loadVolunteers();
+    };
+
+    void loadInitialVolunteers();
   }, []);
 
   // Extract unique tags from volunteers
@@ -59,7 +85,17 @@ export default function Page() {
 
     // Search filter
     if (search.trim()) {
-      const matchesSearch = volunteer.firstName.toLowerCase().includes(search.toLowerCase());
+      const query = search.trim().toLowerCase();
+      const firstName = volunteer.firstName.toLowerCase();
+      const lastName = volunteer.lastName.toLowerCase();
+      const fullName = `${firstName} ${lastName}`;
+      const reverseFullName = `${lastName} ${firstName}`;
+
+      const matchesSearch =
+        firstName.includes(query) ||
+        lastName.includes(query) ||
+        fullName.includes(query) ||
+        reverseFullName.includes(query);
       if (!matchesSearch) return false;
     }
 
@@ -72,6 +108,7 @@ export default function Page() {
   const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
 
   const handleImportComplete = () => {
+    loadVolunteers();
     setShowImportSuccess(true);
   };
 
@@ -82,7 +119,13 @@ export default function Page() {
           {showImportSuccess && (
             <div className={styles.importSuccessBanner}>
               <div className={styles.importSuccessContent}>
-                <img src="/success.svg" className={styles.importSuccessIcon} />
+                <Image
+                  src="/success.svg"
+                  alt="Success"
+                  className={styles.importSuccessIcon}
+                  width={24}
+                  height={24}
+                />
                 <span className={styles.importSuccessText}>CSV Successfully Uploaded</span>
               </div>
               <button
@@ -98,14 +141,14 @@ export default function Page() {
           <TitleBar onImportComplete={handleImportComplete} />
           <SearchBar
             search={search}
-            setSearch={setSearch}
+            setSearch={handleSearchChange}
             tags={uniqueTags}
             selectedEvent={selectedEvent}
-            setSelectedEvent={setSelectedEvent}
+            setSelectedEvent={handleSelectedEventChange}
             selectedStatus={selectedStatus}
-            setSelectedStatus={setSelectedStatus}
+            setSelectedStatus={handleSelectedStatusChange}
             selectedVolunteerType={selectedVolunteerType}
-            setSelectedVolunteerType={setSelectedVolunteerType}
+            setSelectedVolunteerType={handleSelectedVolunteerTypeChange}
           />
           <VolunteerTable volunteers={displayedVolunteers} />
           <PageBar

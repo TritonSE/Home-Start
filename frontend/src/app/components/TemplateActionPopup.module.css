@@ -1,0 +1,169 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #1d1d1dbf;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 999;
+}
+
+.sheetHandle {
+  width: 62px;
+  height: 5px;
+  border-radius: 999px;
+  background: #979797;
+  margin: 6px auto 10px;
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  padding: 29px 32px 34px 32px;
+  gap: 8px;
+}
+
+.popup {
+  background: #ffffff;
+  width: 100%;
+  border-radius: 16px 16px 0 0;
+  animation: slideUp 0.25s ease;
+}
+
+.popupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.text {
+  font-family: var(--Font-family-Headings, Viga);
+  font-size: var(--h4-font-size, 24px);
+  font-weight: 400;
+  line-height: var(--h4-line-height, 24px); /* 125% */
+  letter-spacing: var(--h4-letter-spacing, 1.2px);
+}
+
+.editBtn {
+  width: 100%;
+  background: #1d3a6b;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 16px 12px;
+  cursor: pointer;
+
+  font-family: var(--font-open-sans), sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.deleteBtn {
+  width: 100%;
+  background: white;
+  color: red;
+  border-radius: 4px;
+  padding: 16px 12px;
+  cursor: pointer;
+  border: 1px solid var(--Border-error-bold, #a40026);
+
+  font-family: var(--font-open-sans), sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(0%);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+.overlayDelete {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #1d1d1dbf;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.deletePopup {
+  background: #ffffff;
+  border-radius: 5px;
+  padding: 24px 16px;
+  width: 90%;
+  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); */
+  text-align: center;
+}
+
+.message {
+  font-size: 16px;
+  margin-bottom: 24px;
+  line-height: 1.4;
+}
+
+.buttonsDeletePop {
+  display: flex;
+  justify-content: center;
+  gap: 21px;
+}
+
+.cancelDeleteBtn {
+  background: none;
+  border: none;
+  color: #1c1c1c;
+
+  font-family: var(--font-open-sans), sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.deleteDeleteBtn {
+  background-color: #a40026;
+  border: none;
+  color: white;
+
+  font-family: var(--font-open-sans), sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 16px 20px;
+}

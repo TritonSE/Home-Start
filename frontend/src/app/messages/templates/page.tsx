@@ -9,7 +9,7 @@ import { deleteTemplate, getTemplates, Template } from "@/app/api/template";
 import { TemplateList } from "@/app/components/TemplateList";
 import { usePathname, useRouter } from "next/navigation";
 import { join } from "path";
-import Sidebar from "../../components/sidebar";
+import Sidebar from "@/components/Sidebar";
 import TemplateActionPopup from "@/app/components/TemplateActionPopup";
 import { TemplatePreview } from "@/app/components/TemplatePreview";
 

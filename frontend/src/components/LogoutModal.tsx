@@ -1,7 +1,7 @@
 "use client";
 import styles from "./LogoutModal.module.css";
 import Image from "next/image";
-import icCloseLarge from "../../../public/ic_close_large.svg";
+import icCloseLarge from "../../public/ic_close_large.svg";
 
 type Props = {
   onClose: () => void;

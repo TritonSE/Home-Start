@@ -87,6 +87,25 @@ export default function SearchBar({
     return item.charAt(0).toUpperCase() + item.slice(1);
   }
 
+  function clearCategory(cat: "event" | "status" | "volunteerType") {
+    if (cat === "event") {
+      setSelectedEvent(new Set());
+      return;
+    }
+
+    if (cat === "status") {
+      setSelectedStatus(null);
+      return;
+    }
+
+    setSelectedVolunteerType(new Set());
+  }
+
+  function getClearButtonLabel(cat: "event" | "status" | "volunteerType") {
+    if (cat === "status") return "Clear";
+    return "Clear All";
+  }
+
   function renderDropdown(
     items: string[],
     cat: "event" | "status" | "volunteerType",
@@ -94,6 +113,8 @@ export default function SearchBar({
   ) {
     if (open !== cat) return null;
     const selected = getSelectedSet(cat);
+    const hasSelections = selected.size > 0;
+
     return (
       <div className={`${styles.dropdown} ${!hasSearch ? styles.dropdownSmall : ""}`} role="menu">
         {hasSearch && (
@@ -145,6 +166,17 @@ export default function SearchBar({
                 <div className={styles.filterLabel}>{formatOptionLabel(item, cat)}</div>
               </div>
             ))}
+        </div>
+
+        <div className={styles.dropdownFooter}>
+          <button
+            type="button"
+            className={styles.dropdownClearButton}
+            onClick={() => clearCategory(cat)}
+            disabled={!hasSelections}
+          >
+            {getClearButtonLabel(cat)}
+          </button>
         </div>
       </div>
     );

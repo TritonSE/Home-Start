@@ -4,7 +4,7 @@ import styles from "./page.module.css";
 import icCaretLeft from "../../../../../public/ic_caretleft.svg";
 import Image from "next/image";
 import { TemplateCreate } from "@/app/components/TemplateCreate";
-import Sidebar from "@/app/components/Sidebar";
+import Sidebar from "@/components/Sidebar";
 import { updateTemplate } from "@/app/api/template";
 import SuccessToast from "@/app/components/messages/SuccessToast";
 import { Suspense, useState } from "react";

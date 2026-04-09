@@ -1,4 +1,5 @@
 import { validationResult } from "express-validator";
+import createHttpError from "http-errors";
 
 import TagModel from "../models/tagModel";
 import VolunteerModel from "../models/volunteerModel";
@@ -12,7 +13,7 @@ export const getTag: RequestHandler = async (req, res, next) => {
     const tag = await TagModel.findById(tagId);
 
     if (!tag) {
-      return res.status(404).json({ error: "Could not find tag" });
+      throw createHttpError(404, "Could not find tag");
     }
 
     res.status(200).json(tag);
@@ -45,7 +46,7 @@ export const createTag: RequestHandler = async (req, res, next) => {
 
     const tag = await TagModel.findOne({ name });
     if (tag) {
-      return res.status(409).json({ error: "Tag with this name already exists" });
+      throw createHttpError(409, "Tag with this name already exists");
     }
 
     const newTag = await TagModel.create({
@@ -66,7 +67,7 @@ export const deleteTag: RequestHandler = async (req, res, next) => {
     const tag = await TagModel.findById(tagId);
 
     if (!tag) {
-      return res.status(404).json({ error: "Could not find tag" });
+      throw createHttpError(404, "Could not find tag");
     }
 
     await VolunteerModel.updateMany({ tags: tagId }, { $pull: { tags: tagId } });

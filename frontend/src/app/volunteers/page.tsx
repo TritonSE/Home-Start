@@ -8,7 +8,7 @@ import TitleBar from "@/components/TitleBar";
 import SearchBar from "@/components/SearchBar";
 import PageBar from "@/components/PageBar";
 import styles from "../page.module.css";
-import Sidebar from "../components/sidebar";
+import Sidebar from "@/components/sidebar";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
@@ -50,14 +50,12 @@ export default function Page() {
     setCurrentPage(1);
   };
 
-  // Fetch volunteers once on mount
   useEffect(() => {
     async function loadData() {
       try {
         const [volunteerData, tagData] = await Promise.all([fetchVolunteers(), fetchTags()]);
         setVolunteers(volunteerData);
         setTags(tagData);
-        console.log("raw tag data", tagData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }

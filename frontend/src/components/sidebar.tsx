@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Open_Sans } from "next/font/google";
 import styles from "./sidebar.module.css";
-import layoutStyles from "../layout.module.css";
+import layoutStyles from "../app/layout.module.css";
 import Image from "next/image";
 
 const openSans = Open_Sans({
@@ -13,9 +13,14 @@ const openSans = Open_Sans({
 });
 
 const NAV = [
-  { label: "Dashboard", href: "/dashboard", icon: "/ic_dashboard.svg" },
-  { label: "Communication", href: "/communication", icon: "/ic_communication.svg" },
-  { label: "Volunteers", href: "/volunteers", icon: "/ic_volunteers.svg" },
+  { label: "Dashboard", href: "/dashboard", icon: "/ic_dashboard.svg", enabled: true },
+  {
+    label: "Communication",
+    href: "/communication",
+    icon: "/ic_communication.svg",
+    enabled: false,
+  },
+  { label: "Volunteers", href: "/volunteers", icon: "/ic_volunteers.svg", enabled: true },
 ] as const;
 
 export default function Sidebar({ children }: { children: React.ReactNode }) {
@@ -37,6 +42,27 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
         <nav className={styles.nav}>
           {NAV.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + "/");
+
+            if (!item.enabled) {
+              return (
+                <span
+                  key={item.href}
+                  className={styles.item}
+                  aria-disabled="true"
+                  title="Coming soon"
+                >
+                  <Image
+                    src={item.icon}
+                    alt=""
+                    className={styles.icon}
+                    aria-hidden="true"
+                    width={24}
+                    height={24}
+                  />
+                  <span className={styles.label}>{item.label}</span>
+                </span>
+              );
+            }
 
             return (
               <Link

@@ -99,7 +99,13 @@ export default function SearchBar({
         {hasSearch && (
           <div className={styles.inputField}>
             <span className={styles.ic_search}>
-              <img src="/Union.svg" alt="Union logo" className={styles.union} />
+              <Image
+                src="/Union.svg"
+                alt="Union logo"
+                className={styles.union}
+                width={24}
+                height={24}
+              />
             </span>
             <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
               <input

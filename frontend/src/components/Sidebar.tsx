@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Open_Sans } from "next/font/google";
-import styles from "./sidebar.module.css";
-import layoutStyles from "../layout.module.css";
+import styles from "./Sidebar.module.css";
+import layoutStyles from "../app/layout.module.css";
 import Image from "next/image";
 
 const openSans = Open_Sans({

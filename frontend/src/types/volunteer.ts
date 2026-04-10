@@ -12,5 +12,7 @@ export type Volunteer = {
   lastName: string;
   email: string;
   phoneNumber: string;
+  updated: Date;
+  created: Date;
   tags: VolunteerTag[];
 };

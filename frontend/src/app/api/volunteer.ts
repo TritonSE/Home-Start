@@ -57,6 +57,8 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
     lastName: String(source.lastName ?? ""),
     email: String(source.email ?? ""),
     phoneNumber: String(source.phoneNumber ?? ""),
+    updated: source.updated ? new Date(source.updated) : new Date(),
+    created: source.created ? new Date(source.created) : new Date(),
     tags,
   };
 };
@@ -101,7 +103,9 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
         !volunteer.firstName ||
         !volunteer.lastName ||
         !volunteer.email ||
-        !volunteer.phoneNumber
+        !volunteer.phoneNumber ||
+        !volunteer.updated ||
+        !volunteer.created
       ) {
         console.warn(`Volunteer at index ${index} has missing fields:`, volunteer);
       }
@@ -120,11 +124,14 @@ export type VolunteerCsvParseResult = {
   wouldCreate: string[];
   wouldUpdate: string[];
   totalCount: number;
+
   volunteerInfo: {
     firstName: string;
     lastName: string;
     email: string;
     phoneNumber: string;
+    updated: Date;
+    created: Date;
     tags?: string[];
   }[];
 };
@@ -166,12 +173,16 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
               lastName: string;
               email: string;
               phoneNumber: string;
+              updated: Date;
+              created: Date;
               tags?: string[];
             }) => ({
               firstName: item.firstName,
               lastName: item.lastName,
               email: item.email,
               phoneNumber: item.phoneNumber,
+              updated: new Date(item.updated),
+              created: new Date(item.created),
               tags: item.tags,
             }),
           )

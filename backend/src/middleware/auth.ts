@@ -30,7 +30,6 @@ export const verifyToken = async (req: AuthRequest, res: Response, next: NextFun
       uid: decodedToken.uid,
       email: decodedToken.email,
     };
-
     next();
   } catch (error) {
     console.error("Token verification failed:", error);

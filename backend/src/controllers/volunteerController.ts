@@ -7,6 +7,7 @@ import { Types } from "mongoose";
 
 import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
+import { batchCreateVolunteerValidator } from "../validators/volunteerValidator";
 
 import type { RequestHandler } from "express";
 import type { MongoBulkWriteError, WriteError } from "mongodb";
@@ -25,7 +26,7 @@ export const getVolunteer: RequestHandler = async (req, res, next) => {
     const volunteer = await VolunteerModel.findById(volunteerId).populate(defaultPopulateConfig);
 
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
 
     res.status(200).json(volunteer);
@@ -52,7 +53,7 @@ export const getVolunteerByEmail: RequestHandler = async (req, res, next) => {
   try {
     const volunteer = await VolunteerModel.findOne({ email }).populate(defaultPopulateConfig);
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
     res.status(200).json(volunteer);
   } catch (err) {
@@ -70,7 +71,7 @@ export const getVolunteerPhoneNumber: RequestHandler = async (req, res, next) =>
   try {
     const volunteer = await VolunteerModel.findOne({ phoneNumber }).populate(defaultPopulateConfig);
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
     res.status(200).json(volunteer);
   } catch (err) {
@@ -84,7 +85,7 @@ export const getTagsAssignedToVolunteer: RequestHandler = async (req, res, next)
   try {
     const volunteer = await VolunteerModel.findById(volunteerId).populate("tags");
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
     res.status(200).json(volunteer.tags);
   } catch (err) {
@@ -98,17 +99,25 @@ type CreateVolunteerBody = {
   email: string;
   phoneNumber: string;
   tags?: string[];
+  status?: "returning" | "new";
 };
 
 export const createVolunteer: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);
-  const { firstName, lastName, email, phoneNumber, tags = [] } = req.body as CreateVolunteerBody;
+  const {
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    tags = [],
+    status = "new",
+  } = req.body as CreateVolunteerBody;
   try {
     validationErrorParser(errors);
 
     const volunteer = await VolunteerModel.findOne({ email });
     if (volunteer) {
-      return res.status(409).json({ error: "Volunteer with this email already exists" });
+      throw createError(409, "Volunteer with this email already exists");
     }
 
     const newVolunteer = await VolunteerModel.create({
@@ -117,6 +126,7 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
       email,
       phoneNumber,
       tags,
+      status,
     });
     res.status(201).json(newVolunteer);
   } catch (err) {
@@ -143,7 +153,7 @@ export const updateVolunteerContact: RequestHandler = async (req, res, next) => 
     }).populate(defaultPopulateConfig);
 
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
 
     res.status(200).json(volunteer);
@@ -173,7 +183,7 @@ export const assignTagsToVolunteer: RequestHandler = async (req, res, next) => {
     ).populate(defaultPopulateConfig);
 
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
 
     res.status(200).json(volunteer);
@@ -203,7 +213,7 @@ export const removeTagsFromVolunteer: RequestHandler = async (req, res, next) =>
     ).populate(defaultPopulateConfig);
 
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
 
     res.status(200).json(volunteer);
@@ -218,7 +228,7 @@ export const deleteVolunteer: RequestHandler = async (req, res, next) => {
   try {
     const volunteer = await VolunteerModel.findByIdAndDelete(volunteerId);
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      throw createError(404, "Could not find volunteer");
     }
     res.status(200).json({ message: "Volunteer deleted successfully" });
   } catch (err) {
@@ -229,17 +239,6 @@ export const deleteVolunteer: RequestHandler = async (req, res, next) => {
 type UpdateVolunteerOp = {
   u: {
     $set: CreateVolunteerBody;
-  };
-};
-
-const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
-  const { tags, ...rest } = body;
-
-  return {
-    ...rest,
-    ...(tags && {
-      tags: tags.map((id) => new Types.ObjectId(id)),
-    }),
   };
 };
 
@@ -309,7 +308,19 @@ const validateVolunteer = (volunteer: unknown) => {
   return true;
 };
 
-const statusKeyToString = (key: string): string => {
+const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
+  const { tags, ...rest } = body;
+  const temp = {
+    ...rest,
+    ...(tags && {
+      tags: tags.map((id) => new Types.ObjectId(id)),
+    }),
+  };
+  return temp;
+};
+
+const statusKeyToEnum = (key: string): string => {
+  key = key.trim().toUpperCase();
   if (key === "R") {
     return "returning";
   } else if (key === "N") {
@@ -320,13 +331,15 @@ const statusKeyToString = (key: string): string => {
 };
 
 const createCSVCreationBody = (data: Record<string, string>): CreateVolunteerBody => {
-  return {
+  const result = {
     firstName: data.First,
     lastName: data.Last,
     email: data.Email,
     phoneNumber: data.Phone,
-    status: statusKeyToString(data.New),
+    status: statusKeyToEnum(data.New),
+    tags: data.Tags ? data.Tags.split(",").map((tag) => tag.trim()) : [],
   } as CreateVolunteerBody;
+  return result;
 };
 
 const parseVolunteersHelper = async (fileBuffer: Buffer) => {
@@ -342,7 +355,6 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
           return;
         }
         const creationBody = createCSVCreationBody(data);
-
         const valid = validateVolunteer(creationBody);
 
         if (!valid) {
@@ -363,10 +375,18 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
 export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
   try {
     if (req.file === undefined) {
-      return res.status(400).json({ error: "No CSV file attached" });
+      throw createError(400, "No CSV file attached");
     }
 
     const parsedVolunteers = await parseVolunteersHelper(req.file.buffer);
+
+    const mockReq = { body: { volunteers: parsedVolunteers } } as unknown as Request;
+    await Promise.all(batchCreateVolunteerValidator.map(async (v) => v.run(mockReq)));
+
+    const errors = validationResult(mockReq);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
     const emails = parsedVolunteers.map((v) => v.email);
     const phoneNumbers = parsedVolunteers.map((v) => v.phoneNumber);
@@ -406,7 +426,7 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
 export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
   try {
     if (req.file === undefined) {
-      return res.status(400).json({ error: "No CSV file attached" });
+      throw createError(400, "No CSV file attached");
     }
 
     const volunteerCreationBodies = await parseVolunteersHelper(req.file.buffer);

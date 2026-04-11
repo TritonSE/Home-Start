@@ -8,7 +8,7 @@ import TitleBar from "@/components/TitleBar";
 import SearchBar from "@/components/SearchBar";
 import PageBar from "@/components/PageBar";
 import styles from "../page.module.css";
-import Sidebar from "@/components/sidebar";
+import Sidebar from "@/components/Sidebar";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
@@ -27,6 +27,15 @@ export default function Page() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showImportSuccess, setShowImportSuccess] = useState(false);
   const itemsPerPage = 6;
+
+  const loadVolunteers = async () => {
+    try {
+      const data = await fetchVolunteers();
+      setVolunteers(data);
+    } catch (error) {
+      console.error("Error fetching volunteers:", error);
+    }
+  };
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -112,6 +121,7 @@ export default function Page() {
   const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
 
   const handleImportComplete = () => {
+    loadVolunteers();
     setShowImportSuccess(true);
   };
 

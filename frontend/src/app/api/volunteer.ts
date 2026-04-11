@@ -111,7 +111,6 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
     const typedData: Volunteer[] = data.map(normalizeVolunteer);
     return typedData;
   } catch (error) {
-    console.error("Error fetching volunteers: ", error);
     throw error;
   }
 }

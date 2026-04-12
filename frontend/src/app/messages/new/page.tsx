@@ -9,6 +9,8 @@ import blueChevronLeft from "../../../../public/blue_chevron_left.svg";
 import bluePlus from "../../../../public/blue_plus.svg";
 import Image from "next/image";
 import Sidebar from "../../components/sidebar";
+import { MouseEvent } from "react";
+import { initMsal, signInWithOutlook } from "@/auth/msal";
 
 const TOKEN = "{{First Name}}";
 
@@ -31,6 +33,21 @@ export default function NewMessagePage() {
 
   const editorRef = useRef<HTMLDivElement | null>(null);
 
+  const sendEmails = async () => {
+    const account = await initMsal();
+    setMode("email");
+    if (account) {
+      return;
+    }
+
+    await signInWithOutlook();
+  };
+
+  const switchToEmailTab = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    void sendEmails();
+  };
+
   function tokenTextToHtml(text: string) {
     const escaped = text
       .replaceAll("&", "&amp;")
@@ -43,14 +60,25 @@ export default function NewMessagePage() {
       `<span class="${styles.pill}" contenteditable="false">First Name</span>`,
     );
 
-    return withPill.replaceAll("\n", "<br/>");
+    if (withPill.length === 0) {
+      return "";
+    }
+
+    const lines = withPill.split("\n");
+    const [firstLine, ...restLines] = lines;
+
+    let html = firstLine.length > 0 ? firstLine : "<br/>";
+
+    restLines.forEach((line) => {
+      html += line.length === 0 ? "<div><br/></div>" : `<div>${line}</div>`;
+    });
+
+    return html;
   }
 
   useEffect(() => {
     const el = editorRef.current;
     if (!el) return;
-
-    if ((el.innerHTML ?? "").trim() !== "") return;
 
     el.innerHTML = tokenTextToHtml(message ?? "");
   }, [message]);
@@ -64,7 +92,14 @@ export default function NewMessagePage() {
       node.replaceWith(document.createTextNode(TOKEN));
     });
 
-    return (clone.innerText || "").replace(/\u00A0/g, " ");
+    const htmlWithBreaks = clone.innerHTML.replace(/<div>/gi, "\n").replace(/<\/?p>/gi, "\n");
+
+    const textOnly = htmlWithBreaks.replace(/<[^>]+>/g, "");
+    const decoder = document.createElement("textarea");
+    decoder.innerHTML = textOnly;
+
+    const res = decoder.value.replace(/\u00A0/g, " ").replace(/\r\n/g, "\n");
+    return res;
   }, []);
 
   const canReview = useMemo(() => {
@@ -149,7 +184,7 @@ export default function NewMessagePage() {
               role="tab"
               aria-selected={mode === "email"}
               className={`${styles.tab} ${mode === "email" ? styles.tabActive : ""}`}
-              onClick={() => setMode("email")}
+              onClick={switchToEmailTab}
             >
               Email
             </button>
@@ -196,7 +231,7 @@ export default function NewMessagePage() {
                 role="textbox"
                 aria-multiline="true"
                 data-placeholder="Compose your message..."
-                onInput={() => setDraftText(editorRef.current?.innerText ?? "")}
+                onInput={() => setDraftText(readPlainTextFromEditor())}
               />
             </section>
           </div>

@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { Open_Sans } from "next/font/google";
 import styles from "./sidebar.module.css";
 import layoutStyles from "../layout.module.css";
+import { useTextingFlowStore } from "../messages/new/_store/textingFlowStore";
+import { useRouter } from "next/navigation";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -19,6 +21,13 @@ const NAV = [
 
 export default function Sidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const setMode = useTextingFlowStore((s) => s.setMode);
+
+  const handleCommunicationClick = () => {
+    setMode("text");
+    router.push("/communication");
+  };
 
   return (
     <div className={layoutStyles.layout}>
@@ -35,6 +44,7 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={item.href === "/communication" ? handleCommunicationClick : undefined}
                 className={`${styles.item} ${active ? styles.active : ""}`}
                 aria-current={active ? "page" : undefined}
               >

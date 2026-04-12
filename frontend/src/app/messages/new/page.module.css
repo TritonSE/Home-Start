@@ -372,6 +372,18 @@
   background: var(--Surface-page, #fbffff);
 }
 
+.lexicalWrap {
+  position: relative;
+}
+
+.lexicalPlaceholder {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  color: #9aa3a3;
+  pointer-events: none;
+}
+
 .insertSectionNew {
   display: flex;
   flex-direction: column;

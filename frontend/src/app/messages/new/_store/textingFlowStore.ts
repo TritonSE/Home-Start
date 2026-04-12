@@ -38,7 +38,7 @@ type Recipient = {
 export const useTextingFlowStore = create<TextingFlowState>()(
   persist(
     (set, get) => ({
-      mode: "text",
+      mode: "email",
 
       subject: "",
       message: "",
@@ -64,7 +64,7 @@ export const useTextingFlowStore = create<TextingFlowState>()(
 
       resetDraft: () =>
         set({
-          mode: "text",
+          mode: "email",
           subject: "",
           message: "",
           selectedRecipientIds: [],

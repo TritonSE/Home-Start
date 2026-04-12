@@ -1,27 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import NewMessagePage from "../messages/new/page";
+import { useTextingFlowStore } from "../messages/new/_store/textingFlowStore";
 import { initMsal } from "@/auth/msal";
 
 export default function CommunicationPage() {
-  const router = useRouter();
-  const [ready, setReady] = useState(false);
+  const [emailReady, setEmailReady] = useState(false);
+  const mode = useTextingFlowStore((s) => s.mode);
 
   useEffect(() => {
+    if (mode !== "email") {
+      return;
+    }
+
     let mounted = true;
 
     const finalizeMicrosoftLogin = async () => {
-      const account = await initMsal();
-
-      if (!account) {
-        router.replace("/dashboard");
-        return;
-      }
+      await initMsal();
 
       if (mounted) {
-        setReady(true);
+        setEmailReady(true);
       }
     };
 
@@ -30,10 +29,15 @@ export default function CommunicationPage() {
     return () => {
       mounted = false;
     };
-  }, [router]);
+  }, [mode]);
 
-  if (!ready) {
+  if (mode !== "email") {
+    return <NewMessagePage />;
+  }
+
+  if (!emailReady) {
     return null;
   }
+
   return <NewMessagePage />;
 }

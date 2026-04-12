@@ -6,6 +6,7 @@ import importExport from "../../../public/ion_document.svg";
 import icCaretRight from "../../../public/chevron_backward.svg";
 import Link from "next/link";
 import Image from "next/image";
+import { useTextingFlowStore } from "../messages/new/_store/textingFlowStore";
 import LogoutButton from "../components/LogoutButton";
 import { useState, type MouseEvent } from "react";
 import LogoutModal from "../components/LogoutModal";
@@ -18,9 +19,11 @@ import { useRouter } from "next/navigation";
 export default function Dashboard() {
   const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const setMode = useTextingFlowStore((s) => s.setMode);
 
   const sendEmails = async () => {
     const account = await initMsal();
+    setMode("email");
     if (account) {
       router.push("/communication");
       return;
@@ -36,8 +39,8 @@ export default function Dashboard() {
 
   const CARDS = [
     {
-      href: "some-route",
-      onClick: () => {},
+      href: "/communication",
+      onClick: () => setMode("text"),
       majorText: "Send Text",
       minorText: "Reach volunteers instantly via SMS",
       icon: icMessage,
@@ -84,7 +87,7 @@ export default function Dashboard() {
             {CARDS.map((card) => {
               return (
                 <Link
-                  key={card.href}
+                  key={card.majorText}
                   href={card.href}
                   onClick={card.onClick}
                   className={styles.card}

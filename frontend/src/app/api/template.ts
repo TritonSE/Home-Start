@@ -10,7 +10,7 @@ export type Template = {
 
 export const getTemplate = async (templateId: string): Promise<APIResult<Template>> => {
   try {
-    const response = await get(`/template/${templateId}`);
+    const response = await get(`/api/template/${templateId}`);
     if (response.ok) {
       const template = await response.json();
 
@@ -25,7 +25,7 @@ export const getTemplate = async (templateId: string): Promise<APIResult<Templat
 
 export const getTemplates = async (): Promise<APIResult<Template[]>> => {
   try {
-    const response = await get(`/template`);
+    const response = await get(`/api/template`);
     if (response.ok) {
       const templates: Template[] = await response.json();
 
@@ -49,7 +49,7 @@ export const createTemplate = async (
   templateObj: CreateTemplateRequest,
 ): Promise<APIResult<Template>> => {
   try {
-    const response = await post(`/template`, templateObj);
+    const response = await post(`/api/template`, templateObj);
     if (response.ok) {
       const data = (await response.json()) as Template;
       return { success: true, data };
@@ -66,7 +66,7 @@ export const updateTemplate = async (
   templateObj: CreateTemplateRequest,
 ): Promise<APIResult<Template>> => {
   try {
-    const response = await put(`/template/${templateId}`, templateObj);
+    const response = await put(`/api/template/${templateId}`, templateObj);
     if (response.ok) {
       const data = (await response.json()) as Template;
       return { success: true, data };
@@ -80,7 +80,7 @@ export const updateTemplate = async (
 
 export const deleteTemplate = async (templateId: string): Promise<APIResult<string>> => {
   try {
-    const response = await del(`/template/${templateId}`);
+    const response = await del(`/api/template/${templateId}`);
     if (response.ok) {
       const data = await response.json();
       return { success: true, data: data.message };

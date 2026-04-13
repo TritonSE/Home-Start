@@ -1,5 +1,4 @@
 import { Template } from "@/app/api/template";
-import icMore from "../../../public/ic_more.svg";
 
 import styles from "./TemplateList.module.css";
 import Image from "next/image";
@@ -23,7 +22,7 @@ export function TemplateList({ templates, onTemplateClick, onMoreActions }: Temp
         >
           <span>{template.title}</span>
           <Image
-            src={icMore}
+            src={"/ic_more.svg"}
             alt=""
             onClick={(e) => {
               e.stopPropagation();

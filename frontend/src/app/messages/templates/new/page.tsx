@@ -3,10 +3,10 @@
 import styles from "./page.module.css";
 import icCaretLeft from "@/assets/ic_caretleft.svg";
 import Image from "next/image";
-import { TemplateCreate } from "@/app/components/TemplateCreate";
-import Sidebar from "@/app/components/sidebar";
+import { TemplateCreate } from "@/components/TemplateCreate";
+import Sidebar from "@/components/Sidebar";
 import { createTemplate } from "@/app/api/template";
-import SuccessToast from "@/app/components/messages/SuccessToast";
+import SuccessToast from "@/components/messages/SuccessToast";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 

@@ -1,5 +1,5 @@
-import { Template } from "../api/template";
-import icMore from "../../../public/ic_more.svg";
+import { Template } from "@/app/api/template";
+import icMore from "../../public/ic_more.svg";
 
 import styles from "./TemplateList.module.css";
 import Image from "next/image";

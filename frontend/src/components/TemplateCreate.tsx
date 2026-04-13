@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
-import bluePlus from "../../../public/blue_plus.svg";
-import mdiInfo from "../../../public/mdi_information.svg";
+import bluePlus from "../../public/blue_plus.svg";
+import mdiInfo from "../../public/mdi_information.svg";
 import styles from "./TemplateCreate.module.css";
 import Image from "next/image";
-import { getTemplate } from "../api/template";
+import { getTemplate } from "@/app/api/template";
 
 type TemplateCreateProps = {
   onSave: (title: string, message: string, type: string) => void;

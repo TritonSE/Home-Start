@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import styles from "./SuccessToast.module.css";
-import success from "../../../../public/success.svg";
+import success from "../../../public/success.svg";
 import Image from "next/image";
 
 type Props = {

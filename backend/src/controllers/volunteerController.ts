@@ -242,6 +242,17 @@ type UpdateVolunteerOp = {
   };
 };
 
+const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
+  const { tags, ...rest } = body;
+  const temp = {
+    ...rest,
+    ...(tags && {
+      tags: tags.map((id) => new Types.ObjectId(id)),
+    }),
+  };
+  return temp;
+};
+
 export const uploadVolunteerBatch: RequestHandler<
   object,
   object,
@@ -306,17 +317,6 @@ const validateVolunteer = (volunteer: unknown) => {
     return false;
   }
   return true;
-};
-
-const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
-  const { tags, ...rest } = body;
-  const temp = {
-    ...rest,
-    ...(tags && {
-      tags: tags.map((id) => new Types.ObjectId(id)),
-    }),
-  };
-  return temp;
 };
 
 const statusKeyToEnum = (key: string): string => {

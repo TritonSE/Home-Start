@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com");
-
 .titleBar {
   display: flex;
   flex-direction: row;
@@ -11,7 +9,7 @@
 .volunteers {
   width: 167px;
   height: 40px;
-  font-family: "Viga", sans-serif;
+  font-family: var(--font-viga), sans-serif;
   font-weight: 800;
   font-style: normal;
   font-size: 32px;

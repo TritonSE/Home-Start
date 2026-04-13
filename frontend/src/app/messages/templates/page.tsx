@@ -6,12 +6,12 @@ import icCaretLeft from "../../../../public/ic_caretleft.svg";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { deleteTemplate, getTemplates, Template } from "@/app/api/template";
-import { TemplateList } from "@/app/components/TemplateList";
+import { TemplateList } from "@/components/TemplateList";
 import { usePathname, useRouter } from "next/navigation";
 import { join } from "path";
 import Sidebar from "@/components/Sidebar";
-import TemplateActionPopup from "@/app/components/TemplateActionPopup";
-import { TemplatePreview } from "@/app/components/TemplatePreview";
+import TemplateActionPopup from "@/components/TemplateActionPopup";
+import { TemplatePreview } from "@/components/TemplatePreview";
 
 export default function TemplatePage() {
   const router = useRouter();

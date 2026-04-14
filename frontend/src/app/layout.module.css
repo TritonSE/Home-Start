@@ -15,32 +15,22 @@
 .contentArea {
   max-width: 1320px;
   margin: 0 auto;
+  height: 100%;
   width: 100%;
   height: 100%;
   box-sizing: border-box;
 }
 
 .main {
-  flex: 1 1 auto;
+  flex: 1;
+  background: #fff;
+  height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
-  min-height: 0;
-  padding-top: 62px;
-  padding-left: 15px;
-  padding-right: 15px;
 }
 
 .body {
   margin: 0;
   height: 100vh;
-  width: 100vw;
-}
-
-@media (min-width: 748px) {
-  .main {
-    margin-top: 60px;
-    margin-bottom: 60px;
-    margin-left: 80px;
-    margin-right: 80px;
-  }
+  overflow: hidden;
 }

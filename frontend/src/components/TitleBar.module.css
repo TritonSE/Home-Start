@@ -1,0 +1,27 @@
+.titleBar {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 40px;
+  justify-content: space-between;
+}
+
+.volunteers {
+  width: 167px;
+  height: 40px;
+  font-family: var(--font-viga), sans-serif;
+  font-weight: 800;
+  font-style: normal;
+  font-size: 32px;
+  line-height: 40px;
+  letter-spacing: 1.2px;
+  color: #141414;
+}
+
+.importExportButtons {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  height: 40px;
+  width: 269px;
+}

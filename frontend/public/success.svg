@@ -1,6 +1,16 @@
-<svg width="77" height="77" viewBox="0 0 77 77" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="77" height="77" rx="38.5" fill="#8AC4A7"/>
-<circle cx="38.5" cy="38.5" r="23.5" fill="#D9D9D9"/>
-<line y1="-3" x2="9.21827" y2="-3" transform="matrix(0.832551 0.553948 -0.546631 0.837374 25 44.4491)" stroke="white" stroke-width="6"/>
-<line y1="-3" x2="24.8641" y2="-3" transform="matrix(0.570929 -0.821 0.815781 0.578362 36.7217 52.4135)" stroke="white" stroke-width="6"/>
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3247_12115)">
+<mask id="mask0_3247_12115" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+<path d="M9.99936 18.3334C11.0939 18.3348 12.1779 18.1198 13.1892 17.701C14.2004 17.2821 15.1189 16.6675 15.8919 15.8926C16.6668 15.1196 17.2813 14.2011 17.7002 13.1899C18.1191 12.1787 18.334 11.0946 18.3327 10.0001C18.334 8.90554 18.1191 7.82152 17.7002 6.81029C17.2813 5.79907 16.6668 4.88058 15.8919 4.10759C15.1189 3.33265 14.2004 2.7181 13.1892 2.29922C12.1779 1.88034 11.0939 1.6654 9.99936 1.66675C8.90481 1.6654 7.82078 1.88034 6.80956 2.29922C5.79834 2.7181 4.87984 3.33265 4.10686 4.10759C3.33192 4.88058 2.71736 5.79907 2.29849 6.81029C1.87961 7.82152 1.66467 8.90554 1.66602 10.0001C1.66467 11.0946 1.87961 12.1787 2.29849 13.1899C2.71736 14.2011 3.33192 15.1196 4.10686 15.8926C4.87984 16.6675 5.79834 17.2821 6.80956 17.701C7.82078 18.1198 8.90481 18.3348 9.99936 18.3334Z" fill="white" stroke="white" stroke-width="1.66667" stroke-linejoin="round"/>
+<path d="M6.66602 10L9.16602 12.5L14.166 7.5" stroke="black" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+</mask>
+<g mask="url(#mask0_3247_12115)">
+<path d="M0 0H20V20H0V0Z" fill="#1A8538"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_3247_12115">
+<rect width="20" height="20" fill="white"/>
+</clipPath>
+</defs>
 </svg>

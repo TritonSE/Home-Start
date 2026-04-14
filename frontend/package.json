@@ -14,7 +14,9 @@
     "prepare": "cd .. && husky"
   },
   "dependencies": {
-    "next": "16.1.1",
+    "envalid": "^8.1.1",
+    "firebase": "^12.8.0",
+    "next": "^16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "zustand": "^5.0.11"

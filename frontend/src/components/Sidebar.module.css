@@ -17,14 +17,6 @@
 }
 
 .logoWrap {
-  display: flex;
-  justify-content: center;
-
-  margin-top: 4px;
-  margin-bottom: 34px;
-}
-
-.logo {
   display: none;
 }
 
@@ -119,6 +111,15 @@
 
     border-radius: 0 0 0 0;
   }
+
+  .logoWrap {
+    display: flex;
+    justify-content: center;
+
+    margin-top: 4px;
+    margin-bottom: 34px;
+  }
+
   .logo {
     width: 115px;
     height: auto;

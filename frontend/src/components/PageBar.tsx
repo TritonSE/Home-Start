@@ -1,14 +1,15 @@
 "use client";
 
-import styles from "./PageBar.module.css";
 import Image from "next/image";
 
-interface PageBarProps {
+import styles from "./PageBar.module.css";
+
+type PageBarProps = {
   totalItems: number;
   currentPage: number;
   itemsPerPage: number;
   onPageChange: (page: number) => void;
-}
+};
 
 export default function PageBar({
   totalItems,

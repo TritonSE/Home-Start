@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { parseVolunteersCsv, uploadVolunteerBatch } from "../app/api/volunteer";
-import styles from "./ImportVolunteerModal.module.css";
 import Image from "next/image";
+import { useState } from "react";
+
+import { parseVolunteersCsv, uploadVolunteerBatch } from "../app/api/volunteer";
+
+import styles from "./ImportVolunteerModal.module.css";
 
 type ImportVolunteerModalProps = {
   onClose: () => void;
@@ -34,10 +36,12 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
 
   const [csvParsedInfo, setCSVParsedInfo] = useState<ParsedCSVResult | null>(null);
 
-  function processUploadedFile(file: File) {
+  async function processUploadedFile(file: File): Promise<void> {
     setFileName(file.name);
+    setStatus("idle");
 
-    parseVolunteersCsv(file).then((result) => {
+    try {
+      const result = await parseVolunteersCsv(file);
       if (!result.ok) {
         setStatus("error");
         return;
@@ -59,16 +63,17 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
       } as ParsedCSVResult;
 
       setCSVParsedInfo(data);
-    });
-
-    setStatus("success");
+      setStatus("success");
+    } catch {
+      setStatus("error");
+    }
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    processUploadedFile(file);
+    void processUploadedFile(file);
   }
 
   function handleDragOver(e: React.DragEvent<HTMLLabelElement>) {
@@ -89,7 +94,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
 
-    processUploadedFile(file);
+    void processUploadedFile(file);
   }
 
   async function handleContinue() {
@@ -291,7 +296,9 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
           <button
             className={styles.continue}
             disabled={isContinueDisabled}
-            onClick={handleContinue}
+            onClick={() => {
+              void handleContinue();
+            }}
           >
             Continue
           </button>

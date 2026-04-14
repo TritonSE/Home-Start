@@ -1,10 +1,11 @@
 "use client";
 
-import styles from "./SearchBar.module.css";
-import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 
-interface SearchBarProps {
+import styles from "./SearchBar.module.css";
+
+type SearchBarProps = {
   search: string;
   setSearch: (value: string) => void;
   tags: string[];
@@ -14,7 +15,7 @@ interface SearchBarProps {
   setSelectedStatus: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   selectedVolunteerType: Set<string>;
   setSelectedVolunteerType: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
-}
+};
 
 export default function SearchBar({
   search,

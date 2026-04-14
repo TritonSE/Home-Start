@@ -1,6 +1,7 @@
-import { useState } from "react";
-import styles from "./TemplateActionPopup.module.css";
 import Image from "next/image";
+import { useState } from "react";
+
+import styles from "./TemplateActionPopup.module.css";
 
 type TemplateActionPopupProps = {
   templateTitle?: string;

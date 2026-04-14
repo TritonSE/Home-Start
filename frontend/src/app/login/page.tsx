@@ -2,14 +2,14 @@
 
 import { FirebaseError } from "firebase/app";
 import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
-import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useState } from "react";
 
-import { auth } from "@/firebase/firebase";
-import SuccessNotification from "@/components/SuccessNotification";
-
 import styles from "./page.module.css";
+
+import SuccessNotification from "@/components/SuccessNotification";
+import { auth } from "@/firebase/firebase";
 
 // import "@fontsource/albert-sans";
 

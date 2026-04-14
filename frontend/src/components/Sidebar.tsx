@@ -9,11 +9,15 @@ import layoutStyles from "../app/layout.module.css";
 
 import styles from "./Sidebar.module.css";
 
+import icCommunicationAsset from "@/assets/ic_communication.svg";
 import icDashboardAsset from "@/assets/ic_dashboard.svg";
+import icVolunteersAsset from "@/assets/ic_volunteers.svg";
 import mainVerticalAsset from "@/assets/Main Vertical USE 1.svg";
 
 const icDashboard = icDashboardAsset as string;
+const icCommunication = icCommunicationAsset as string;
 const mainVertical = mainVerticalAsset as string;
+const icVolunteers = icVolunteersAsset as string;
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -22,8 +26,8 @@ const openSans = Open_Sans({
 
 const NAV = [
   { label: "Dashboard", href: "/dashboard", icon: icDashboard },
-  { label: "Communication", href: "/communication", icon: icDashboard },
-  { label: "Volunteers", href: "/volunteers", icon: icDashboard },
+  { label: "Communication", href: "/communication", icon: icCommunication },
+  { label: "Volunteers", href: "/volunteers", icon: icVolunteers },
 ] as const;
 
 export default function Sidebar({ children }: { children: React.ReactNode }) {

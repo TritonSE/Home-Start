@@ -6,10 +6,19 @@ import { useState } from "react";
 
 import styles from "./page.module.css";
 
+import chevronBackwardAsset from "@/assets/chevron_backward.svg";
+import icMessageAsset from "@/assets/ic_message.svg";
+import importExportAsset from "@/assets/ion_document.svg";
+import mailAsset from "@/assets/mail.svg";
 import LogoutButton from "@/components/LogoutButton";
 import LogoutModal from "@/components/LogoutModal";
 import Sidebar from "@/components/Sidebar";
 import { auth } from "@/firebase/firebase";
+
+const chevronBackward = chevronBackwardAsset as string;
+const icMessage = icMessageAsset as string;
+const importExport = importExportAsset as string;
+const mail = mailAsset as string;
 
 export default function Dashboard() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -19,19 +28,19 @@ export default function Dashboard() {
       href: "some-route",
       majorText: "Send Text",
       minorText: "Reach volunteers instantly via SMS",
-      icon: "/ic_message.svg",
+      icon: icMessage,
     },
     {
       href: "some-route2",
       majorText: "Send Email",
       minorText: "Send detailed announcements",
-      icon: "/mail.svg",
+      icon: mail,
     },
     {
       href: "/volunteers",
       majorText: "Import/Export data",
       minorText: "Manage volunteer information",
-      icon: "/ion_document.svg",
+      icon: importExport,
     },
   ] as const;
 
@@ -68,7 +77,7 @@ export default function Dashboard() {
                       <Image src={card.icon} alt="" width={24} height={24} />
                     </div>
                     <div className={styles.arrowFrame}>
-                      <Image src="/chevron_backward.svg" alt="" width={24} height={24} />
+                      <Image src={chevronBackward} alt="" width={24} height={24} />
                     </div>
                   </div>
                   <div className={styles.frame2}>

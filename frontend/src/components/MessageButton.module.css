@@ -1,0 +1,58 @@
+.messageButton {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 100px;
+    background-color: #1d3a6b;
+    cursor: pointer;
+    padding: 16px;
+    gap: 0;
+    opacity: 1;
+    transition: width 0.2s ease;
+    border: none;
+    overflow: hidden;
+}
+
+.messageButton:hover {
+    width: 185px;
+    height: 56px;
+    border-radius: 100px;
+    padding: 16px;
+    opacity: 1;
+}
+
+.messageIcon {
+    width: 24px;
+    height: 24px;
+    opacity: 1;
+}
+
+.messageButtonText {
+    font-family: var(--Font-family-Body, "Open Sans");
+    font-weight: 400;
+    font-style: normal;
+    font-size: var(--paragraph-md-font-size, 16px);
+    line-height: var(--paragraph-md-line-height, 20px);
+    letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
+    text-align: center;
+    vertical-align: middle;
+    color: #ffffff;
+    white-space: nowrap;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin-left: 0;
+    transform: translateX(-4px);
+    transition: max-width 0.2s ease, opacity 0.2s ease, margin-left 0.2s ease,
+        transform 0.2s ease;
+}
+
+.messageButton:hover .messageButtonText {
+    max-width: 113px;
+    opacity: 1;
+    margin-left: 16px;
+    transform: translateX(0);
+}

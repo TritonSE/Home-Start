@@ -9,6 +9,7 @@ import SearchBar from "@/components/SearchBar";
 import PageBar from "@/components/PageBar";
 import styles from "../page.module.css";
 import Sidebar from "@/components/Sidebar";
+import MessageButton from "@/components/MessageButton";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
@@ -171,6 +172,7 @@ export default function Page() {
             itemsPerPage={itemsPerPage}
             onPageChange={setCurrentPage}
           />
+          <MessageButton />
         </main>
       </div>
     </Sidebar>

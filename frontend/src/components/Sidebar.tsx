@@ -1,11 +1,13 @@
 "use client";
 
+import { Open_Sans } from "next/font/google";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Open_Sans } from "next/font/google";
-import styles from "./Sidebar.module.css";
+
 import layoutStyles from "../app/layout.module.css";
-import Image from "next/image";
+
+import styles from "./Sidebar.module.css";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -36,7 +38,7 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
 
         <nav className={styles.nav}>
           {NAV.map((item) => {
-            const active = pathname === item.href || pathname.startsWith(item.href + "/");
+            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
             return (
               <Link

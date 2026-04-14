@@ -3,8 +3,9 @@
  * https://github.com/TritonSE/TSE-Fulcrum/blob/main/frontend/src/api.ts
  */
 
-import { auth } from "@/firebase/firebase";
 import { onAuthStateChanged } from "firebase/auth";
+
+import { auth } from "@/firebase/firebase";
 
 /**
  * A custom type defining which HTTP methods we will handle in this file
@@ -23,7 +24,7 @@ type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 
 // Gets firebase auth token
-function waitForAuth(): Promise<string> {
+async function waitForAuth(): Promise<string> {
   return new Promise((resolve, reject) => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       unsubscribe();
@@ -71,7 +72,7 @@ async function fetchRequest(
 
   const response = await fetch(url, {
     method,
-    headers: headers,
+    headers,
     body: hasBody ? JSON.stringify(body) : undefined,
     ...options,
   });
@@ -97,10 +98,10 @@ async function assertOk(response: Response): Promise<void> {
   try {
     const text = await response.text();
     if (text) {
-      message += ": " + text;
+      message += `: ${text}`;
     }
   } catch (e) {
-    console.log(e);
+    console.info(e);
   }
 
   throw new Error(message);

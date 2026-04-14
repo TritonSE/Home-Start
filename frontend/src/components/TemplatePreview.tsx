@@ -1,5 +1,6 @@
-import { Template } from "@/app/api/template";
 import styles from "./TemplatePreview.module.css";
+
+import type { Template } from "@/app/api/template";
 
 type TemplatePreviewType = {
   template: Template;

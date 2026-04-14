@@ -1,7 +1,7 @@
 "use client";
-import styles from "./LogoutModal.module.css";
 import Image from "next/image";
-import icCloseLarge from "../../public/ic_close_large.svg";
+
+import styles from "./LogoutModal.module.css";
 
 type Props = {
   onClose: () => void;
@@ -16,7 +16,7 @@ export default function LogoutModal({ onClose, onConfirm }: Props) {
         <div className={styles.header}>
           <p className={styles.title}>Are you sure you want to log out?</p>
           <button className={styles.close} onClick={onClose} aria-label="Close">
-            <Image src={icCloseLarge} alt="" />
+            <Image src="/ic_close_large.svg" alt="" width={24} height={24} />
           </button>
         </div>
 

@@ -1,51 +1,3 @@
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
-
-.modal {
-  width: 1049px;
-  max-width: 95vw;
-  max-height: 90vh;
-  background: #fbffff;
-  border-radius: 12px;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-  overflow: hidden;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header h2 {
-  font-family: "Viga";
-  font-size: 32px;
-  font-weight: 400;
-  letter-spacing: 1.2px;
-  color: #141414;
-  margin: 0;
-}
-
-.close {
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: none;
-  font-size: 28px;
-  cursor: pointer;
-}
-
 .step {
   display: flex;
   align-items: center;
@@ -112,7 +64,6 @@
   vertical-align: middle;
   color: #141414;
   margin-top: 12px;
-  margin-left: 12px;
 }
 
 .uploadBox {
@@ -167,6 +118,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+  margin-top: 24px;
 }
 
 .summaryCard {
@@ -337,6 +289,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 32px;
 }
 
 .cancel {

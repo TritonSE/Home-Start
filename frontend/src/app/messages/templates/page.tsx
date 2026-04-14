@@ -10,8 +10,8 @@ import styles from "./page.module.css";
 
 import type { Template } from "@/app/api/template";
 
-import icAddAsset from "@/assets/ic_add.svg";
 import { deleteTemplate, getTemplates } from "@/app/api/template";
+import icAddAsset from "@/assets/ic_add.svg";
 import icCaretLeftAsset from "@/assets/ic_caretleft.svg";
 import Sidebar from "@/components/Sidebar";
 import TemplateActionPopup from "@/components/TemplateActionPopup";

@@ -224,6 +224,29 @@
   display: none;
 }
 
+.subjectCard {
+  width: 100%;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.subjectLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: #6f7878;
+  margin-bottom: 6px;
+}
+
+.subjectText {
+  font-size: 16px;
+  font-weight: 400;
+  color: #000;
+  line-height: 20px;
+}
+
 @media (max-width: 767px) {
   .content {
     max-width: none;

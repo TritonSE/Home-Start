@@ -47,7 +47,7 @@
 
 .message {
   font-family: "Open Sans", sans-serif;
-  font-size: 18px; /* ← 28 → 18 */
+  font-size: 18px; 
   font-weight: 400;
   color: #000;
   line-height: 1.5;

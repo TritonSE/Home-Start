@@ -1,0 +1,74 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px;
+  height: 100%;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.title {
+  font-family: var(--font-open-sans), sans-serif;
+  font-weight: 700;
+  font-style: Bold;
+  font-size: 20px;
+  line-height: 24px;
+  letter-spacing: 0.5px;
+  color: #000000;
+  padding: 10px;
+}
+
+.message {
+  font-family: var(--font-open-sans), sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0.5px;
+  color: #6c6c6c;
+  padding: 20px;
+
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  height: 216px;
+}
+
+.useFixed {
+  position: static;
+  background: transparent;
+  box-shadow: none;
+  border-top: none;
+  max-width: 720px;
+  margin: 24px 0px 0px;
+  width: 100%;
+}
+
+.useBtn {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 8px;
+  border: none;
+  background: #1d3a6b;
+  color: #ffffff;
+  font-weight: 400;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 16px 20px;
+}
+
+.useBtnText {
+  color: #ffffff;
+  text-align: center;
+  /* Body/md */
+  font-family: var(--font-open-sans), sans-serif;
+  font-size: var(--paragraph-md-font-size, 16px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-md-line-height, 20px); /* 125% */
+  letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
+}

@@ -4,10 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import { useTextingFlowStore } from "./_store/textingFlowStore";
-import icCaretLeft from "../../../../public/ic_caretleft.svg";
-import blueChevronLeft from "../../../../public/blue_chevron_left.svg";
-import bluePlus from "../../../../public/blue_plus.svg";
-import addPersonIcon from "../../../../public/Add Person Icon.svg";
+import icCaretLeft from "@/assets/ic_caretleft.svg";
+import blueChevronLeft from "@/assets/blueChevronLeft.svg";
+import bluePlus from "@/assets/blue_plus.svg";
+import addPersonIcon from "@/assets/addPersonIcon.svg";
+import mdiInformation from "@/assets/mdi_information.svg";
 import Image from "next/image";
 import RecipientsPanel from "@/app/components/messages/RecipientsPanel";
 
@@ -77,7 +78,6 @@ function Composer({
     }
 
     if (isComposingRef.current) return;
-
     if (lastSyncedMessageRef.current === message) return;
 
     el.innerHTML = tokenTextToHtml(message, styles.pill);
@@ -87,10 +87,12 @@ function Composer({
   const readPlainTextFromEditor = useCallback(() => {
     const el = editorRef.current;
     if (!el) return "";
+
     const clone = el.cloneNode(true) as HTMLElement;
     clone.querySelectorAll(`.${styles.pill}`).forEach((node) => {
       node.replaceWith(document.createTextNode(TOKEN));
     });
+
     return (clone.innerText || "").replace(/\u00A0/g, " ");
   }, []);
 
@@ -113,6 +115,7 @@ function Composer({
     if (sel.rangeCount === 0) {
       editor.appendChild(pill);
       editor.appendChild(space);
+
       const next = readPlainTextFromEditor();
       lastSyncedMessageRef.current = next;
       setDraftText(next);
@@ -121,6 +124,7 @@ function Composer({
     }
 
     const range = sel.getRangeAt(0);
+
     if (!editor.contains(range.commonAncestorContainer)) {
       const end = document.createRange();
       end.selectNodeContents(editor);
@@ -248,7 +252,7 @@ function Composer({
         </button>
 
         <div className={styles.helper}>
-          <img src="/mdi_information.svg" alt="" className={styles.helperIcon} />
+          <Image src={mdiInformation} alt="" className={styles.helperIcon} width={20} height={20} />
           <span className={styles.bottomText}>
             Tap the button to insert a volunteer&apos;s name wherever you want it to appear.
           </span>
@@ -305,6 +309,10 @@ export default function NewMessagePage() {
     return true;
   }, [mode, recipientsCount, subject, message]);
 
+  const goDashboard = useCallback(() => {
+    router.push("/dashboard");
+  }, [router]);
+
   const goRecipientsMobile = useCallback(() => {
     router.push("/messages/new/recipients");
   }, [router]);
@@ -330,9 +338,16 @@ export default function NewMessagePage() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Image src={icCaretLeft} alt="" />
+        <button
+          type="button"
+          className={styles.backBtn}
+          aria-label="Back to dashboard"
+          onClick={goDashboard}
+        >
+          <Image src={icCaretLeft} alt="" className={styles.backIcon} width={24} height={24} />
+        </button>
         <h1 className={styles.headerTitle}>New Message</h1>
-        <div />
+        <div className={styles.headerRight} />
       </header>
 
       {!isDesktop ? (

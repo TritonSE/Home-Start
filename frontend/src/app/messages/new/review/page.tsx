@@ -6,6 +6,10 @@ import styles from "./page.module.css";
 import { useTextingFlowStore } from "../_store/textingFlowStore";
 import SuccessToast from "../../../components/messages/SuccessToast";
 import RecipientsPanel from "@/app/components/messages/RecipientsPanel";
+import Image from "next/image";
+import groupsIcon from "@/assets/groups.svg";
+import backIcon from "@/assets/back.svg";
+import Sidebar from "@/components/Sidebar";
 
 const DESKTOP_MQ = "(min-width: 1024px)";
 
@@ -13,7 +17,7 @@ export default function ReviewAndSendPage() {
   const router = useRouter();
 
   const mode = useTextingFlowStore((s) => s.mode);
-  const setMode = useTextingFlowStore((s) => s.setMode);
+  const subject = useTextingFlowStore((s) => s.subject);
   const message = useTextingFlowStore((s) => s.message);
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
   const resetDraft = useTextingFlowStore((s) => s.resetDraft);
@@ -35,7 +39,7 @@ export default function ReviewAndSendPage() {
       router.back();
       return;
     }
-    router.replace("/messages/new");
+    router.replace("/communication");
   }, [router]);
 
   const previewText = useMemo(() => {
@@ -72,7 +76,7 @@ export default function ReviewAndSendPage() {
   const onToastDone = useCallback(() => {
     setShowSuccess(false);
     resetDraft();
-    router.replace("/messages/new");
+    router.replace("/communication");
   }, [resetDraft, router]);
 
   const ReviewContent = () => (
@@ -84,7 +88,7 @@ export default function ReviewAndSendPage() {
             role="tab"
             aria-selected={mode === "text"}
             className={`${styles.tab} ${mode === "text" ? styles.tabActive : ""}`}
-            onClick={() => setMode("text")}
+            disabled
           >
             Text
           </button>
@@ -93,7 +97,7 @@ export default function ReviewAndSendPage() {
             role="tab"
             aria-selected={mode === "email"}
             className={`${styles.tab} ${mode === "email" ? styles.tabActive : ""}`}
-            onClick={() => setMode("email")}
+            disabled
           >
             Email
           </button>
@@ -114,7 +118,7 @@ export default function ReviewAndSendPage() {
 
         <div className={styles.recipientsCard}>
           <div className={styles.groupsIconWrap} aria-hidden>
-            <img src="/groups.svg" alt="" className={styles.groupsIcon} />
+            <Image src={groupsIcon} alt="" className={styles.groupsIcon} width={20} height={20} />
           </div>
           <div className={styles.recipientsText}>{recipientsCount} Volunteers</div>
         </div>
@@ -131,6 +135,12 @@ export default function ReviewAndSendPage() {
             Edit
           </button>
         </div>
+
+        {mode === "email" ? (
+          <div className={styles.subjectCard}>
+            <div className={styles.subjectText}>{subject || "No subject"}</div>
+          </div>
+        ) : null}
 
         <div className={styles.previewCard}>
           <pre className={styles.previewText}>{previewText}</pre>
@@ -152,70 +162,72 @@ export default function ReviewAndSendPage() {
   );
 
   return (
-    <div className={styles.page}>
-      <SuccessToast
-        open={showSuccess}
-        message={successMessage}
-        durationMs={2600}
-        onDone={onToastDone}
-      />
+    <Sidebar>
+      <div className={styles.page}>
+        <SuccessToast
+          open={showSuccess}
+          message={successMessage}
+          durationMs={2600}
+          onDone={onToastDone}
+        />
 
-      {!isDesktop ? (
-        <>
-          <header className={styles.header}>
-            <button type="button" className={styles.backBtn} aria-label="Back" onClick={handleBack}>
-              <img src="/Back.svg" alt="" className={styles.backIcon} />
-            </button>
+        {!isDesktop ? (
+          <>
+            <header className={styles.header}>
+              <button type="button" className={styles.backBtn} aria-label="Back" onClick={handleBack}>
+                <Image src={backIcon} alt="" className={styles.backIcon} width={12} height={12} />
+              </button>
 
-            <h1 className={styles.headerTitle}>Review and Send</h1>
+              <h1 className={styles.headerTitle}>Review and Send</h1>
 
-            <div className={styles.headerRight} />
-          </header>
+              <div className={styles.headerRight} />
+            </header>
 
-          <main className={styles.content}>
-            <ReviewContent />
-            <div className={styles.bottomSpacer} />
+            <main className={styles.content}>
+              <ReviewContent />
+              <div className={styles.bottomSpacer} />
+            </main>
+
+            <div className={styles.bottomCta}>
+              <button
+                type="button"
+                className={styles.sendBtn}
+                disabled={!canSend || sending}
+                onClick={handleSend}
+              >
+                {sending ? "Sending..." : mode === "email" ? "Send Email" : "Send Text"}
+              </button>
+            </div>
+          </>
+        ) : (
+          <main className={styles.desktopMain}>
+            <div className={styles.desktopGrid}>
+              <aside className={styles.leftPane}>
+                <div className={styles.leftScroll}>
+                  <RecipientsPanel mode="panel" />
+                </div>
+              </aside>
+
+              <section className={styles.rightPane}>
+                <div className={styles.rightScroll}>
+                  <ReviewContent />
+                </div>
+
+                <div className={styles.desktopSend}>
+                  <button
+                    type="button"
+                    className={styles.sendBtn}
+                    disabled={!canSend || sending}
+                    onClick={handleSend}
+                  >
+                    {sending ? "Sending..." : "Review and Send"}
+                  </button>
+                </div>
+              </section>
+            </div>
           </main>
-
-          <div className={styles.bottomCta}>
-            <button
-              type="button"
-              className={styles.sendBtn}
-              disabled={!canSend || sending}
-              onClick={handleSend}
-            >
-              {sending ? "Sending..." : mode === "email" ? "Send Email" : "Send Text"}
-            </button>
-          </div>
-        </>
-      ) : (
-        <main className={styles.desktopMain}>
-          <div className={styles.desktopGrid}>
-            <aside className={styles.leftPane}>
-              <div className={styles.leftScroll}>
-                <RecipientsPanel mode="panel" />
-              </div>
-            </aside>
-
-            <section className={styles.rightPane}>
-              <div className={styles.rightScroll}>
-                <ReviewContent />
-              </div>
-
-              <div className={styles.desktopSend}>
-                <button
-                  type="button"
-                  className={styles.sendBtn}
-                  disabled={!canSend || sending}
-                  onClick={handleSend}
-                >
-                  {sending ? "Sending..." : "Review and Send"}
-                </button>
-              </div>
-            </section>
-          </div>
-        </main>
-      )}
-    </div>
+        )}
+      </div>
+    </Sidebar>
   );
 }

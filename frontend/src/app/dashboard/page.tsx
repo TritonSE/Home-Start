@@ -1,15 +1,28 @@
 "use client";
-import styles from "./page.module.css";
-import icMessage from "../../../public/ic_message.svg";
-import mail from "../../../public/mail.svg";
-import importExport from "../../../public/ion_document.svg";
-import icCaretRight from "../../../public/chevron_backward.svg";
-import Link from "next/link";
+import { signOut } from "firebase/auth";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
+import styles from "./page.module.css";
+
+import chevronBackwardAsset from "@/assets/chevron_backward.svg";
+import icMessageAsset from "@/assets/ic_message.svg";
+import importExportAsset from "@/assets/ion_document.svg";
+import mailAsset from "@/assets/mail.svg";
+import LogoutButton from "@/components/LogoutButton";
+import LogoutModal from "@/components/LogoutModal";
+import Sidebar from "@/components/Sidebar";
+import { auth } from "@/firebase/firebase";
+
+const chevronBackward = chevronBackwardAsset as string;
+const icMessage = icMessageAsset as string;
+const importExport = importExportAsset as string;
+const mail = mailAsset as string;
+
 export default function Dashboard() {
-  const [showPopUp, setShowPopup] = useState<boolean>(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
   const CARDS = [
     {
       href: "some-route",
@@ -24,54 +37,71 @@ export default function Dashboard() {
       icon: mail,
     },
     {
-      href: "some-route3",
+      href: "/volunteers",
       majorText: "Import/Export data",
       minorText: "Manage volunteer information",
       icon: importExport,
     },
   ] as const;
 
+  const handleLogout = async () => {
+    await signOut(auth);
+    window.location.href = "/login";
+  };
+
   return (
-    <div className={styles.dashboard}>
-      <div className={styles.dashboardHeader}>
-        <p className={styles.headersH2}>Dashboard</p>
-      </div>
-
-      <div className={styles.dashboardSecond}>
-        <div className={styles.quickActions}>
-          <p className={styles.headersH4}>Quick Actions</p>
-          <p className={styles.bodyMdLong}>Select an action to get started</p>
-          <p className={styles.bodyMdShort}>Select to start</p>
+    <Sidebar>
+      <div className={styles.dashboard}>
+        <div className={styles.dashboardHeader}>
+          <p className={styles.headersH2}>Dashboard</p>
         </div>
 
-        <div className={styles.cards}>
-          {CARDS.map((card) => {
-            return (
-              <Link
-                key={card.href}
-                href={card.href}
-                className={styles.card}
-                aria-current={undefined}
-              >
-                <div className={styles.frame1}>
-                  <div className={styles.iconFrame}>
-                    <Image src={card.icon} alt="" />
+        <div className={styles.dashboardSecond}>
+          <div className={styles.quickActions}>
+            <p className={styles.headersH4}>Quick Actions</p>
+            <p className={styles.bodyMdLong}>Select an action to get started</p>
+            <p className={styles.bodyMdShort}>Select to start</p>
+          </div>
+
+          <div className={styles.cards}>
+            {CARDS.map((card) => {
+              return (
+                <Link
+                  key={card.href}
+                  href={card.href}
+                  className={styles.card}
+                  aria-current={undefined}
+                >
+                  <div className={styles.frame1}>
+                    <div className={styles.iconFrame}>
+                      <Image src={card.icon} alt="" width={24} height={24} />
+                    </div>
+                    <div className={styles.arrowFrame}>
+                      <Image src={chevronBackward} alt="" width={24} height={24} />
+                    </div>
                   </div>
-                  <div className={styles.arrowFrame}>
-                    <Image src={icCaretRight} alt="" />
+                  <div className={styles.frame2}>
+                    <p className={styles.headersH5}>{card.majorText}</p>
                   </div>
-                </div>
-                <div className={styles.frame2}>
-                  <p className={styles.headersH5}>{card.majorText}</p>
-                </div>
-                <div className={styles.frame3}>
-                  <p className={styles.bodyMd}>{card.minorText}</p>
-                </div>
-              </Link>
-            );
-          })}
+                  <div className={styles.frame3}>
+                    <p className={styles.bodyMd}>{card.minorText}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
+        <LogoutButton onLogout={() => setShowLogoutModal(true)} />
+        {showLogoutModal && (
+          <LogoutModal
+            onClose={() => setShowLogoutModal(false)}
+            onConfirm={() => {
+              setShowLogoutModal(false);
+              void handleLogout();
+            }}
+          />
+        )}
       </div>
-    </div>
+    </Sidebar>
   );
 }

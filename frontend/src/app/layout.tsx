@@ -1,8 +1,11 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Open_Sans, Viga } from "next/font/google";
+
+import AuthProvider from "../contexts/AuthProvider";
+
 import "./globals.css";
-import Sidebar from "./components/sidebar";
 import styles from "./layout.module.css";
+
+import type { Metadata } from "next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,21 +17,34 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const openSans = Open_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "600", "700"],
+  variable: "--font-open-sans",
+});
+
+const viga = Viga({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-viga",
+});
+
 export const metadata: Metadata = {
   title: "Home Start",
   description: "Home Start dashboard",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} ${styles.body}`}>
-        <div className={styles.layout}>
-          <Sidebar />
-          <main className={styles.main}>
-            <div className={styles.contentArea}>{children}</div>
-          </main>
-        </div>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} ${openSans.variable} ${viga.variable} ${styles.body}`}
+      >
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

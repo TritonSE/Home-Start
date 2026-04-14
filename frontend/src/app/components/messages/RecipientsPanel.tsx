@@ -6,7 +6,7 @@ import styles from "./RecipientsPanel.module.css";
 import RecipientRow from "./RecipientRow";
 import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
 import Image from "next/image";
-import unionIcon from "../../../../public/Union.svg";
+import unionIcon from "@/assets/Union.svg";
 
 type Mode = "page" | "panel";
 type FilterMenu = "event" | "status" | "volunteerType" | null;
@@ -69,7 +69,6 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
         selectedVolunteerTypes.length === 0 ||
         r.tags.some((tag) => selectedVolunteerTypes.includes(tag));
 
-      // mockには event / status が無いので、今は見た目だけ対応
       const matchesEvent = true;
       const matchesStatus = true;
 

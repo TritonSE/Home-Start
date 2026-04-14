@@ -1,0 +1,397 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  width: 1049px;
+  max-width: 95vw;
+  max-height: 90vh;
+  background: #fbffff;
+  border-radius: 12px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h2 {
+  font-family: "Viga";
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: 1.2px;
+  color: #141414;
+  margin: 0;
+}
+
+.close {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: none;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepCircleActive {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #1d3a6b;
+  color: #fbffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.stepCircleInactive {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #979797;
+  color: #fbffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.stepLabelActive {
+  font-size: 14px;
+  letter-spacing: 0.8px;
+  color: #1d3a6b;
+}
+
+.stepLabelInactive {
+  font-size: 14px;
+  letter-spacing: 0.8px;
+  color: #979797;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.sectionTitle {
+  font-family: var(--font-family-body, "Open Sans");
+  font-weight: 900;
+  font-style: normal;
+  font-size: var(--paragraph-lg-font-size, 20px);
+  line-height: var(--paragraph-lg-line-height, 28px);
+  letter-spacing: var(--paragraph-lg-letter-spacing, 1px);
+  vertical-align: middle;
+  color: #141414;
+  margin-top: 12px;
+  margin-left: 12px;
+}
+
+.uploadBox {
+  height: 211px;
+  border: 1px dashed #494949;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.uploadBoxDragging {
+  border-color: #1d3a6b;
+  background: #f1f7ff;
+}
+
+.uploadContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.uploadText {
+  font-size: 14px;
+  letter-spacing: 0.8px;
+  color: #141414;
+  text-align: center;
+}
+
+.uploadSubtext {
+  font-size: 12px;
+  color: #494949;
+}
+
+.warning {
+  height: 56px;
+  background: #f9efe6;
+  border: 1px solid #e4b78a;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 14px;
+  letter-spacing: 0.8px;
+  color: #141414;
+}
+
+.summaryRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.summaryCard {
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid transparent;
+}
+
+.summaryCardNew {
+  background: #e9f6ef;
+  border-color: #b9e0cb;
+  color: #1f6b3a;
+}
+
+.summaryCardUpdated {
+  background: #f9f0e3;
+  border-color: #e2c6a1;
+  color: #8a5b2d;
+}
+
+.summaryHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  letter-spacing: 0.6px;
+}
+
+.summaryIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.summaryCount {
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.detailSection {
+  display: flex;
+  background: #ecf3f3;
+  border: 1px solid #d7e6e2;
+  border-radius: 8px;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.detailCard {
+  background: #ffffff;
+  border: 1px solid #d7e6e2;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+@media (max-width: 900px) {
+  .modal {
+    width: 100%;
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .summaryRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .modal {
+    max-height: 92vh;
+    border-radius: 10px;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .header h2 {
+    font-size: 24px;
+  }
+
+  .body {
+    max-height: 60vh;
+  }
+
+  .uploadBox {
+    height: 170px;
+  }
+
+  .warning {
+    height: auto;
+  }
+}
+
+.detailList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detailBadge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+}
+
+.detailBadgeNew {
+  background: #dff1e6;
+  color: #1f6b3a;
+}
+
+.detailBadgeUpdated {
+  background: #f4e7d6;
+  color: #8a5b2d;
+}
+
+.detailName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #141414;
+}
+
+.detailMeta {
+  font-size: 14px;
+  color: #494949;
+}
+
+.detailDivider {
+  height: 1px;
+  background: #d7e6e2;
+  margin-top: 8px;
+}
+
+.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  color: #991b1b;
+}
+
+.success {
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  color: #065f46;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cancel {
+  width: 92px;
+  height: 48px;
+  border: 1px solid #a40026;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #a40026;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.continue {
+  width: 112px;
+  height: 48px;
+  background: #1d3a6b;
+  border-radius: 8px;
+  border: none;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.continue:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.uploadIcon {
+  width: 48px;
+  height: 48px;
+  filter: invert(0.75);
+}
+
+.uploadBoxError {
+  background: #f6e6e9;
+  border: 1px dashed #a40026;
+}
+
+.uploadBoxSuccess {
+  background: #e6f2ec;
+  border: 1px dashed #8ac4a7;
+}
+
+.errorText {
+  color: #a40026;
+  font-size: 14px;
+  letter-spacing: 0.8px;
+  text-align: center;
+}
+
+.successText {
+  color: #141414;
+  font-size: 14px;
+  letter-spacing: 0.8px;
+  text-align: center;
+}

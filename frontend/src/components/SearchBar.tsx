@@ -37,7 +37,7 @@ export default function SearchBar({
   selectedVolunteerType,
   setSelectedVolunteerType,
 }: SearchBarProps) {
-  const [tagSearch, setTagSearch] = useState<string | undefined>();
+  const [tagSearch, setTagSearch] = useState("");
   const [open, setOpen] = useState<"event" | "status" | "volunteerType" | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
@@ -128,7 +128,7 @@ export default function SearchBar({
           <div className={styles.inputField}>
             <span className={styles.ic_search}>
               <Image
-                src="/Union.svg"
+                src={unionIcon}
                 alt="Union logo"
                 className={styles.union}
                 width={24}
@@ -148,7 +148,7 @@ export default function SearchBar({
 
         <div className={styles.dropdownItemContainer}>
           {items
-            .filter((item) => item.toLowerCase().includes(tagSearch?.toLowerCase() || ""))
+            .filter((item) => item.toLowerCase().includes(tagSearch.toLowerCase()))
             .map((item) => (
               <div
                 key={item}

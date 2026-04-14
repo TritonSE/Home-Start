@@ -1,10 +1,12 @@
-import { auth } from "@/firebase/firebase";
-import { Volunteer, VolunteerTag } from "@/types/volunteer";
 import { onAuthStateChanged } from "firebase/auth";
+
+import type { Volunteer, VolunteerTag } from "@/types/volunteer";
+
+import { auth } from "@/firebase/firebase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-function waitForAuth(): Promise<string> {
+async function waitForAuth(): Promise<string> {
   return new Promise((resolve, reject) => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       unsubscribe();
@@ -21,6 +23,25 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   const token = await waitForAuth();
   return { Authorization: `Bearer ${token}` };
 }
+
+type APIErrorBody = {
+  error?: string;
+};
+
+type VolunteerParseCsvDTO = {
+  wouldCreateCount: number;
+  wouldUpdateCount: number;
+  wouldCreate: string[];
+  wouldUpdate: string[];
+  total: number;
+  volunteerInfo: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    tags?: string[];
+  }[];
+};
 
 const toVolunteerTag = (tag: unknown): VolunteerTag | null => {
   if (!tag || typeof tag !== "object") {
@@ -67,56 +88,57 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
 };
 
 export async function fetchVolunteers(): Promise<Volunteer[]> {
+  const headers = await getAuthHeaders();
+
+  let response: Response;
   try {
-    const headers = await getAuthHeaders();
-
-    let response: Response;
-    try {
-      response = await fetch(`${API_URL}/api/volunteer`, {
-        headers,
-      });
-    } catch (fetchError) {
-      console.error("Fetch network error:", fetchError);
-      throw new Error(`Network error during fetch: ${fetchError}`);
-    }
-
-    if (!response.ok) {
-      let backendMessage = "";
-      try {
-        const errorBody = await response.json();
-        backendMessage = typeof errorBody?.error === "string" ? errorBody.error : "";
-      } catch {
-        backendMessage = "";
-      }
-
-      throw new Error(
-        `Failed to fetch volunteers: ${response.status} ${response.statusText}${backendMessage ? ` - ${backendMessage}` : ""}`,
-      );
-    }
-
-    const data = await response.json();
-
-    if (!Array.isArray(data)) {
-      throw new Error(`Expected array but got ${typeof data}`);
-    }
-
-    data.forEach((volunteer, index) => {
-      if (
-        !volunteer._id ||
-        !volunteer.firstName ||
-        !volunteer.lastName ||
-        !volunteer.email ||
-        !volunteer.phoneNumber
-      ) {
-        console.warn(`Volunteer at index ${index} has missing fields:`, volunteer);
-      }
+    response = await fetch(`${API_URL}/api/volunteer`, {
+      headers,
     });
-
-    const typedData: Volunteer[] = data.map(normalizeVolunteer);
-    return typedData;
-  } catch (error) {
-    throw error;
+  } catch (fetchError) {
+    console.error("Fetch network error:", fetchError);
+    const fetchErrorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
+    throw new Error(`Network error during fetch: ${fetchErrorMessage}`);
   }
+
+  if (!response.ok) {
+    let backendMessage = "";
+    try {
+      const errorBody: unknown = await response.json();
+      if (errorBody && typeof errorBody === "object") {
+        const body = errorBody as APIErrorBody;
+        backendMessage = typeof body.error === "string" ? body.error : "";
+      }
+    } catch {
+      backendMessage = "";
+    }
+
+    throw new Error(
+      `Failed to fetch volunteers: ${response.status} ${response.statusText}${backendMessage ? ` - ${backendMessage}` : ""}`,
+    );
+  }
+
+  const data: unknown = await response.json();
+
+  if (!Array.isArray(data)) {
+    throw new TypeError(`Expected array but got ${typeof data}`);
+  }
+
+  data.forEach((volunteer, index) => {
+    const normalized = normalizeVolunteer(volunteer);
+    if (
+      !normalized._id ||
+      !normalized.firstName ||
+      !normalized.lastName ||
+      !normalized.email ||
+      !normalized.phoneNumber
+    ) {
+      console.warn(`Volunteer at index ${index} has missing fields:`, volunteer);
+    }
+  });
+
+  const typedData: Volunteer[] = data.map(normalizeVolunteer);
+  return typedData;
 }
 
 export type VolunteerCsvParseResult = {
@@ -157,30 +179,59 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
       };
     }
 
-    const data = await response.json();
+    const data: unknown = await response.json();
+    if (!data || typeof data !== "object") {
+      return { ok: false, error: "Unexpected parse-csv response format" };
+    }
+
+    const parsed = data as Partial<VolunteerParseCsvDTO>;
+    if (
+      typeof parsed.wouldCreateCount !== "number" ||
+      typeof parsed.wouldUpdateCount !== "number" ||
+      !Array.isArray(parsed.wouldCreate) ||
+      !Array.isArray(parsed.wouldUpdate) ||
+      typeof parsed.total !== "number"
+    ) {
+      return { ok: false, error: "Unexpected parse-csv response format" };
+    }
+
+    const volunteerInfo = Array.isArray(parsed.volunteerInfo) ? parsed.volunteerInfo : [];
     const result: VolunteerCsvParseResult = {
-      wouldCreateCount: data.wouldCreateCount,
-      wouldUpdateCount: data.wouldUpdateCount,
-      wouldCreate: data.wouldCreate,
-      wouldUpdate: data.wouldUpdate,
-      totalCount: data.total,
-      volunteerInfo: Array.isArray(data.volunteerInfo)
-        ? data.volunteerInfo.map(
-            (item: {
-              firstName: string;
-              lastName: string;
-              email: string;
-              phoneNumber: string;
-              tags?: string[];
-            }) => ({
-              firstName: item.firstName,
-              lastName: item.lastName,
-              email: item.email,
-              phoneNumber: item.phoneNumber,
-              tags: item.tags,
-            }),
-          )
-        : [],
+      wouldCreateCount: parsed.wouldCreateCount,
+      wouldUpdateCount: parsed.wouldUpdateCount,
+      wouldCreate: parsed.wouldCreate.filter((value): value is string => typeof value === "string"),
+      wouldUpdate: parsed.wouldUpdate.filter((value): value is string => typeof value === "string"),
+      totalCount: parsed.total,
+      volunteerInfo: volunteerInfo
+        .filter((item): item is VolunteerParseCsvDTO["volunteerInfo"][number] => {
+          if (!item || typeof item !== "object") {
+            return false;
+          }
+          const row = item as Partial<VolunteerParseCsvDTO["volunteerInfo"][number]>;
+          return (
+            typeof row.firstName === "string" &&
+            typeof row.lastName === "string" &&
+            typeof row.email === "string" &&
+            typeof row.phoneNumber === "string"
+          );
+        })
+        .map(
+          (item: {
+            firstName: string;
+            lastName: string;
+            email: string;
+            phoneNumber: string;
+            tags?: string[];
+          }) => ({
+            firstName: item.firstName,
+            lastName: item.lastName,
+            email: item.email,
+            phoneNumber: item.phoneNumber,
+            tags: Array.isArray(item.tags)
+              ? item.tags.filter((tag): tag is string => typeof tag === "string")
+              : undefined,
+          }),
+        ),
     };
     return { ok: true, data: result };
   } catch (error) {

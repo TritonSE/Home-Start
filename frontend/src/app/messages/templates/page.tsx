@@ -1,17 +1,25 @@
 "use client";
 
-import styles from "./page.module.css";
-import icAdd from "../../../../public/ic_add.svg";
-import icCaretLeft from "../../../../public/ic_caretleft.svg";
+import { join } from "node:path";
+
 import Image from "next/image";
-import { useState, useEffect } from "react";
-import { deleteTemplate, getTemplates, Template } from "@/app/api/template";
-import { TemplateList } from "@/components/TemplateList";
 import { usePathname, useRouter } from "next/navigation";
-import { join } from "path";
+import { useEffect, useState } from "react";
+
+import styles from "./page.module.css";
+
+import type { Template } from "@/app/api/template";
+
+import { deleteTemplate, getTemplates } from "@/app/api/template";
+import icAddAsset from "@/assets/ic_add.svg";
+import icCaretLeftAsset from "@/assets/ic_caretleft.svg";
 import Sidebar from "@/components/Sidebar";
 import TemplateActionPopup from "@/components/TemplateActionPopup";
+import { TemplateList } from "@/components/TemplateList";
 import { TemplatePreview } from "@/components/TemplatePreview";
+
+const icAdd = icAddAsset as string;
+const icCaretLeft = icCaretLeftAsset as string;
 
 export default function TemplatePage() {
   const router = useRouter();
@@ -80,13 +88,13 @@ export default function TemplatePage() {
     <Sidebar>
       <div className={styles.page}>
         <header className={styles.header}>
-          <Image src={icCaretLeft} alt="" onClick={handleBackClicked} />
+          <Image src={icCaretLeft} alt="" width={40} height={40} onClick={handleBackClicked} />
           <h1 className={styles.headerTitle}>Templates</h1>
           {previewTemplate ? (
             <span style={{ height: "40px", width: "40px" }}></span>
           ) : (
             <div className={styles.plusCircle} onClick={handleAddTemplateClicked}>
-              <Image src={icAdd} alt="" />
+              <Image src={icAdd} alt="" width={24} height={24} />
             </div>
           )}
         </header>

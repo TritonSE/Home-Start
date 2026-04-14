@@ -1,4 +1,6 @@
-import { APIResult, del, get, handleAPIError, post, put } from "./requests";
+import { del, get, handleAPIError, post, put } from "./requests";
+
+import type { APIResult } from "./requests";
 
 export type Template = {
   _id: string;
@@ -8,15 +10,71 @@ export type Template = {
   subject?: string;
 };
 
+type TemplateResponse = {
+  _id: string;
+  title: string;
+  message: string;
+  type: string;
+  subject?: string;
+};
+
+type APIErrorBody = {
+  error?: string;
+  message?: string;
+};
+
+function isTemplateResponse(value: unknown): value is TemplateResponse {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Partial<TemplateResponse>;
+  return (
+    typeof candidate._id === "string" &&
+    typeof candidate.title === "string" &&
+    typeof candidate.message === "string" &&
+    typeof candidate.type === "string"
+  );
+}
+
+function toTemplate(value: TemplateResponse): Template {
+  return {
+    _id: value._id,
+    title: value.title,
+    message: value.message,
+    type: value.type,
+    subject: value.subject,
+  };
+}
+
+async function readErrorMessage(response: Response): Promise<string> {
+  const body: unknown = await response.json();
+  if (!body || typeof body !== "object") {
+    return "Request failed";
+  }
+
+  const errorBody = body as APIErrorBody;
+  if (typeof errorBody.error === "string") {
+    return errorBody.error;
+  }
+  if (typeof errorBody.message === "string") {
+    return errorBody.message;
+  }
+  return "Request failed";
+}
+
 export const getTemplate = async (templateId: string): Promise<APIResult<Template>> => {
   try {
     const response = await get(`/api/template/${templateId}`);
     if (response.ok) {
-      const template = await response.json();
+      const templateJson: unknown = await response.json();
+      if (!isTemplateResponse(templateJson)) {
+        return { success: false, error: "Unexpected template response format" };
+      }
 
-      return { success: true, data: template };
+      return { success: true, data: toTemplate(templateJson) };
     } else {
-      return { success: false, error: (await response.json()).error };
+      return { success: false, error: await readErrorMessage(response) };
     }
   } catch (err) {
     return handleAPIError(err);
@@ -27,11 +85,16 @@ export const getTemplates = async (): Promise<APIResult<Template[]>> => {
   try {
     const response = await get(`/api/template`);
     if (response.ok) {
-      const templates: Template[] = await response.json();
+      const templatesJson: unknown = await response.json();
+      if (!Array.isArray(templatesJson)) {
+        return { success: false, error: "Unexpected templates response format" };
+      }
+
+      const templates = templatesJson.filter(isTemplateResponse).map(toTemplate);
 
       return { success: true, data: templates };
     } else {
-      return { success: false, error: (await response.json()).error };
+      return { success: false, error: await readErrorMessage(response) };
     }
   } catch (err) {
     return handleAPIError(err);
@@ -51,10 +114,14 @@ export const createTemplate = async (
   try {
     const response = await post(`/api/template`, templateObj);
     if (response.ok) {
-      const data = (await response.json()) as Template;
-      return { success: true, data };
+      const data: unknown = await response.json();
+      if (!isTemplateResponse(data)) {
+        return { success: false, error: "Unexpected template response format" };
+      }
+
+      return { success: true, data: toTemplate(data) };
     } else {
-      return { success: false, error: (await response.json()).error };
+      return { success: false, error: await readErrorMessage(response) };
     }
   } catch (err) {
     return handleAPIError(err);
@@ -68,10 +135,14 @@ export const updateTemplate = async (
   try {
     const response = await put(`/api/template/${templateId}`, templateObj);
     if (response.ok) {
-      const data = (await response.json()) as Template;
-      return { success: true, data };
+      const data: unknown = await response.json();
+      if (!isTemplateResponse(data)) {
+        return { success: false, error: "Unexpected template response format" };
+      }
+
+      return { success: true, data: toTemplate(data) };
     } else {
-      return { success: false, error: (await response.json()).error };
+      return { success: false, error: await readErrorMessage(response) };
     }
   } catch (err) {
     return handleAPIError(err);
@@ -82,10 +153,19 @@ export const deleteTemplate = async (templateId: string): Promise<APIResult<stri
   try {
     const response = await del(`/api/template/${templateId}`);
     if (response.ok) {
-      const data = await response.json();
-      return { success: true, data: data.message };
+      const data: unknown = await response.json();
+      if (!data || typeof data !== "object") {
+        return { success: false, error: "Unexpected delete template response format" };
+      }
+
+      const message = (data as APIErrorBody).message;
+      if (typeof message !== "string") {
+        return { success: false, error: "Unexpected delete template response format" };
+      }
+
+      return { success: true, data: message };
     } else {
-      return { success: false, error: (await response.json()).error };
+      return { success: false, error: await readErrorMessage(response) };
     }
   } catch (err) {
     return handleAPIError(err);

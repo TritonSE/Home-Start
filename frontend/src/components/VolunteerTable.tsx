@@ -1,11 +1,13 @@
 "use client";
-import { Volunteer } from "../types/volunteer";
-import styles from "./VolunteerTable.module.css";
 import { useState } from "react";
 
-interface VolunteerTableProps {
+import styles from "./VolunteerTable.module.css";
+
+import type { Volunteer } from "../types/volunteer";
+
+type VolunteerTableProps = {
   volunteers: Volunteer[];
-}
+};
 
 export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());

@@ -4,6 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./TemplateCreate.module.css";
 
 import { getTemplate } from "@/app/api/template";
+import bluePlusAsset from "@/assets/blue_plus.svg";
+import mdiInfoAsset from "@/assets/mdi_information.svg";
+
+const bluePlus = bluePlusAsset as string;
+const mdiInfo = mdiInfoAsset as string;
 
 type TemplateCreateProps = {
   onSave: (title: string, message: string, type: string) => void;
@@ -86,18 +91,12 @@ export function TemplateCreate({ onSave, templateId }: TemplateCreateProps) {
               insertText("[First Name]");
             }}
           >
-            <Image src="/blue_plus.svg" alt="" width={16} height={16} />
+            <Image src={bluePlus} alt="" width={16} height={16} />
             Insert First Name
           </button>
 
           <div className={styles.helper}>
-            <Image
-              src="/mdi_information.svg"
-              alt=""
-              className={styles.helperIcon}
-              width={16}
-              height={16}
-            />
+            <Image src={mdiInfo} alt="" className={styles.helperIcon} width={16} height={16} />
             <span className={styles.bottomText}>
               Tap the button to insert a volunteer{"'"}s name wherever you want it to appear.
             </span>

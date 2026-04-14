@@ -5,6 +5,18 @@ import { parseVolunteersCsv, uploadVolunteerBatch } from "../app/api/volunteer";
 
 import styles from "./ImportVolunteerModal.module.css";
 
+import icErrorAsset from "@/assets/ic_error.svg";
+import icNewAsset from "@/assets/ic_new.svg";
+import icSuccessAsset from "@/assets/ic_success.svg";
+import icWarningAsset from "@/assets/ic_warning.svg";
+import uploadIconAsset from "@/assets/upload.svg";
+
+const icError = icErrorAsset as string;
+const icNew = icNewAsset as string;
+const icSuccess = icSuccessAsset as string;
+const icWarning = icWarningAsset as string;
+const uploadIcon = uploadIconAsset as string;
+
 type ImportVolunteerModalProps = {
   onClose: () => void;
   onComplete: () => void;
@@ -163,7 +175,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                     <input type="file" accept=".csv" hidden onChange={handleFileChange} />
                     <div className={styles.uploadContent}>
                       <Image
-                        src="/upload.svg"
+                        src={uploadIcon}
                         alt="Upload icon"
                         className={styles.uploadIcon}
                         width={24}
@@ -178,7 +190,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
 
                   <div className={styles.warning}>
                     <Image
-                      src="/ic_warning.svg"
+                      src={icWarning}
                       alt="Warning icon"
                       className={styles.warningIcon}
                       width={24}
@@ -193,7 +205,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                 <div className={`${styles.uploadBox} ${styles.uploadBoxError}`}>
                   <div className={styles.uploadContent}>
                     <Image
-                      src="/ic_error.svg"
+                      src={icError}
                       alt="Error icon"
                       className={styles.errorIcon}
                       width={24}
@@ -211,7 +223,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                 <div className={`${styles.uploadBox} ${styles.uploadBoxSuccess}`}>
                   <div className={styles.uploadContent}>
                     <Image
-                      src="/ic_success.svg"
+                      src={icSuccess}
                       alt="Success icon"
                       className={styles.successIcon}
                       width={24}
@@ -230,7 +242,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                 <div className={`${styles.summaryCard} ${styles.summaryCardNew}`}>
                   <div className={styles.summaryHeader}>
                     <Image
-                      src="/ic_success.svg"
+                      src={icSuccess}
                       alt="Success icon"
                       className={styles.summaryIcon}
                       width={24}
@@ -243,7 +255,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                 <div className={`${styles.summaryCard} ${styles.summaryCardUpdated}`}>
                   <div className={styles.summaryHeader}>
                     <Image
-                      src="/ic_new.svg"
+                      src={icNew}
                       alt="New icon"
                       className={styles.summaryIcon}
                       width={24}

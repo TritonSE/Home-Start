@@ -7,9 +7,12 @@ import { useState } from "react";
 import styles from "./page.module.css";
 
 import { createTemplate } from "@/app/api/template";
+import icCaretLeftAsset from "@/assets/ic_caretleft.svg";
 import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 import { TemplateCreate } from "@/components/TemplateCreate";
+
+const icCaretLeft = icCaretLeftAsset as string;
 
 export default function CreateTemplatePage() {
   const router = useRouter();
@@ -49,13 +52,7 @@ export default function CreateTemplatePage() {
           onDone={onToastDone}
         />
         <header className={styles.header}>
-          <Image
-            src="/ic_caretleft.svg"
-            alt=""
-            width={40}
-            height={40}
-            onClick={() => router.back()}
-          />
+          <Image src={icCaretLeft} alt="" width={40} height={40} onClick={() => router.back()} />
           <h1 className={styles.headerTitle}>Compose Template</h1>
           <span style={{ height: "40px" }}></span>
         </header>

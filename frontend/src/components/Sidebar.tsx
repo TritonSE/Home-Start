@@ -9,15 +9,25 @@ import layoutStyles from "../app/layout.module.css";
 
 import styles from "./Sidebar.module.css";
 
+import icCommunicationAsset from "@/assets/ic_communication.svg";
+import icDashboardAsset from "@/assets/ic_dashboard.svg";
+import icVolunteersAsset from "@/assets/ic_volunteers.svg";
+import mainVerticalAsset from "@/assets/Main Vertical USE 1.svg";
+
+const icDashboard = icDashboardAsset as string;
+const icCommunication = icCommunicationAsset as string;
+const mainVertical = mainVerticalAsset as string;
+const icVolunteers = icVolunteersAsset as string;
+
 const openSans = Open_Sans({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 });
 
 const NAV = [
-  { label: "Dashboard", href: "/dashboard", icon: "/ic_dashboard.svg" },
-  { label: "Communication", href: "/communication", icon: "/ic_communication.svg" },
-  { label: "Volunteers", href: "/volunteers", icon: "/ic_volunteers.svg" },
+  { label: "Dashboard", href: "/dashboard", icon: icDashboard },
+  { label: "Communication", href: "/communication", icon: icCommunication },
+  { label: "Volunteers", href: "/volunteers", icon: icVolunteers },
 ] as const;
 
 export default function Sidebar({ children }: { children: React.ReactNode }) {
@@ -28,11 +38,12 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
       <aside className={`${styles.sidebar} ${openSans.className}`}>
         <div className={styles.logoWrap}>
           <Image
-            src="/Main Vertical USE 1.svg"
+            src={mainVertical}
             alt="Home Start"
             className={styles.logo}
             width={100}
             height={100}
+            loading="eager"
           />
         </div>
 

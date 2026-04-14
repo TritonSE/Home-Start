@@ -4,6 +4,10 @@ import Image from "next/image";
 
 import styles from "./PageBar.module.css";
 
+import caretIconAsset from "@/assets/caret.svg";
+
+const caretIcon = caretIconAsset as string;
+
 type PageBarProps = {
   totalItems: number;
   currentPage: number;
@@ -51,7 +55,7 @@ export default function PageBar({
         <div className={styles.previous} onClick={() => onPageChange(Math.max(1, currentPage - 1))}>
           <div className={styles.ic_container}>
             <Image
-              src="/caret.svg"
+              src={caretIcon}
               alt="Caret Left"
               className={styles.caretIconLeft}
               width={24}
@@ -78,7 +82,7 @@ export default function PageBar({
         >
           <div className={styles.ic_container}>
             <Image
-              src="/caret.svg"
+              src={caretIcon}
               alt="Caret Right"
               className={styles.caretIconRight}
               width={24}

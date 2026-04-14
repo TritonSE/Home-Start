@@ -123,7 +123,7 @@ export default function Page() {
             <div className={styles.importSuccessBanner}>
               <div className={styles.importSuccessContent}>
                 <Image
-                  src="/success.svg"
+                  src={"/ic_success.svg"}
                   alt="Success"
                   className={styles.importSuccessIcon}
                   width={24}

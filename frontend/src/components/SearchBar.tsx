@@ -5,6 +5,12 @@ import { useEffect, useRef, useState } from "react";
 
 import styles from "./SearchBar.module.css";
 
+import checkboxIconAsset from "@/assets/Checkbox.svg";
+import unionIconAsset from "@/assets/Union.svg";
+
+const checkboxIcon = checkboxIconAsset as string;
+const unionIcon = unionIconAsset as string;
+
 type SearchBarProps = {
   search: string;
   setSearch: (value: string) => void;
@@ -95,7 +101,7 @@ export default function SearchBar({
         <div className={styles.inputField}>
           <span className={styles.ic_search}>
             <Image
-              src="/Union.svg"
+              src={unionIcon}
               alt="Union logo"
               className={styles.union}
               width={24}
@@ -128,7 +134,7 @@ export default function SearchBar({
                 >
                   {selected.has(item) && (
                     <Image
-                      src="/Checkbox.svg"
+                      src={checkboxIcon}
                       alt="checked"
                       className={styles.checkIcon}
                       width={16}
@@ -150,7 +156,7 @@ export default function SearchBar({
         <div className={styles.inputField}>
           <span className={styles.ic_search}>
             <Image
-              src="/Union.svg"
+              src={unionIcon}
               alt="Union logo"
               className={styles.union}
               width={24}

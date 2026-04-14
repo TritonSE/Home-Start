@@ -3,6 +3,10 @@ import { useState } from "react";
 
 import styles from "./TemplateActionPopup.module.css";
 
+import icCloseAsset from "@/assets/ic_close.svg";
+
+const icClose = icCloseAsset as string;
+
 type TemplateActionPopupProps = {
   templateTitle?: string;
   open: boolean;
@@ -36,7 +40,7 @@ export default function TemplateActionPopup({
           <div className={styles.content}>
             <div className={styles.popupHeader}>
               <span className={styles.text}>{templateTitle}</span>
-              <Image src="/ic_close.svg" alt="" width={24} height={24} onClick={onClose} />
+              <Image src={icClose} alt="" width={24} height={24} onClick={onClose} />
             </div>
 
             <button className={styles.editBtn} onClick={onEdit}>

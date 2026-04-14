@@ -63,6 +63,10 @@ const toVolunteerTag = (tag: unknown): VolunteerTag | null => {
   };
 };
 
+const normalizeVolunteerStatus = (status: unknown): Volunteer["status"] => {
+  return status === "returning" ? "returning" : "new";
+};
+
 const normalizeVolunteer = (volunteer: unknown): Volunteer => {
   const source = (volunteer ?? {}) as Partial<Volunteer> & {
     tags?: unknown;
@@ -79,6 +83,7 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
     email: String(source.email ?? ""),
     phoneNumber: String(source.phoneNumber ?? ""),
     tags,
+    status: normalizeVolunteerStatus(source.status),
   };
 };
 

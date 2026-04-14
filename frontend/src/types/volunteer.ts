@@ -13,4 +13,5 @@ export type Volunteer = {
   email: string;
   phoneNumber: string;
   tags: VolunteerTag[];
+  status: "new" | "returning";
 };

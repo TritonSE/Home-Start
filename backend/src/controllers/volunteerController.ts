@@ -174,9 +174,13 @@ export const assignTagsToVolunteer: RequestHandler = async (req, res, next) => {
     validationErrorParser(errors);
 
     const { tags } = req.body as AssignTagsBody;
-    const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
-      $addToSet: { tags: { $each: tags } },
-    }).populate(defaultPopulateConfig);
+    const volunteer = await VolunteerModel.findByIdAndUpdate(
+      volunteerId,
+      {
+        $addToSet: { tags: { $each: tags } },
+      },
+      { new: true },
+    ).populate(defaultPopulateConfig);
 
     if (!volunteer) {
       throw createError(404, "Could not find volunteer");
@@ -200,9 +204,13 @@ export const removeTagsFromVolunteer: RequestHandler = async (req, res, next) =>
     validationErrorParser(errors);
 
     const { tags } = req.body as RemoveTagsFromVolunteerBody;
-    const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
-      $pullAll: { tags },
-    }).populate(defaultPopulateConfig);
+    const volunteer = await VolunteerModel.findByIdAndUpdate(
+      volunteerId,
+      {
+        $pullAll: { tags },
+      },
+      { new: true },
+    ).populate(defaultPopulateConfig);
 
     if (!volunteer) {
       throw createError(404, "Could not find volunteer");
@@ -232,6 +240,17 @@ type UpdateVolunteerOp = {
   u: {
     $set: CreateVolunteerBody;
   };
+};
+
+const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
+  const { tags, ...rest } = body;
+  const temp = {
+    ...rest,
+    ...(tags && {
+      tags: tags.map((id) => new Types.ObjectId(id)),
+    }),
+  };
+  return temp;
 };
 
 export const uploadVolunteerBatch: RequestHandler<
@@ -298,17 +317,6 @@ const validateVolunteer = (volunteer: unknown) => {
     return false;
   }
   return true;
-};
-
-const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
-  const { tags, ...rest } = body;
-  const temp = {
-    ...rest,
-    ...(tags && {
-      tags: tags.map((id) => new Types.ObjectId(id)),
-    }),
-  };
-  return temp;
 };
 
 const statusKeyToEnum = (key: string): string => {

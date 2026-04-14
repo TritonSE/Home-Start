@@ -1,5 +1,7 @@
 import { onAuthStateChanged } from "firebase/auth";
 
+import type { VolunteerTag } from "@/types/volunteer";
+
 import { auth } from "@/firebase/firebase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -12,11 +14,11 @@ type TagDTO = {
 };
 
 function isTagDTO(value: unknown): value is TagDTO {
-  if (!value || typeof value !== "object") {
+  if (typeof value !== "object" || value === null) {
     return false;
   }
 
-  const candidate = value as Partial<TagDTO>;
+  const candidate = value as Record<string, unknown>;
   return (
     typeof candidate._id === "string" &&
     typeof candidate.name === "string" &&
@@ -43,9 +45,7 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   return { Authorization: `Bearer ${token}` };
 }
 
-export async function fetchTags(): Promise<
-  { id: string; name: string; color: string; type: string }[]
-> {
+export async function fetchTags(): Promise<VolunteerTag[]> {
   try {
     const headers = await getAuthHeaders();
 
@@ -60,13 +60,18 @@ export async function fetchTags(): Promise<
     if (!Array.isArray(data)) {
       throw new TypeError("Unexpected response format: expected an array of tags");
     }
+    return data.map((tag, index) => {
+      if (!isTagDTO(tag)) {
+        throw new TypeError(`Unexpected tag format at index ${index}`);
+      }
 
-    return data.filter(isTagDTO).map((tag) => ({
-      id: tag._id,
-      name: tag.name,
-      color: tag.color,
-      type: tag.type,
-    }));
+      return {
+        _id: tag._id,
+        name: tag.name,
+        color: tag.color,
+        type: tag.type,
+      };
+    });
   } catch (error) {
     console.error("Error fetching tags:", error);
     throw error instanceof Error

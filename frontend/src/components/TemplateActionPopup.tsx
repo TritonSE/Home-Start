@@ -1,7 +1,11 @@
-import { useState } from "react";
-import styles from "./TemplateActionPopup.module.css";
 import Image from "next/image";
-import icClose from "@/assets/ic_close.svg";
+import { useState } from "react";
+
+import styles from "./TemplateActionPopup.module.css";
+
+import icCloseAsset from "@/assets/ic_close.svg";
+
+const icClose = icCloseAsset as string;
 
 type TemplateActionPopupProps = {
   templateTitle?: string;

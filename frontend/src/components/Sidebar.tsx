@@ -1,15 +1,19 @@
 "use client";
 
+import { Open_Sans } from "next/font/google";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Open_Sans } from "next/font/google";
-import icDashboard from "@/assets/ic_dashboard.svg";
-import icCommunication from "@/assets/ic_dashboard.svg";
-import icVolunteers from "@/assets/ic_dashboard.svg";
-import mainVertical from "@/assets/Main Vertical USE 1.svg";
-import styles from "./Sidebar.module.css";
+
 import layoutStyles from "../app/layout.module.css";
-import Image from "next/image";
+
+import styles from "./Sidebar.module.css";
+
+import icDashboardAsset from "@/assets/ic_dashboard.svg";
+import mainVerticalAsset from "@/assets/Main Vertical USE 1.svg";
+
+const icDashboard = icDashboardAsset as string;
+const mainVertical = mainVerticalAsset as string;
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -18,8 +22,8 @@ const openSans = Open_Sans({
 
 const NAV = [
   { label: "Dashboard", href: "/dashboard", icon: icDashboard },
-  { label: "Communication", href: "/communication", icon: icCommunication },
-  { label: "Volunteers", href: "/volunteers", icon: icVolunteers },
+  { label: "Communication", href: "/communication", icon: icDashboard },
+  { label: "Volunteers", href: "/volunteers", icon: icDashboard },
 ] as const;
 
 export default function Sidebar({ children }: { children: React.ReactNode }) {
@@ -41,7 +45,7 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
 
         <nav className={styles.nav}>
           {NAV.map((item) => {
-            const active = pathname === item.href || pathname.startsWith(item.href + "/");
+            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
             return (
               <Link

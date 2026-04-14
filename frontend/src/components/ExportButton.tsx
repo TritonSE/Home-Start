@@ -1,6 +1,10 @@
-import styles from "./CSVButton.module.css";
 import Image from "next/image";
-import uploadBlue from "@/assets/upload_blue.svg";
+
+import styles from "./CSVButton.module.css";
+
+import uploadBlueAsset from "@/assets/upload_blue.svg";
+
+const uploadBlue = uploadBlueAsset as string;
 
 export default function ExportButton() {
   return (

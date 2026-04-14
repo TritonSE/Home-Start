@@ -1,16 +1,18 @@
 "use client";
 
-import { Volunteer } from "@/types/volunteer";
-import { fetchVolunteers } from "@/app/api/volunteer";
-import VolunteerTable from "@/components/VolunteerTable";
-import TitleBar from "@/components/TitleBar";
-import SearchBar from "@/components/SearchBar";
-import PageBar from "@/components/PageBar";
-import styles from "../page.module.css";
-import Sidebar from "@/components/Sidebar";
 import Image from "next/image";
-import { useState, useEffect } from "react";
-import successSvg from "@/assets/success.svg";
+import { useEffect, useState } from "react";
+
+import styles from "../page.module.css";
+
+import type { Volunteer } from "@/types/volunteer";
+
+import { fetchVolunteers } from "@/app/api/volunteer";
+import PageBar from "@/components/PageBar";
+import SearchBar from "@/components/SearchBar";
+import Sidebar from "@/components/Sidebar";
+import TitleBar from "@/components/TitleBar";
+import VolunteerTable from "@/components/VolunteerTable";
 
 export default function Page() {
   // Data state
@@ -109,7 +111,7 @@ export default function Page() {
   const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
 
   const handleImportComplete = () => {
-    loadVolunteers();
+    void loadVolunteers();
     setShowImportSuccess(true);
   };
 
@@ -121,7 +123,7 @@ export default function Page() {
             <div className={styles.importSuccessBanner}>
               <div className={styles.importSuccessContent}>
                 <Image
-                  src={successSvg}
+                  src={"/ic_success.svg"}
                   alt="Success"
                   className={styles.importSuccessIcon}
                   width={24}

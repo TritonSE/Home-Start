@@ -1,12 +1,17 @@
 "use client";
 
-import styles from "./SearchBar.module.css";
-import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import unionIcon from "@/assets/Union.svg";
-import checkboxIcon from "@/assets/Checkbox.svg";
+import { useEffect, useRef, useState } from "react";
 
-interface SearchBarProps {
+import styles from "./SearchBar.module.css";
+
+import checkboxIconAsset from "@/assets/Checkbox.svg";
+import unionIconAsset from "@/assets/Union.svg";
+
+const checkboxIcon = checkboxIconAsset as string;
+const unionIcon = unionIconAsset as string;
+
+type SearchBarProps = {
   search: string;
   setSearch: (value: string) => void;
   tags: string[];
@@ -16,7 +21,7 @@ interface SearchBarProps {
   setSelectedStatus: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   selectedVolunteerType: Set<string>;
   setSelectedVolunteerType: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
-}
+};
 
 export default function SearchBar({
   search,

@@ -1,17 +1,15 @@
 "use client";
-import styles from "./page.module.css";
-import icMessage from "@/assets/ic_message.svg";
-import mail from "@/assets/mail.svg";
-import importExport from "@/assets/ion_document.svg";
-import icCaretRight from "@/assets/chevron_backward.svg";
-import Link from "next/link";
-import Image from "next/image";
-import LogoutButton from "@/components/LogoutButton";
-import { useState } from "react";
-import LogoutModal from "@/components/LogoutModal";
 import { signOut } from "firebase/auth";
-import { auth } from "@/firebase/firebase";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+
+import styles from "./page.module.css";
+
+import LogoutButton from "@/components/LogoutButton";
+import LogoutModal from "@/components/LogoutModal";
 import Sidebar from "@/components/Sidebar";
+import { auth } from "@/firebase/firebase";
 
 export default function Dashboard() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -21,19 +19,19 @@ export default function Dashboard() {
       href: "some-route",
       majorText: "Send Text",
       minorText: "Reach volunteers instantly via SMS",
-      icon: icMessage,
+      icon: "/ic_message.svg",
     },
     {
       href: "some-route2",
       majorText: "Send Email",
       minorText: "Send detailed announcements",
-      icon: mail,
+      icon: "/mail.svg",
     },
     {
       href: "/volunteers",
       majorText: "Import/Export data",
       minorText: "Manage volunteer information",
-      icon: importExport,
+      icon: "/ion_document.svg",
     },
   ] as const;
 
@@ -67,10 +65,10 @@ export default function Dashboard() {
                 >
                   <div className={styles.frame1}>
                     <div className={styles.iconFrame}>
-                      <Image src={card.icon} alt="" />
+                      <Image src={card.icon} alt="" width={24} height={24} />
                     </div>
                     <div className={styles.arrowFrame}>
-                      <Image src={icCaretRight} alt="" />
+                      <Image src="/chevron_backward.svg" alt="" width={24} height={24} />
                     </div>
                   </div>
                   <div className={styles.frame2}>
@@ -88,9 +86,9 @@ export default function Dashboard() {
         {showLogoutModal && (
           <LogoutModal
             onClose={() => setShowLogoutModal(false)}
-            onConfirm={async () => {
+            onConfirm={() => {
               setShowLogoutModal(false);
-              await handleLogout();
+              void handleLogout();
             }}
           />
         )}

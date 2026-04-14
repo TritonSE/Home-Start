@@ -4,7 +4,10 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import styles from "./SuccessNotification.module.css";
-import check from "@/assets/check.svg";
+
+import checkAsset from "@/assets/check.svg";
+
+const check = checkAsset as string;
 
 export type SuccessNotificationProps = {
   message: string;

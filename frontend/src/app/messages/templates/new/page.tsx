@@ -1,20 +1,21 @@
 "use client";
 
-import styles from "./page.module.css";
-import icCaretLeft from "@/assets/ic_caretleft.svg";
 import Image from "next/image";
-import { TemplateCreate } from "@/components/TemplateCreate";
-import Sidebar from "@/components/Sidebar";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import styles from "./page.module.css";
+
 import { createTemplate } from "@/app/api/template";
 import SuccessToast from "@/components/messages/SuccessToast";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Sidebar from "@/components/Sidebar";
+import { TemplateCreate } from "@/components/TemplateCreate";
 
 export default function CreateTemplatePage() {
   const router = useRouter();
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const onSave = async (title: string, message: string, type: string) => {
+  const onSave = (title: string, message: string, type: string) => {
     const createTemplateRequest = {
       title,
       message,
@@ -48,7 +49,13 @@ export default function CreateTemplatePage() {
           onDone={onToastDone}
         />
         <header className={styles.header}>
-          <Image src={icCaretLeft} alt="" onClick={() => router.back()} />
+          <Image
+            src="/ic_caretleft.svg"
+            alt=""
+            width={40}
+            height={40}
+            onClick={() => router.back()}
+          />
           <h1 className={styles.headerTitle}>Compose Template</h1>
           <span style={{ height: "40px" }}></span>
         </header>

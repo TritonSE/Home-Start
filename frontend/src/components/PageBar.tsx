@@ -1,15 +1,19 @@
 "use client";
 
-import styles from "./PageBar.module.css";
 import Image from "next/image";
-import caretIcon from "@/assets/caret.svg";
 
-interface PageBarProps {
+import styles from "./PageBar.module.css";
+
+import caretIconAsset from "@/assets/caret.svg";
+
+const caretIcon = caretIconAsset as string;
+
+type PageBarProps = {
   totalItems: number;
   currentPage: number;
   itemsPerPage: number;
   onPageChange: (page: number) => void;
-}
+};
 
 export default function PageBar({
   totalItems,

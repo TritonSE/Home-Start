@@ -1,6 +1,10 @@
-import styles from "./CSVButton.module.css";
 import Image from "next/image";
-import uploadIcon from "@/assets/upload.svg";
+
+import styles from "./CSVButton.module.css";
+
+import uploadIconAsset from "@/assets/upload.svg";
+
+const uploadIcon = uploadIconAsset as string;
 
 type ImportButtonProps = {
   onClick: () => void;

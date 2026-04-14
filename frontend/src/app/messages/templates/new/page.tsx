@@ -6,8 +6,8 @@ import { useState } from "react";
 
 import styles from "./page.module.css";
 
-import icCaretLeftAsset from "@/assets/ic_caretleft.svg";
 import { createTemplate } from "@/app/api/template";
+import icCaretLeftAsset from "@/assets/ic_caretleft.svg";
 import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 import { TemplateCreate } from "@/components/TemplateCreate";

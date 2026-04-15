@@ -3,12 +3,11 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import styles from "../page.module.css";
-
 import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 
 import { fetchTags } from "@/app/api/tag";
 import { fetchVolunteers } from "@/app/api/volunteer";
+import styles from "@/app/page.module.css";
 import PageBar from "@/components/PageBar";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";

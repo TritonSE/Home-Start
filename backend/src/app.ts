@@ -4,7 +4,7 @@ import { isHttpError } from "http-errors";
 
 import "./firebase/admin";
 import { frontend_origin } from "./config";
-import { type AuthRequest, verifyToken } from "./middleware/auth";
+import { verifyToken } from "./middleware/auth";
 import tagRoutes from "./routes/tagRoutes";
 import templateRoutes from "./routes/templateRoutes";
 import volunteerRoutes from "./routes/volunteerRoutes";
@@ -40,17 +40,6 @@ app.use(
     origin: frontend_origin,
   }),
 );
-
-// Example routes
-app.get("/api/public", (req, res) => {
-  res.json({ message: "This is a public endpoint" });
-});
-
-// Protected route - requires authentication
-app.get("/api/protected", verifyToken, (req, res) => {
-  const authReq = req as AuthRequest;
-  res.json({ message: "You are authenticated!", user: authReq.user });
-});
 
 app.use("/api/volunteer", verifyToken, volunteerRoutes);
 app.use("/api/tag", verifyToken, tagRoutes);

@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import styles from "./VolunteerTable.module.css";
 
-import type { Volunteer } from "../types/volunteer";
+import type { Volunteer } from "@/types/volunteer";
 
 type VolunteerTableProps = {
   volunteers: Volunteer[];

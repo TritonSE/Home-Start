@@ -1,10 +1,9 @@
 import Image from "next/image";
 import { useState } from "react";
 
-import { parseVolunteersCsv, uploadVolunteerBatch } from "../app/api/volunteer";
-
 import styles from "./ImportVolunteerModal.module.css";
 
+import { parseVolunteersCsv, uploadVolunteerBatch } from "@/app/api/volunteer";
 import icErrorAsset from "@/assets/ic_error.svg";
 import icNewAsset from "@/assets/ic_new.svg";
 import icSuccessAsset from "@/assets/ic_success.svg";

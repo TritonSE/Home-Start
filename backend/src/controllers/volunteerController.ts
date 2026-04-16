@@ -5,6 +5,7 @@ import { validationResult } from "express-validator";
 import createError from "http-errors";
 import { Types } from "mongoose";
 
+import TagModel from "../models/tagModel";
 import VolunteerModel from "../models/volunteerModel";
 import validationErrorParser from "../util/validationErrorParser";
 import { batchCreateVolunteerValidator } from "../validators/volunteerValidator";
@@ -469,6 +470,58 @@ export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
       });
       return;
     }
+    next(err);
+  }
+};
+
+export const getSelectedVolunteers: RequestHandler = async (req, res, next) => {
+  const { events, statuses } = req.body as { events: string[]; statuses: string[] };
+  try {
+    const volunteerFilter: {
+      tags?: { $in: Types.ObjectId[] };
+      status?: { $in: string[] };
+    } = {};
+
+    if (events.length > 0) {
+      const tagEventsMap = await TagModel.find({
+        name: { $in: events },
+        type: "Event",
+      }).select("_id");
+
+      const tagEvents = tagEventsMap.map((tag) => tag._id);
+
+      if (tagEvents.length !== events.length) {
+        return res.status(400).json({ error: "One or more event tags not found" });
+      }
+
+      volunteerFilter.tags = { $in: tagEvents };
+    }
+
+    if (statuses.length > 0) {
+      volunteerFilter.status = { $in: statuses };
+    }
+
+    const volunteersMap = await VolunteerModel.find(volunteerFilter).select(
+      "_id firstName lastName email phoneNumber",
+    );
+
+    return res.status(200).json(volunteersMap);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getVolunteerRows: RequestHandler = async (req, res, next) => {
+  try {
+    const volunteers = await VolunteerModel.find();
+    const volunteerRows = volunteers.map((volunteer) => ({
+      id: volunteer._id,
+      firstName: volunteer.firstName,
+      lastName: volunteer.lastName,
+      tags: ["intern", "volunter"],
+    }));
+    res.status(200).json(volunteerRows);
+  } catch (err) {
     next(err);
   }
 };

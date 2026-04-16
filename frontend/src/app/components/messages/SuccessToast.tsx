@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
-import styles from "./SuccessToast.module.css";
 import Image from "next/image";
+import { useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
+
+import styles from "./SuccessToast.module.css";
+
 import successIcon from "@/assets/success.svg";
 
 type Props = {
@@ -37,7 +39,7 @@ export default function SuccessToast({
     return (
       <div className={styles.wrap} aria-live="polite" aria-atomic="true">
         <div className={styles.card} style={{ ["--toast-ms" as string]: `${durationMs}ms` }}>
-        <Image src={successIcon} alt="" className={styles.icon} width={24} height={24} />
+          <Image src={successIcon} alt="" className={styles.icon} width={24} height={24} />
 
           <div className={styles.textWrap}>
             <div className={styles.title}>{title}</div>

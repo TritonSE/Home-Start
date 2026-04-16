@@ -139,9 +139,14 @@
 }
 
 .toLabelNew {
+  color: var(--Text-gray, #676767);
+  /* Body/md-semibold */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-md-font-size, 16px);
+  font-style: normal;
   font-weight: 400;
-  color: #000;
-  flex: 0 0 auto;
+  line-height: var(--paragraph-md-line-height, 20px); /* 125% */
+  letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
 }
 
 .selectRecipientsBtn {
@@ -261,9 +266,16 @@
   padding: 6px 10px;
   border-radius: 999px;
   background: #b0c7d0;
-  color: #000;
-  font-weight: 600;
   line-height: 1;
+
+  color: #000;
+  /* Body/md-semibold */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-md-font-size, 16px);
+  font-style: normal;
+  font-weight: 700;
+  line-height: var(--paragraph-md-line-height, 20px); /* 125% */
+  letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
 }
 
 .insertSectionNew {
@@ -302,12 +314,24 @@
 }
 
 .bottomText {
-  color: #6f7878;
+  color: var(--Lofi-Gray-4, #676767);
+  /* Body/sm */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-sm-font-size, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-sm-line-height, 20px); /* 142.857% */
+  letter-spacing: var(--paragraph-sm-letter-spacing, 0.8px);
 }
 
 .reviewFixed {
-  width: 100%;
-  margin-top: 20px;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(420px, calc(100% - 30px));
+  bottom: calc(102px + 12px + env(safe-area-inset-bottom));
+  margin-top: 0;
+  z-index: 1000;
   display: flex;
   justify-content: center;
 }
@@ -376,52 +400,52 @@
     padding-bottom: 0;
   }
 
-.leftPane,
-.rightPane {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  height: 100%;
-}
+  .leftPane,
+  .rightPane {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+  }
 
-.leftPane {
-  overflow: hidden;
-}
+  .leftPane {
+    overflow: hidden;
+  }
 
-.rightPane {
-  min-height: 0;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  padding-right: 12px;
-}
+  .rightPane {
+    min-height: 0;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 12px;
+  }
 
-.leftScroll {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  padding-right: 8px;
-}
+  .leftScroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 8px;
+  }
 
-.rightScroll {
-  flex: 0 0 auto;
-  min-height: auto;
-  overflow: visible;
-  max-width: 760px;
-  padding-top: 0;
-  margin-top: 0;
-}
+  .rightScroll {
+    flex: 0 0 auto;
+    min-height: auto;
+    overflow: visible;
+    max-width: 760px;
+    padding-top: 0;
+    margin-top: 0;
+  }
 
-.desktopReview {
-  margin-top: 16px;
-  display: flex;
-  justify-content: center;
-  flex: 0 0 auto;
-  max-width: 760px;
-}
+  .desktopReview {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+    flex: 0 0 auto;
+    max-width: 760px;
+  }
 
   .desktopReview .reviewBtn,
   .desktopReview .reviewBtnDisabled {

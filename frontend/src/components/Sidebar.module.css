@@ -53,7 +53,7 @@
   align-items: center;
   gap: 12px;
 
-  padding: 10px 14px;
+  padding: 16px 16px;
   border-radius: 10px;
 
   color: #1a1a1a;
@@ -86,8 +86,8 @@
 }
 
 .icon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   display: block;
 }
 

@@ -1,21 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import styles from "./page.module.css";
-import { useTextingFlowStore } from "./_store/textingFlowStore";
-import icCaretLeft from "@/assets/ic_caretleft.svg";
-import blueChevronLeft from "@/assets/blueChevronLeft.svg";
-import bluePlus from "@/assets/blue_plus.svg";
-import addPersonIcon from "@/assets/addPersonIcon.svg";
-import mdiInformation from "@/assets/mdi_information.svg";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { useTextingFlowStore } from "./_store/textingFlowStore";
+import styles from "./page.module.css";
+
+import type { MouseEvent } from "react";
+
 import RecipientsPanel from "@/app/components/messages/RecipientsPanel";
+import addPersonIcon from "@/assets/addPersonIcon.svg";
+import bluePlus from "@/assets/blue_plus.svg";
+import blueChevronLeft from "@/assets/blueChevronLeft.svg";
+import icCaretLeft from "@/assets/ic_caretleft.svg";
+import mdiInformation from "@/assets/mdi_information.svg";
+import { initMsal, signInWithOutlook } from "@/auth/msal";
+import Sidebar from "@/components/Sidebar";
 
 const TOKEN = "{{First Name}}";
 const DESKTOP_MQ = "(min-width: 1024px)";
 
-interface ComposerProps {
+type ComposerProps = {
   mode: "text" | "email";
   setMode: (mode: "text" | "email") => void;
   subject: string;
@@ -28,7 +34,7 @@ interface ComposerProps {
   clickableTo: boolean;
   onGoRecipients: () => void;
   onGoReview: () => void;
-}
+};
 
 function tokenTextToHtml(text: string, pillClass: string) {
   const escaped = text
@@ -42,7 +48,20 @@ function tokenTextToHtml(text: string, pillClass: string) {
     `<span class="${pillClass}" contenteditable="false">First Name</span>`,
   );
 
-  return withPill.replaceAll("\n", "<br/>");
+  if (withPill.length === 0) {
+    return "";
+  }
+
+  const lines = withPill.split("\n");
+  const [firstLine, ...restLines] = lines;
+
+  let html = firstLine.length > 0 ? firstLine : "<br/>";
+
+  restLines.forEach((line) => {
+    html += line.length === 0 ? "<div><br/></div>" : `<div>${line}</div>`;
+  });
+
+  return html;
 }
 
 function Composer({
@@ -66,6 +85,21 @@ function Composer({
 
   const [draftText, setDraftText] = useState(message);
 
+  const sendEmails = async () => {
+    const account = await initMsal();
+    setMode("email");
+    if (account) {
+      return;
+    }
+
+    await signInWithOutlook();
+  };
+
+  const switchToEmailTab = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    void sendEmails();
+  };
+
   useEffect(() => {
     const el = editorRef.current;
     if (!el) return;
@@ -87,13 +121,20 @@ function Composer({
   const readPlainTextFromEditor = useCallback(() => {
     const el = editorRef.current;
     if (!el) return "";
-
     const clone = el.cloneNode(true) as HTMLElement;
+
     clone.querySelectorAll(`.${styles.pill}`).forEach((node) => {
       node.replaceWith(document.createTextNode(TOKEN));
     });
 
-    return (clone.innerText || "").replace(/\u00A0/g, " ");
+    const htmlWithBreaks = clone.innerHTML.replace(/<div>/gi, "\n").replace(/<\/?p>/gi, "\n");
+
+    const textOnly = htmlWithBreaks.replace(/<[^>]+>/g, "");
+    const decoder = document.createElement("textarea");
+    decoder.innerHTML = textOnly;
+
+    const res = decoder.value.replace(/\u00A0/g, " ").replace(/\r\n/g, "\n");
+    return res;
   }, []);
 
   const insertFirstName = () => {
@@ -165,7 +206,7 @@ function Composer({
           role="tab"
           aria-selected={mode === "email"}
           className={`${styles.tab} ${mode === "email" ? styles.tabActive : ""}`}
-          onClick={() => setMode("email")}
+          onClick={switchToEmailTab}
         >
           Email
         </button>
@@ -336,54 +377,56 @@ export default function NewMessagePage() {
   };
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <button
-          type="button"
-          className={styles.backBtn}
-          aria-label="Back to dashboard"
-          onClick={goDashboard}
-        >
-          <Image src={icCaretLeft} alt="" className={styles.backIcon} width={24} height={24} />
-        </button>
-        <h1 className={styles.headerTitle}>New Message</h1>
-        <div className={styles.headerRight} />
-      </header>
+    <Sidebar>
+      <div className={styles.page}>
+        <header className={styles.header}>
+          <button
+            type="button"
+            className={styles.backBtn}
+            aria-label="Back to dashboard"
+            onClick={goDashboard}
+          >
+            <Image src={icCaretLeft} alt="" className={styles.backIcon} width={24} height={24} />
+          </button>
+          <h1 className={styles.headerTitle}>New Message</h1>
+          <div className={styles.headerRight} />
+        </header>
 
-      {!isDesktop ? (
-        <main className={styles.content}>
-          <Composer {...commonProps} clickableTo />
-        </main>
-      ) : null}
+        {!isDesktop ? (
+          <main className={styles.content}>
+            <Composer {...commonProps} clickableTo />
+          </main>
+        ) : null}
 
-      {isDesktop ? (
-        <main className={styles.desktopMain}>
-          <div className={styles.desktopGrid}>
-            <aside className={styles.leftPane}>
-              <div className={styles.leftScroll}>
-                <RecipientsPanel mode="panel" />
-              </div>
-            </aside>
+        {isDesktop ? (
+          <main className={styles.desktopMain}>
+            <div className={styles.desktopGrid}>
+              <aside className={styles.leftPane}>
+                <div className={styles.leftScroll}>
+                  <RecipientsPanel mode="panel" />
+                </div>
+              </aside>
 
-            <section className={styles.rightPane}>
-              <div className={styles.rightScroll}>
-                <Composer {...commonProps} clickableTo={false} />
-              </div>
+              <section className={styles.rightPane}>
+                <div className={styles.rightScroll}>
+                  <Composer {...commonProps} clickableTo={false} />
+                </div>
 
-              <div className={styles.desktopReview}>
-                <button
-                  type="button"
-                  className={canReview ? styles.reviewBtn : styles.reviewBtnDisabled}
-                  disabled={!canReview}
-                  onClick={goReview}
-                >
-                  <span className={styles.reviewBtnText}>Review and Send</span>
-                </button>
-              </div>
-            </section>
-          </div>
-        </main>
-      ) : null}
-    </div>
+                <div className={styles.desktopReview}>
+                  <button
+                    type="button"
+                    className={canReview ? styles.reviewBtn : styles.reviewBtnDisabled}
+                    disabled={!canReview}
+                    onClick={goReview}
+                  >
+                    <span className={styles.reviewBtnText}>Review and Send</span>
+                  </button>
+                </div>
+              </section>
+            </div>
+          </main>
+        ) : null}
+      </div>
+    </Sidebar>
   );
 }

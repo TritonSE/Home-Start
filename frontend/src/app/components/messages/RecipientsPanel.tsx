@@ -1,25 +1,39 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import styles from "./RecipientsPanel.module.css";
-import RecipientRow from "./RecipientRow";
-import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import RecipientRow from "./RecipientRow";
+import styles from "./RecipientsPanel.module.css";
+
+import { getEventTags } from "@/app/api/tag";
+import { getSelectedVolunteers, getVolunteerRows } from "@/app/api/volunteer";
+import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
 import unionIcon from "@/assets/Union.svg";
 
 type Mode = "page" | "panel";
 type FilterMenu = "event" | "status" | "volunteerType" | null;
 
-type Recipient = {
+type VolunteerRow = {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   tags: string[];
 };
 
-const mockRecipients: Recipient[] = Array.from({ length: 24 }).map((_, i) => ({
+type Recipient = {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+};
+
+const mockRecipients: VolunteerRow[] = Array.from({ length: 3 }).map((_, i) => ({
   id: `r${i + 1}`,
-  name: "Frederico M.",
+  firstName: `Recipient`,
+  lastName: `#${i + 1}`,
   tags: ["Intern"],
 }));
 
@@ -30,7 +44,7 @@ const EVENTS = [
   "Small Celebration",
 ];
 
-const STATUSES = ["New", "Returner"];
+const STATUSES = ["new", "returning"];
 const VOLUNTEER_TYPES = ["Intern", "Lead", "Mentor", "Parent"];
 
 export default function RecipientsPanel({ mode }: { mode: Mode }) {
@@ -38,15 +52,66 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
 
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
   const toggleRecipient = useTextingFlowStore((s) => s.toggleRecipient);
+  const setRecipientIds = useTextingFlowStore((s) => s.setRecipientIds);
   const setRecipients = useTextingFlowStore((s) => s.setRecipients);
+  const getRecipients = useTextingFlowStore((s) => s.getRecipients);
+  const clearRecipients = useTextingFlowStore((s) => s.clearRecipients);
 
   const [query, setQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false); // mobile bottom sheet
+  const [events, setEvents] = useState<string[]>([]);
   const [openMenu, setOpenMenu] = useState<FilterMenu>(null); // desktop dropdown
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedVolunteerTypes, setSelectedVolunteerTypes] = useState<string[]>([]);
   const [isDesktop, setIsDesktop] = useState(false);
+
+  const [volunteerRows, setVolunteerRows] = useState<VolunteerRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled: boolean = false;
+    async function loadVolunteerRows() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        getVolunteerRows().then((data) => {
+          if (!cancelled) setVolunteerRows(data);
+        });
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError("Unknown error");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    async function loadEvents() {
+      try {
+        getEventTags().then((data) => {
+          if (!cancelled) setEvents(data);
+        });
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError("Unknown error");
+        }
+      }
+    }
+
+    loadEvents();
+    loadVolunteerRows();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -61,20 +126,9 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-
-    return mockRecipients.filter((r) => {
-      const matchesQuery = !q || r.name.toLowerCase().includes(q);
-
-      const matchesVolunteerType =
-        selectedVolunteerTypes.length === 0 ||
-        r.tags.some((tag) => selectedVolunteerTypes.includes(tag));
-
-      const matchesEvent = true;
-      const matchesStatus = true;
-
-      return matchesQuery && matchesVolunteerType && matchesEvent && matchesStatus;
-    });
-  }, [query, selectedVolunteerTypes]);
+    if (!q) return volunteerRows;
+    return volunteerRows.filter((r) => r.firstName.toLowerCase().includes(q));
+  }, [query, volunteerRows]);
 
   const filteredIds = useMemo(() => filtered.map((r) => r.id), [filtered]);
 
@@ -98,12 +152,12 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
 
     if (!allFilteredSelected) {
       for (const id of filteredIds) current.add(id);
-      setRecipients(Array.from(current));
+      setRecipientIds(Array.from(current));
       return;
     }
 
     for (const id of filteredIds) current.delete(id);
-    setRecipients(Array.from(current));
+    setRecipientIds(Array.from(current));
   }, [allFilteredSelected, filteredIds, selectedRecipientIds, setRecipients]);
 
   const toggleFilterChip = (kind: "event" | "status" | "volunteerType", value: string) => {
@@ -133,7 +187,26 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
     setOpenMenu(null);
   };
 
-  const applyFilters = () => setFiltersOpen(false);
+  const applyFilters = async () => {
+    try {
+      const data: Recipient[] = await getSelectedVolunteers({
+        events: selectedEvents,
+        statuses: selectedStatuses,
+      });
+      clearRecipients();
+      setRecipients(data);
+      setFiltersOpen(false);
+      for (const r of data) {
+        toggleRecipient(r._id);
+      }
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("Unknown error applying filters");
+      }
+    }
+  };
 
   const labelFor = (items: string[], fallback: string) => {
     if (items.length === 0) return fallback;
@@ -148,15 +221,15 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
   return (
     <div className={mode === "panel" ? styles.panel : styles.pageBody}>
       <div className={styles.searchRow}>
-      <div className={styles.searchWrap}>
-        <Image src={unionIcon} alt="" aria-hidden className={styles.searchIcon} />
-        <input
+        <div className={styles.searchWrap}>
+          <Image src={unionIcon} alt="" aria-hidden className={styles.searchIcon} />
+          <input
             className={styles.searchInput}
             placeholder="Search Volunteer"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-        />
-      </div>
+          />
+        </div>
 
         {!isDesktop ? (
           <button
@@ -281,7 +354,7 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
         {filtered.map((r) => (
           <RecipientRow
             key={r.id}
-            name={r.name}
+            name={`${r.firstName} ${r.lastName}`}
             tags={r.tags}
             selected={selectedSet.has(r.id)}
             onToggle={() => toggleRecipient(r.id)}
@@ -330,7 +403,7 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
             <div className={styles.sheetSection}>
               <div className={styles.sheetSectionTitle}>Events</div>
               <div className={styles.sheetChips}>
-                {EVENTS.map((e) => {
+                {events.map((e) => {
                   const on = selectedEvents.includes(e);
                   return (
                     <button

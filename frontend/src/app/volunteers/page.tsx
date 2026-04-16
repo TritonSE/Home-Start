@@ -9,12 +9,12 @@ import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 
 import { fetchTags } from "@/app/api/tag";
 import { fetchVolunteers } from "@/app/api/volunteer";
+import icSuccessAsset from "@/assets/ic_success.svg";
 import PageBar from "@/components/PageBar";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
 import VolunteerTable from "@/components/VolunteerTable";
-import icSuccessAsset from "@/assets/ic_success.svg";
 
 export default function Page() {
   // Data state
@@ -136,13 +136,13 @@ export default function Page() {
           {showImportSuccess && (
             <div className={styles.importSuccessBanner}>
               <div className={styles.importSuccessContent}>
-              <Image
-                src={icSuccessAsset}
-                alt="Success"
-                className={styles.importSuccessIcon}
-                width={24}
-                height={24}
-              />
+                <Image
+                  src={icSuccessAsset}
+                  alt="Success"
+                  className={styles.importSuccessIcon}
+                  width={24}
+                  height={24}
+                />
                 <span className={styles.importSuccessText}>CSV Successfully Uploaded</span>
               </div>
               <button

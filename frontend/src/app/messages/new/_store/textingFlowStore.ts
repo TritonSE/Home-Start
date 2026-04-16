@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 export type MessageMode = "text" | "email";
 
@@ -11,6 +11,7 @@ type TextingFlowState = {
   subject: string;
   message: string;
   selectedRecipientIds: string[];
+  selectedRecipients: Recipient[];
 
   setMode: (mode: MessageMode) => void;
 
@@ -18,20 +19,31 @@ type TextingFlowState = {
   setMessage: (msg: string) => void;
 
   toggleRecipient: (id: string) => void;
-  setRecipients: (ids: string[]) => void;
+  setRecipientIds: (ids: string[]) => void;
+  setRecipients: (recipients: Recipient[]) => void;
   clearRecipients: () => void;
+  getRecipients: () => Recipient[];
 
   resetDraft: () => void;
+};
+
+type Recipient = {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
 };
 
 export const useTextingFlowStore = create<TextingFlowState>()(
   persist(
     (set, get) => ({
-      mode: "text",
+      mode: "email",
 
       subject: "",
       message: "",
       selectedRecipientIds: [],
+      selectedRecipients: [],
 
       setMode: (mode) => set({ mode }),
       setSubject: (subject) => set({ subject }),
@@ -45,12 +57,14 @@ export const useTextingFlowStore = create<TextingFlowState>()(
         });
       },
 
-      setRecipients: (ids) => set({ selectedRecipientIds: ids }),
+      setRecipientIds: (ids) => set({ selectedRecipientIds: ids }),
+      setRecipients: (recipients) => set({ selectedRecipients: recipients }),
       clearRecipients: () => set({ selectedRecipientIds: [] }),
+      getRecipients: () => get().selectedRecipients,
 
       resetDraft: () =>
         set({
-          mode: "text",
+          mode: "email",
           subject: "",
           message: "",
           selectedRecipientIds: [],

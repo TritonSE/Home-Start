@@ -1,17 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import styles from "./page.module.css";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { useTextingFlowStore } from "../_store/textingFlowStore";
 import SuccessToast from "../../../components/messages/SuccessToast";
+
+import styles from "./page.module.css";
+
+import { fetchVolunteers } from "@/app/api/volunteer";
 import RecipientsPanel from "@/app/components/messages/RecipientsPanel";
-import Image from "next/image";
-import groupsIcon from "@/assets/groups.svg";
 import backIcon from "@/assets/back.svg";
+import groupsIcon from "@/assets/ic_volunteers.svg";
+import { getGraphToken, signInWithOutlook } from "@/auth/msal";
 import Sidebar from "@/components/Sidebar";
+import { auth } from "@/firebase/firebase";
 
 const DESKTOP_MQ = "(min-width: 1024px)";
+const FIRST_NAME_TOKEN = "{{First Name}}";
 
 export default function ReviewAndSendPage() {
   const router = useRouter();
@@ -44,25 +51,69 @@ export default function ReviewAndSendPage() {
 
   const previewText = useMemo(() => {
     const firstName = "[First name]";
-    return (message || "").replaceAll("{{first_name}}", firstName);
+    return (message || "").replaceAll(FIRST_NAME_TOKEN, "[First name]");
   }, [message]);
 
   const personalized = useMemo(() => {
-    return (message || "").includes("{{first_name}}");
+    return (message || "").includes(FIRST_NAME_TOKEN);
   }, [message]);
 
   const canSend = recipientsCount > 0 && (message || "").trim().length > 0;
 
   const [sending, setSending] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   const handleSend = async () => {
     if (!canSend || sending) return;
 
     setSending(true);
+    setSendError(null);
 
     try {
-      await new Promise((r) => setTimeout(r, 250));
+      if (mode === "email") {
+        let graphToken: string;
+        try {
+          graphToken = await getGraphToken();
+        } catch {
+          await signInWithOutlook();
+          return;
+        }
+
+        const firebaseToken = await auth.currentUser?.getIdToken();
+        if (!firebaseToken) {
+          setSendError("You must be logged in to send emails.");
+          return;
+        }
+
+        const allVolunteers = await fetchVolunteers();
+        const recipients = allVolunteers.filter((v) => selectedRecipientIds.includes(v._id));
+        if (recipients.length === 0) {
+          setSendError("Could not find recipient data. Please re-select your recipients.");
+          return;
+        }
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/messages/send-email`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${firebaseToken}`,
+          },
+          body: JSON.stringify({
+            graphToken,
+            recipients,
+            subject,
+            message,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = (await res.json()) as { error?: string };
+          setSendError(err.error ?? "Failed to send emails. Please try again.");
+          return;
+        }
+      }
+
       setShowSuccess(true);
     } finally {
       setSending(false);
@@ -70,7 +121,7 @@ export default function ReviewAndSendPage() {
   };
 
   const successMessage = useMemo(() => {
-    return `Success!\nYour message has successfully\nbeen sent to ${recipientsCount} volunteers.`;
+    return `Your message has successfully\nbeen sent to ${recipientsCount} volunteers.`;
   }, [recipientsCount]);
 
   const onToastDone = useCallback(() => {
@@ -174,7 +225,12 @@ export default function ReviewAndSendPage() {
         {!isDesktop ? (
           <>
             <header className={styles.header}>
-              <button type="button" className={styles.backBtn} aria-label="Back" onClick={handleBack}>
+              <button
+                type="button"
+                className={styles.backBtn}
+                aria-label="Back"
+                onClick={handleBack}
+              >
                 <Image src={backIcon} alt="" className={styles.backIcon} width={12} height={12} />
               </button>
 
@@ -189,6 +245,7 @@ export default function ReviewAndSendPage() {
             </main>
 
             <div className={styles.bottomCta}>
+              {sendError && <p className={styles.sendError}>{sendError}</p>}
               <button
                 type="button"
                 className={styles.sendBtn}

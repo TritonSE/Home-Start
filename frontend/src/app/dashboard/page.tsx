@@ -2,42 +2,62 @@
 import { signOut } from "firebase/auth";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { type MouseEvent, useState } from "react";
+
+import icCaretRight from "../../assets/chevron_backward.svg";
+import icMessage from "../../assets/ic_message.svg";
+import importExport from "../../assets/ion_document.svg";
+import mail from "../../assets/mail.svg";
+import Sidebar from "../../components/Sidebar";
+import LogoutButton from "../components/LogoutButton";
+import LogoutModal from "../components/LogoutModal";
+import { useTextingFlowStore } from "../messages/new/_store/textingFlowStore";
 
 import styles from "./page.module.css";
 
-import chevronBackwardAsset from "@/assets/chevron_backward.svg";
-import icMessageAsset from "@/assets/ic_message.svg";
-import importExportAsset from "@/assets/ion_document.svg";
-import mailAsset from "@/assets/mail.svg";
-import LogoutButton from "@/components/LogoutButton";
-import LogoutModal from "@/components/LogoutModal";
-import Sidebar from "@/components/Sidebar";
+import { initMsal, signInWithOutlook } from "@/auth/msal";
 import { auth } from "@/firebase/firebase";
 
-const chevronBackward = chevronBackwardAsset as string;
-const icMessage = icMessageAsset as string;
-const importExport = importExportAsset as string;
-const mail = mailAsset as string;
-
 export default function Dashboard() {
+  const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const setMode = useTextingFlowStore((s) => s.setMode);
+
+  const sendEmails = async () => {
+    const account = await initMsal();
+    setMode("email");
+    if (account) {
+      router.push("/communication");
+      return;
+    }
+
+    await signInWithOutlook();
+  };
+
+  const handleSendEmailCardClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    void sendEmails();
+  };
 
   const CARDS = [
     {
-      href: "some-route",
+      href: "/communication",
+      onClick: () => setMode("text"),
       majorText: "Send Text",
       minorText: "Reach volunteers instantly via SMS",
       icon: icMessage,
     },
     {
-      href: "some-route2",
+      href: "/communication",
+      onClick: handleSendEmailCardClick,
       majorText: "Send Email",
       minorText: "Send detailed announcements",
       icon: mail,
     },
     {
-      href: "/volunteers",
+      href: "some-route3",
+      onClick: () => {},
       majorText: "Import/Export data",
       minorText: "Manage volunteer information",
       icon: importExport,
@@ -46,6 +66,9 @@ export default function Dashboard() {
 
   const handleLogout = async () => {
     await signOut(auth);
+
+    // delete the login cookie created in LoginForm
+    document.cookie = "firebaseAuthToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
     window.location.href = "/login";
   };
 
@@ -67,17 +90,18 @@ export default function Dashboard() {
             {CARDS.map((card) => {
               return (
                 <Link
-                  key={card.href}
+                  key={card.majorText}
                   href={card.href}
+                  onClick={card.onClick}
                   className={styles.card}
                   aria-current={undefined}
                 >
                   <div className={styles.frame1}>
                     <div className={styles.iconFrame}>
-                      <Image src={card.icon} alt="" width={24} height={24} />
+                      <Image src={card.icon} alt="" />
                     </div>
                     <div className={styles.arrowFrame}>
-                      <Image src={chevronBackward} alt="" width={24} height={24} />
+                      <Image src={icCaretRight} alt="" />
                     </div>
                   </div>
                   <div className={styles.frame2}>
@@ -95,9 +119,9 @@ export default function Dashboard() {
         {showLogoutModal && (
           <LogoutModal
             onClose={() => setShowLogoutModal(false)}
-            onConfirm={() => {
+            onConfirm={async () => {
               setShowLogoutModal(false);
-              void handleLogout();
+              await handleLogout();
             }}
           />
         )}

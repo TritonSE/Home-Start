@@ -67,8 +67,8 @@
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 16px 140px;
   max-width: 720px;
+  padding-top: 25px;
   margin: 0 auto;
 }
 
@@ -76,6 +76,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: 50px;
   margin-bottom: 22px;
 }
 
@@ -86,10 +87,14 @@
 }
 
 .sectionTitle {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
   color: #000;
+  /* Body/lg-semibold */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-lg-font-size, 20px);
+  font-style: normal;
+  font-weight: 700;
+  line-height: var(--paragraph-lg-line-height, 24px); /* 120% */
+  letter-spacing: var(--paragraph-lg-letter-spacing, 0.5px);
 }
 
 .editLink {
@@ -127,8 +132,8 @@
 }
 
 .groupsIcon {
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
 }
 
 .recipientsText {
@@ -245,6 +250,15 @@
   font-weight: 400;
   color: #000;
   line-height: 20px;
+}
+
+.sendError {
+  pointer-events: auto;
+  color: #c0392b;
+  font-size: 13px;
+  text-align: center;
+  margin: 0;
+  padding: 0 8px;
 }
 
 @media (max-width: 767px) {

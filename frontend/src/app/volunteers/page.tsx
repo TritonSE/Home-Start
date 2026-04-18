@@ -29,6 +29,7 @@ export default function Page() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [showImportSuccess, setShowImportSuccess] = useState(false);
+  const [selectedCount, setSelectedCount] = useState(0);
   const itemsPerPage = 6;
 
   const loadVolunteers = async () => {
@@ -167,7 +168,16 @@ export default function Page() {
             selectedVolunteerType={selectedVolunteerType}
             setSelectedVolunteerType={handleSelectedVolunteerTypeChange}
           />
-          <VolunteerTable volunteers={displayedVolunteers} />
+          <VolunteerTable
+            volunteers={displayedVolunteers}
+            onSelectedCountChange={setSelectedCount}
+          />
+          <div className={styles.tableSummaryRow}>
+            <span className={styles.tableSummaryLeft}>
+              {selectedCount > 0 ? `${selectedCount} selected` : ""}
+            </span>
+            <span className={styles.tableSummaryRight}>Total volunteers: {volunteers.length}</span>
+          </div>
           <PageBar
             totalItems={filteredVolunteers.length}
             currentPage={currentPage}

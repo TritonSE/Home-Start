@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import styles from "./VolunteerTable.module.css";
 
@@ -7,10 +7,23 @@ import type { Volunteer } from "../types/volunteer";
 
 type VolunteerTableProps = {
   volunteers: Volunteer[];
+  onSelectedCountChange?: (count: number) => void;
 };
 
-export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
+export default function VolunteerTable({ volunteers, onSelectedCountChange }: VolunteerTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const visibleIds = new Set(volunteers.map((volunteer) => volunteer._id));
+    setSelectedIds((prev) => {
+      const next = new Set([...prev].filter((id) => visibleIds.has(id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [volunteers]);
+
+  useEffect(() => {
+    onSelectedCountChange?.(selectedIds.size);
+  }, [selectedIds, onSelectedCountChange]);
 
   const allSelected = volunteers.length > 0 && volunteers.every((v) => selectedIds.has(v._id));
   const someSelected = volunteers.some((v) => selectedIds.has(v._id));
@@ -39,13 +52,14 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
         <colgroup>
-          <col style={{ width: "60px" }} />
-          <col style={{ width: "150px" }} />
+          <col style={{ width: "40px" }} />
           <col style={{ width: "160px" }} />
-          <col style={{ width: "230px" }} />
-          <col style={{ width: "180px" }} />
-          <col style={{ width: "230px" }} />
-          <col style={{ width: "350px" }} />
+          <col style={{ width: "160px" }} />
+          <col style={{ width: "130px" }} />
+          <col style={{ width: "304px" }} />
+          <col style={{ width: "304px" }} />
+          <col style={{ width: "240px" }} />
+          <col style={{ width: "240px" }} />
         </colgroup>
         <thead>
           <tr>
@@ -63,17 +77,12 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
             </th>
             <th>
               <div className={styles.headerContent}>
-                <span>Volunteer</span>
+                <span>Last Name</span>
               </div>
             </th>
             <th>
               <div className={styles.headerContent}>
-                <span>Phone Number</span>
-              </div>
-            </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Email</span>
+                <span>First Name</span>
               </div>
             </th>
             <th>
@@ -89,6 +98,16 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
             <th>
               <div className={styles.headerContent}>
                 <span>Event</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Phone Number</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Email</span>
               </div>
             </th>
           </tr>
@@ -109,10 +128,11 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
                 />
               </td>
               <td>
-                {volunteer.firstName}, {volunteer.lastName}
+                {volunteer.lastName}
               </td>
-              <td>{volunteer.phoneNumber}</td>
-              <td>{volunteer.email}</td>
+              <td>
+                {volunteer.firstName}
+              </td>
 
               <td>
                 <div className={styles.tagsContainer}>

@@ -69,6 +69,26 @@
   color: #1f6b3a;
 }
 
+.tableSummaryRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 20px;
+  margin-top: 4px;
+}
+
+.tableSummaryLeft,
+.tableSummaryRight {
+  font-size: 12px;
+  line-height: 16px;
+  color: #666;
+}
+
+.tableSummaryRight {
+  margin-left: auto;
+}
+
 .intro {
   display: flex;
   flex-direction: column;
@@ -149,6 +169,16 @@ a.secondary {
 @media (max-width: 600px) {
   .main {
     padding: 48px 24px;
+  }
+
+  .tableSummaryRow {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .tableSummaryRight {
+    width: 100%;
+    text-align: right;
   }
 
   .intro {

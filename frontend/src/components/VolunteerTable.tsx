@@ -7,32 +7,39 @@ import type { Volunteer } from "../types/volunteer";
 
 type VolunteerTableProps = {
   volunteers: Volunteer[];
+  selectableVolunteers?: Volunteer[];
   onSelectedCountChange?: (count: number) => void;
 };
 
-export default function VolunteerTable({ volunteers, onSelectedCountChange }: VolunteerTableProps) {
+export default function VolunteerTable({
+  volunteers,
+  selectableVolunteers,
+  onSelectedCountChange,
+}: VolunteerTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const selectionScope = selectableVolunteers ?? volunteers;
 
   useEffect(() => {
-    const visibleIds = new Set(volunteers.map((volunteer) => volunteer._id));
+    const selectableIds = new Set(selectionScope.map((volunteer) => volunteer._id));
     setSelectedIds((prev) => {
-      const next = new Set([...prev].filter((id) => visibleIds.has(id)));
+      const next = new Set([...prev].filter((id) => selectableIds.has(id)));
       return next.size === prev.size ? prev : next;
     });
-  }, [volunteers]);
+  }, [selectionScope]);
 
   useEffect(() => {
     onSelectedCountChange?.(selectedIds.size);
   }, [selectedIds, onSelectedCountChange]);
 
-  const allSelected = volunteers.length > 0 && volunteers.every((v) => selectedIds.has(v._id));
-  const someSelected = volunteers.some((v) => selectedIds.has(v._id));
+  const allSelected =
+    selectionScope.length > 0 && selectionScope.every((volunteer) => selectedIds.has(volunteer._id));
+  const someSelected = selectionScope.some((volunteer) => selectedIds.has(volunteer._id));
 
   function toggleAll() {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(volunteers.map((v) => v._id)));
+      setSelectedIds(new Set(selectionScope.map((volunteer) => volunteer._id)));
     }
   }
 

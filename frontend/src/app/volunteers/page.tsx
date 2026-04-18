@@ -170,6 +170,7 @@ export default function Page() {
           />
           <VolunteerTable
             volunteers={displayedVolunteers}
+            selectableVolunteers={filteredVolunteers}
             onSelectedCountChange={setSelectedCount}
           />
           <div className={styles.tableSummaryRow}>

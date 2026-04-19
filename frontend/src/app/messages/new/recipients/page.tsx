@@ -8,8 +8,10 @@ import RecipientsPanel from "../../../components/messages/RecipientsPanel";
 
 import styles from "./page.module.css";
 
-import backIcon from "@/assets/back.svg";
+import backIconAsset from "@/assets/back.svg";
 import Sidebar from "@/components/Sidebar";
+
+const backIcon = backIconAsset as string;
 
 export default function RecipientsPage() {
   const router = useRouter();

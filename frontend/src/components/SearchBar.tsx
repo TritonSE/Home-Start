@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import styles from "./SearchBar.module.css";
 
-import checkboxIconAsset from "@/assets/Checkbox.svg";
+import checkboxIconAsset from "@/assets/checkbox.svg";
 import unionIconAsset from "@/assets/Union.svg";
 
 const checkboxIcon = checkboxIconAsset as string;

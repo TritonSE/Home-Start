@@ -10,21 +10,32 @@ import { useTextingFlowStore } from "../app/messages/new/_store/textingFlowStore
 
 import styles from "./Sidebar.module.css";
 
-import communicationIcon from "@/assets/ic_communication.svg";
-import dashboardIcon from "@/assets/ic_dashboard.svg";
-import volunteersIcon from "@/assets/ic_volunteers_2.svg";
-import homeStartLogo from "@/assets/Main Vertical USE 1.svg";
+import communicationIconAsset from "@/assets/icCommunication.svg";
+import dashboardIconAsset from "@/assets/icDashboard.svg";
+import volunteersIconAsset from "@/assets/icVolunteers2.svg";
+import homeStartLogoAsset from "@/assets/Main Vertical USE 1.svg";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 });
 
-const NAV = [
+const communicationIcon = communicationIconAsset as string;
+const dashboardIcon = dashboardIconAsset as string;
+const volunteersIcon = volunteersIconAsset as string;
+const homeStartLogo = homeStartLogoAsset as string;
+
+type NavItem = {
+  label: string;
+  href: string;
+  icon: string;
+};
+
+const NAV: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: dashboardIcon },
   { label: "Communication", href: "/communication", icon: communicationIcon },
   { label: "Volunteers", href: "/volunteers", icon: volunteersIcon },
-] as const;
+];
 
 export default function Sidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

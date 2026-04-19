@@ -10,13 +10,19 @@ import styles from "./page.module.css";
 import type { MouseEvent } from "react";
 
 import RecipientsPanel from "@/app/components/messages/RecipientsPanel";
-import addPersonIcon from "@/assets/addPersonIcon.svg";
-import bluePlus from "@/assets/blue_plus.svg";
-import blueChevronLeft from "@/assets/blueChevronLeft.svg";
-import icCaretLeft from "@/assets/ic_caretleft.svg";
-import mdiInformation from "@/assets/mdi_information.svg";
+import addPersonIconAsset from "@/assets/addPersonIcon.svg";
+import blueChevronLeftAsset from "@/assets/blueChevronLeft.svg";
+import bluePlusAsset from "@/assets/bluePlus.svg";
+import icCaretLeftAsset from "@/assets/icCaretleft.svg";
+import mdiInformationAsset from "@/assets/mdi_information.svg";
 import { initMsal, signInWithOutlook } from "@/auth/msal";
 import Sidebar from "@/components/Sidebar";
+
+const addPersonIcon = addPersonIconAsset as string;
+const blueChevronLeft = blueChevronLeftAsset as string;
+const bluePlus = bluePlusAsset as string;
+const icCaretLeft = icCaretLeftAsset as string;
+const mdiInformation = mdiInformationAsset as string;
 
 const TOKEN = "{{First Name}}";
 const DESKTOP_MQ = "(min-width: 1024px)";
@@ -83,12 +89,11 @@ function Composer({
   const lastSyncedMessageRef = useRef(message);
   const initializedRef = useRef(false);
 
-  const [draftText, setDraftText] = useState(message);
+  const [, setDraftText] = useState(message);
 
   const sendEmails = async () => {
-    const account = await initMsal();
     setMode("email");
-    if (account) {
+    if (await initMsal()) {
       return;
     }
 

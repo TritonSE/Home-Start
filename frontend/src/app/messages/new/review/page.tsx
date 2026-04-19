@@ -11,14 +11,16 @@ import styles from "./page.module.css";
 
 import { fetchVolunteers } from "@/app/api/volunteer";
 import RecipientsPanel from "@/app/components/messages/RecipientsPanel";
-import backIcon from "@/assets/back.svg";
-import groupsIcon from "@/assets/ic_volunteers.svg";
+import backIconAsset from "@/assets/back.svg";
+import groupsIconAsset from "@/assets/icVolunteers.svg";
 import { getGraphToken, signInWithOutlook } from "@/auth/msal";
 import Sidebar from "@/components/Sidebar";
 import { auth } from "@/firebase/firebase";
 
 const DESKTOP_MQ = "(min-width: 1024px)";
 const FIRST_NAME_TOKEN = "{{First Name}}";
+const backIcon = backIconAsset as string;
+const groupsIcon = groupsIconAsset as string;
 
 export default function ReviewAndSendPage() {
   const router = useRouter();
@@ -50,7 +52,6 @@ export default function ReviewAndSendPage() {
   }, [router]);
 
   const previewText = useMemo(() => {
-    const firstName = "[First name]";
     return (message || "").replaceAll(FIRST_NAME_TOKEN, "[First name]");
   }, [message]);
 
@@ -250,7 +251,9 @@ export default function ReviewAndSendPage() {
                 type="button"
                 className={styles.sendBtn}
                 disabled={!canSend || sending}
-                onClick={handleSend}
+                onClick={() => {
+                  void handleSend();
+                }}
               >
                 {sending ? "Sending..." : mode === "email" ? "Send Email" : "Send Text"}
               </button>
@@ -275,7 +278,9 @@ export default function ReviewAndSendPage() {
                     type="button"
                     className={styles.sendBtn}
                     disabled={!canSend || sending}
-                    onClick={handleSend}
+                    onClick={() => {
+                      void handleSend();
+                    }}
                   >
                     {sending ? "Sending..." : "Review and Send"}
                   </button>

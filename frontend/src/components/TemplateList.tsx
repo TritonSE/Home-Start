@@ -23,7 +23,7 @@ export function TemplateList({ templates, onTemplateClick, onMoreActions }: Temp
         >
           <span>{template.title}</span>
           <Image
-            src={"/ic_more.svg"}
+            src={"/icMore.svg"}
             alt=""
             width={24}
             height={24}

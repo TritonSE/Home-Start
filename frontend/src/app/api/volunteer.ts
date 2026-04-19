@@ -28,6 +28,10 @@ type APIErrorBody = {
   error?: string;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null;
+};
+
 type VolunteerParseCsvDTO = {
   wouldCreateCount: number;
   wouldUpdateCount: number;
@@ -173,9 +177,20 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
     });
 
     if (!response.ok) {
+      let backendMessage = "";
+      try {
+        const errorBody: unknown = await response.json();
+        if (errorBody && typeof errorBody === "object") {
+          const body = errorBody as APIErrorBody;
+          backendMessage = typeof body.error === "string" ? body.error : "";
+        }
+      } catch {
+        backendMessage = "";
+      }
+
       return {
         ok: false,
-        error: `Failed to parse volunteers CSV: ${response.status} ${response.statusText}`,
+        error: `Failed to parse volunteers CSV: ${response.status} ${response.statusText}${backendMessage ? ` - ${backendMessage}` : ""}`,
       };
     }
 
@@ -294,18 +309,25 @@ export async function getVolunteerRows(): Promise<
       throw new Error(`Failed to fetch volunteer rows: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data: unknown = await response.json();
 
     if (!Array.isArray(data)) {
-      throw new Error(`Expected array but got ${typeof data}`);
+      throw new TypeError(`Expected array but got ${typeof data}`);
     }
 
-    return data.map((item) => ({
-      id: String(item.id ?? ""),
-      firstName: String(item.firstName ?? ""),
-      lastName: String(item.lastName ?? ""),
-      tags: item.tags ?? "",
-    }));
+    return data.map((item) => {
+      const row = isRecord(item) ? item : {};
+      const tags = Array.isArray(row.tags)
+        ? row.tags.filter((tag): tag is string => typeof tag === "string")
+        : [];
+
+      return {
+        id: String(row.id ?? ""),
+        firstName: String(row.firstName ?? ""),
+        lastName: String(row.lastName ?? ""),
+        tags,
+      };
+    });
   } catch (error) {
     console.error("Error fetching volunteer rows: ", error);
     throw error;
@@ -345,19 +367,22 @@ export async function getSelectedVolunteers({
       );
     }
 
-    const data = await response.json();
+    const data: unknown = await response.json();
 
     if (!Array.isArray(data)) {
-      throw new Error(`Expected array but got ${typeof data}`);
+      throw new TypeError(`Expected array but got ${typeof data}`);
     }
 
-    const recipients: Recipient[] = data.map((item) => ({
-      _id: String(item._id ?? ""),
-      firstName: String(item.firstName ?? ""),
-      lastName: String(item.lastName ?? ""),
-      email: String(item.email ?? ""),
-      phoneNumber: String(item.phoneNumber ?? ""),
-    }));
+    const recipients: Recipient[] = data.map((item) => {
+      const row = isRecord(item) ? item : {};
+      return {
+        _id: String(row._id ?? ""),
+        firstName: String(row.firstName ?? ""),
+        lastName: String(row.lastName ?? ""),
+        email: String(row.email ?? ""),
+        phoneNumber: String(row.phoneNumber ?? ""),
+      };
+    });
 
     return recipients;
   } catch (error) {

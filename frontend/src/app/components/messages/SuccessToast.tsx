@@ -6,7 +6,9 @@ import { createPortal } from "react-dom";
 
 import styles from "./SuccessToast.module.css";
 
-import successIcon from "@/assets/success.svg";
+import successIconAsset from "@/assets/success.svg";
+
+const successIcon = successIconAsset as string;
 
 type Props = {
   open: boolean;

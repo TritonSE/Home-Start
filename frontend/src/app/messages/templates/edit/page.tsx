@@ -7,7 +7,7 @@ import { Suspense, useState } from "react";
 import styles from "./page.module.css";
 
 import { updateTemplate } from "@/app/api/template";
-import icCaretLeftAsset from "@/assets/ic_caretleft.svg";
+import icCaretLeftAsset from "@/assets/icCaretleft.svg";
 import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 import { TemplateCreate } from "@/components/TemplateCreate";

@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import styles from "./TemplateActionPopup.module.css";
 
-import icCloseAsset from "@/assets/ic_close.svg";
+import icCloseAsset from "@/assets/icClose.svg";
 
 const icClose = icCloseAsset as string;
 

@@ -5,19 +5,23 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type MouseEvent, useState } from "react";
 
-import icCaretRight from "../../assets/chevron_backward.svg";
-import icMessage from "../../assets/ic_message.svg";
-import importExport from "../../assets/ion_document.svg";
-import mail from "../../assets/mail.svg";
-import Sidebar from "../../components/Sidebar";
-import LogoutButton from "../components/LogoutButton";
-import LogoutModal from "../components/LogoutModal";
-import { useTextingFlowStore } from "../messages/new/_store/textingFlowStore";
-
 import styles from "./page.module.css";
 
+import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
+import icCaretRightAsset from "@/assets/chevronBackward.svg";
+import icMessageAsset from "@/assets/icMessage.svg";
+import importExportAsset from "@/assets/ion_document.svg";
+import mailAsset from "@/assets/mail.svg";
 import { initMsal, signInWithOutlook } from "@/auth/msal";
+import LogoutButton from "@/components/LogoutButton";
+import LogoutModal from "@/components/LogoutModal";
+import Sidebar from "@/components/Sidebar";
 import { auth } from "@/firebase/firebase";
+
+const icCaretRight = icCaretRightAsset as string;
+const icMessage = icMessageAsset as string;
+const importExport = importExportAsset as string;
+const mail = mailAsset as string;
 
 export default function Dashboard() {
   const router = useRouter();
@@ -25,9 +29,8 @@ export default function Dashboard() {
   const setMode = useTextingFlowStore((s) => s.setMode);
 
   const sendEmails = async () => {
-    const account = await initMsal();
     setMode("email");
-    if (account) {
+    if (await initMsal()) {
       router.push("/communication");
       return;
     }
@@ -119,9 +122,9 @@ export default function Dashboard() {
         {showLogoutModal && (
           <LogoutModal
             onClose={() => setShowLogoutModal(false)}
-            onConfirm={async () => {
+            onConfirm={() => {
               setShowLogoutModal(false);
-              await handleLogout();
+              void handleLogout();
             }}
           />
         )}

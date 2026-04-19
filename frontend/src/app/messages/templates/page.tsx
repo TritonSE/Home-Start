@@ -11,8 +11,8 @@ import styles from "./page.module.css";
 import type { Template } from "@/app/api/template";
 
 import { deleteTemplate, getTemplates } from "@/app/api/template";
-import icAddAsset from "@/assets/ic_add.svg";
-import icCaretLeftAsset from "@/assets/ic_caretleft.svg";
+import icAddAsset from "@/assets/icAdd.svg";
+import icCaretLeftAsset from "@/assets/icCaretleft.svg";
 import Sidebar from "@/components/Sidebar";
 import TemplateActionPopup from "@/components/TemplateActionPopup";
 import { TemplateList } from "@/components/TemplateList";

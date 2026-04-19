@@ -10,7 +10,9 @@ import styles from "./RecipientsPanel.module.css";
 import { getEventTags } from "@/app/api/tag";
 import { getSelectedVolunteers, getVolunteerRows } from "@/app/api/volunteer";
 import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
-import unionIcon from "@/assets/Union.svg";
+import unionIconAsset from "@/assets/Union.svg";
+
+const unionIcon = unionIconAsset as string;
 
 type Mode = "page" | "panel";
 type FilterMenu = "event" | "status" | "volunteerType" | null;
@@ -30,13 +32,6 @@ type Recipient = {
   phoneNumber: string;
 };
 
-const mockRecipients: VolunteerRow[] = Array.from({ length: 3 }).map((_, i) => ({
-  id: `r${i + 1}`,
-  firstName: `Recipient`,
-  lastName: `#${i + 1}`,
-  tags: ["Intern"],
-}));
-
 const EVENTS = [
   "Holiday Toy Drive",
   "Celebration Event 3",
@@ -54,7 +49,6 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
   const toggleRecipient = useTextingFlowStore((s) => s.toggleRecipient);
   const setRecipientIds = useTextingFlowStore((s) => s.setRecipientIds);
   const setRecipients = useTextingFlowStore((s) => s.setRecipients);
-  const getRecipients = useTextingFlowStore((s) => s.getRecipients);
   const clearRecipients = useTextingFlowStore((s) => s.clearRecipients);
 
   const [query, setQuery] = useState("");
@@ -67,19 +61,19 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
   const [isDesktop, setIsDesktop] = useState(false);
 
   const [volunteerRows, setVolunteerRows] = useState<VolunteerRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setLoading] = useState(true);
+  const [, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled: boolean = false;
+
     async function loadVolunteerRows() {
       try {
         setLoading(true);
         setError(null);
 
-        getVolunteerRows().then((data) => {
-          if (!cancelled) setVolunteerRows(data);
-        });
+        const data = await getVolunteerRows();
+        if (!cancelled) setVolunteerRows(data);
       } catch (e: unknown) {
         if (e instanceof Error) {
           setError(e.message);
@@ -93,9 +87,8 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
 
     async function loadEvents() {
       try {
-        getEventTags().then((data) => {
-          if (!cancelled) setEvents(data);
-        });
+        const data = await getEventTags();
+        if (!cancelled) setEvents(data);
       } catch (e: unknown) {
         if (e instanceof Error) {
           setError(e.message);
@@ -105,8 +98,12 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
       }
     }
 
-    loadEvents();
-    loadVolunteerRows();
+    const loadData = async () => {
+      await loadEvents();
+      await loadVolunteerRows();
+    };
+
+    void loadData();
 
     return () => {
       cancelled = true;
@@ -158,7 +155,7 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
 
     for (const id of filteredIds) current.delete(id);
     setRecipientIds(Array.from(current));
-  }, [allFilteredSelected, filteredIds, selectedRecipientIds, setRecipients]);
+  }, [allFilteredSelected, filteredIds, selectedRecipientIds, setRecipientIds]);
 
   const toggleFilterChip = (kind: "event" | "status" | "volunteerType", value: string) => {
     if (kind === "event") {
@@ -452,7 +449,13 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
                 Clear All
               </button>
 
-              <button type="button" className={styles.applyBtn} onClick={applyFilters}>
+              <button
+                type="button"
+                className={styles.applyBtn}
+                onClick={() => {
+                  void applyFilters();
+                }}
+              >
                 Apply Filters
               </button>
             </div>

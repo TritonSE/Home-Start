@@ -5,10 +5,10 @@ import { parseVolunteersCsv, uploadVolunteerBatch } from "../app/api/volunteer";
 
 import styles from "./ImportVolunteerModal.module.css";
 
-import icErrorAsset from "@/assets/ic_error.svg";
-import icNewAsset from "@/assets/ic_new.svg";
-import icSuccessAsset from "@/assets/ic_success.svg";
-import icWarningAsset from "@/assets/ic_warning.svg";
+import icErrorAsset from "@/assets/icError.svg";
+import icNewAsset from "@/assets/icNew.svg";
+import icSuccessAsset from "@/assets/icSuccess.svg";
+import icWarningAsset from "@/assets/icWarning.svg";
 import uploadIconAsset from "@/assets/upload.svg";
 
 const icError = icErrorAsset as string;
@@ -42,6 +42,7 @@ type ParsedCSVResult = {
 
 export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolunteerModalProps) {
   const [status, setStatus] = useState<Status>("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("upload");
   const [isDragging, setIsDragging] = useState(false);
@@ -51,10 +52,12 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
   async function processUploadedFile(file: File): Promise<void> {
     setFileName(file.name);
     setStatus("idle");
+    setErrorMessage(null);
 
     try {
       const result = await parseVolunteersCsv(file);
       if (!result.ok) {
+        setErrorMessage(result.error);
         setStatus("error");
         return;
       }
@@ -76,7 +79,12 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
 
       setCSVParsedInfo(data);
       setStatus("success");
-    } catch {
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Unknown error while parsing CSV");
+      }
       setStatus("error");
     }
   }
@@ -211,9 +219,9 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                       width={24}
                       height={24}
                     />
-                    <div className={styles.errorText}>Unsupported file uploaded</div>
+                    <div className={styles.errorText}>CSV upload failed</div>
                     <div className={styles.uploadSubtext}>
-                      Make sure the headers for the CSV are correct!
+                      {errorMessage || "Make sure the headers for the CSV are correct!"}
                     </div>
                   </div>
                 </div>

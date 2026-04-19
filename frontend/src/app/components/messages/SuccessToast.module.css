@@ -39,23 +39,21 @@
 
 .title {
   color: #000;
-  /* Body/lg-semibold */
   font-family: var(--Font-family-Body, "Open Sans");
   font-size: var(--paragraph-lg-font-size, 20px);
   font-style: normal;
   font-weight: 700;
-  line-height: var(--paragraph-lg-line-height, 24px); /* 120% */
+  line-height: var(--paragraph-lg-line-height, 24px);
   letter-spacing: var(--paragraph-lg-letter-spacing, 0.5px);
 }
 
 .message {
   color: #000;
-  /* Body/sm */
   font-family: var(--Font-family-Body, "Open Sans");
   font-size: var(--paragraph-sm-font-size, 14px);
   font-style: normal;
   font-weight: 400;
-  line-height: var(--paragraph-sm-line-height, 20px); /* 142.857% */
+  line-height: var(--paragraph-sm-line-height, 20px);
   letter-spacing: var(--paragraph-sm-letter-spacing, 0.8px);
 }
 

@@ -9,12 +9,14 @@ import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 
 import { fetchTags } from "@/app/api/tag";
 import { fetchVolunteers } from "@/app/api/volunteer";
-import icSuccessAsset from "@/assets/ic_success.svg";
+import icSuccessSvg from "@/assets/icSuccess.svg";
 import PageBar from "@/components/PageBar";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
 import VolunteerTable from "@/components/VolunteerTable";
+
+const icSuccessAsset = icSuccessSvg as string;
 
 export default function Page() {
   // Data state

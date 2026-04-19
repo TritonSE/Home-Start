@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 
-import icCloseLarge from "../../assets/ic_close_large.svg";
+import icCloseLargeAsset from "../../assets/icCloseLarge.svg";
 
 import styles from "./LogoutModal.module.css";
 
@@ -9,6 +9,8 @@ type Props = {
   onClose: () => void;
   onConfirm: () => void;
 };
+
+const icCloseLarge = icCloseLargeAsset as string;
 
 export default function LogoutModal({ onClose, onConfirm }: Props) {
   return (

@@ -1,5 +1,7 @@
 import { PublicClientApplication } from "@azure/msal-browser";
 
+import type { AccountInfo } from "@azure/msal-browser";
+
 const msal = new PublicClientApplication({
   auth: {
     clientId: process.env.NEXT_PUBLIC_MS_CLIENT_ID!,
@@ -14,11 +16,11 @@ const request = {
 
 let initialized = false;
 
-export async function initMsal() {
+export async function initMsal(): Promise<AccountInfo | undefined> {
   if (!initialized) {
     await msal.initialize();
 
-    let account;
+    let account: AccountInfo | undefined;
 
     try {
       const result = await msal.handleRedirectPromise({

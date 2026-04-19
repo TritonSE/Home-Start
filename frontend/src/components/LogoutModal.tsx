@@ -3,7 +3,7 @@ import Image from "next/image";
 
 import styles from "./LogoutModal.module.css";
 
-import icCloseLargeAsset from "@/assets/ic_close_large.svg";
+import icCloseLargeAsset from "@/assets/icCloseLarge.svg";
 
 const icCloseLarge = icCloseLargeAsset as string;
 

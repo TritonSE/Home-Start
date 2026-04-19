@@ -4,8 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./TemplateCreate.module.css";
 
 import { getTemplate } from "@/app/api/template";
-import bluePlus from "@/assets/blue_plus.svg";
-import mdiInformation from "@/assets/mdi_information.svg";
+import bluePlusAsset from "@/assets/bluePlus.svg";
+import mdiInformationAsset from "@/assets/mdi_information.svg";
+
+const bluePlus = bluePlusAsset as string;
+const mdiInformation = mdiInformationAsset as string;
 
 type TemplateCreateProps = {
   onSave: (title: string, message: string, type: string) => void;

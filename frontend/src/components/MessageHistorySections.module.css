@@ -1,0 +1,115 @@
+.messageSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.messageSectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 10px;
+}
+
+.sectionTitle {
+  color: #000;
+  font-family: var(--Font-family-Headings, Viga);
+  font-size: var(--h5-font-size, 24px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--h5-font-size, 24px);
+  letter-spacing: var(--h5-letter-spacing, 1.2px);
+}
+
+.sectionSubtitle {
+  color: #676767;
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-sm-font-size, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-sm-line-height, 20px);
+  letter-spacing: var(--paragraph-sm-letter-spacing, 0.8px);
+}
+
+.messageList {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  border-radius: 8px;
+  border: 1px solid var(--Lofi-Gray-4, #676767);
+  overflow: hidden;
+}
+
+.messageRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px;
+  background: var(--Surface-page, #fbffff);
+}
+
+.messageRowLeft {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.messageSubject {
+  color: #000;
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-sm-font-size, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-sm-line-height, 20px);
+  letter-spacing: var(--paragraph-sm-letter-spacing, 0.8px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.messageDate {
+  color: #676767;
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-sm-font-size, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-sm-line-height, 20px);
+  letter-spacing: var(--paragraph-sm-letter-spacing, 0.8px);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.messageDivider {
+  border: none;
+  border-top: 1px dashed #979797;
+  margin: 0 16px;
+}
+
+.viewHistoryRow {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 0 4px;
+}
+
+.viewHistoryLink {
+  color: #1d3a6b;
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-sm-font-size, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-sm-line-height, 20px);
+  letter-spacing: var(--paragraph-sm-letter-spacing, 0.8px);
+  text-decoration: underline;
+}
+
+.viewHistoryLink:hover {
+  color: #0a1f3d;
+}

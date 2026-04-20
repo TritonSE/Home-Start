@@ -107,12 +107,16 @@ export default function Page() {
       const lastName = volunteer.lastName.toLowerCase();
       const fullName = `${firstName} ${lastName}`;
       const reverseFullName = `${lastName} ${firstName}`;
+      const phoneNumber = volunteer.phoneNumber.toLowerCase();
+      const email = volunteer.email.toLowerCase();
 
       const matchesSearch =
         firstName.includes(query) ||
         lastName.includes(query) ||
         fullName.includes(query) ||
-        reverseFullName.includes(query);
+        reverseFullName.includes(query) ||
+        phoneNumber.includes(query) ||
+        email.includes(query);
       if (!matchesSearch) return false;
     }
 
@@ -168,16 +172,20 @@ export default function Page() {
             selectedVolunteerType={selectedVolunteerType}
             setSelectedVolunteerType={handleSelectedVolunteerTypeChange}
           />
-          <VolunteerTable
-            volunteers={displayedVolunteers}
-            selectableVolunteers={filteredVolunteers}
-            onSelectedCountChange={setSelectedCount}
-          />
-          <div className={styles.tableSummaryRow}>
-            <span className={styles.tableSummaryLeft}>
-              {selectedCount > 0 ? `${selectedCount} selected` : ""}
-            </span>
-            <span className={styles.tableSummaryRight}>Total volunteers: {volunteers.length}</span>
+          <div className={styles.tableSection}>
+            <VolunteerTable
+              volunteers={displayedVolunteers}
+              selectableVolunteers={filteredVolunteers}
+              onSelectedCountChange={setSelectedCount}
+            />
+            <div className={styles.tableSummaryRow}>
+              <span className={styles.tableSummaryLeft}>
+                {selectedCount > 0 ? `${selectedCount} selected` : ""}
+              </span>
+              <span className={styles.tableSummaryRight}>
+                Total volunteers: {volunteers.length}
+              </span>
+            </div>
           </div>
           <PageBar
             totalItems={filteredVolunteers.length}

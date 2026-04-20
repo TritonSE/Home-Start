@@ -44,8 +44,17 @@
   color: #1f6b3a;
 }
 
-.importSuccessContent {
+.tableSection {
+  width: 100%;
+  max-width: 100%;
+  align-self: stretch;
   display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.importSuccessContent {
+  margin-top: 0;
   align-items: center;
   gap: 12px;
 }
@@ -75,13 +84,17 @@
   align-items: center;
   justify-content: space-between;
   min-height: 20px;
-  margin-top: 4px;
+  margin-top: 0px;
 }
 
 .tableSummaryLeft,
 .tableSummaryRight {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 400;
+  font-style: normal;
   font-size: 12px;
   line-height: 16px;
+  letter-spacing: 0;
   color: #666;
 }
 

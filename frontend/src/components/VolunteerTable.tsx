@@ -32,7 +32,8 @@ export default function VolunteerTable({
   }, [selectedIds, onSelectedCountChange]);
 
   const allSelected =
-    selectionScope.length > 0 && selectionScope.every((volunteer) => selectedIds.has(volunteer._id));
+    selectionScope.length > 0 &&
+    selectionScope.every((volunteer) => selectedIds.has(volunteer._id));
   const someSelected = selectionScope.some((volunteer) => selectedIds.has(volunteer._id));
 
   function toggleAll() {
@@ -134,12 +135,8 @@ export default function VolunteerTable({
                   aria-label={`Select ${volunteer.firstName} ${volunteer.lastName}`}
                 />
               </td>
-              <td>
-                {volunteer.lastName}
-              </td>
-              <td>
-                {volunteer.firstName}
-              </td>
+              <td>{volunteer.lastName}</td>
+              <td>{volunteer.firstName}</td>
 
               <td>
                 <div className={styles.tagsContainer}>
@@ -200,6 +197,9 @@ export default function VolunteerTable({
                     })}
                 </div>
               </td>
+
+              <td>{volunteer.phoneNumber}</td>
+              <td>{volunteer.email}</td>
             </tr>
           ))}
         </tbody>

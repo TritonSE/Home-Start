@@ -89,7 +89,7 @@
 .volunteerTable tbody tr:hover td:nth-child(-n + 3) {
   background-color: #e8e8e8;
 }
- /*END: Sticky first 3 columns */
+/*END: Sticky first 3 columns */
 
 .volunteerTable tbody tr:hover td {
   background-color: inherit;

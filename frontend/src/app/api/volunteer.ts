@@ -82,6 +82,8 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
     lastName: String(source.lastName ?? ""),
     email: String(source.email ?? ""),
     phoneNumber: String(source.phoneNumber ?? ""),
+    updated: source.updated ? new Date(source.updated) : new Date(),
+    created: source.created ? new Date(source.created) : new Date(),
     tags,
     status: normalizeVolunteerStatus(source.status),
   };
@@ -124,18 +126,19 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
     throw new TypeError(`Expected array but got ${typeof data}`);
   }
 
-  data.forEach((volunteer, index) => {
-    const normalized = normalizeVolunteer(volunteer);
-    if (
-      !normalized._id ||
-      !normalized.firstName ||
-      !normalized.lastName ||
-      !normalized.email ||
-      !normalized.phoneNumber
-    ) {
-      console.warn(`Volunteer at index ${index} has missing fields:`, volunteer);
-    }
-  });
+    data.forEach((volunteer, index) => {
+      if (
+        !volunteer._id ||
+        !volunteer.firstName ||
+        !volunteer.lastName ||
+        !volunteer.email ||
+        !volunteer.phoneNumber ||
+        !volunteer.updated ||
+        !volunteer.created
+      ) {
+        console.warn(`Volunteer at index ${index} has missing fields:`, volunteer);
+      }
+    });
 
   const typedData: Volunteer[] = data.map(normalizeVolunteer);
   return typedData;
@@ -147,11 +150,14 @@ export type VolunteerCsvParseResult = {
   wouldCreate: string[];
   wouldUpdate: string[];
   totalCount: number;
+
   volunteerInfo: {
     firstName: string;
     lastName: string;
     email: string;
     phoneNumber: string;
+    updated: Date;
+    created: Date;
     tags?: string[];
   }[];
 };
@@ -179,7 +185,7 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
       };
     }
 
-    const data: unknown = await response.json();
+    const data = await response.json();
     if (!data || typeof data !== "object") {
       return { ok: false, error: "Unexpected parse-csv response format" };
     }
@@ -197,41 +203,32 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
 
     const volunteerInfo = Array.isArray(parsed.volunteerInfo) ? parsed.volunteerInfo : [];
     const result: VolunteerCsvParseResult = {
-      wouldCreateCount: parsed.wouldCreateCount,
-      wouldUpdateCount: parsed.wouldUpdateCount,
-      wouldCreate: parsed.wouldCreate.filter((value): value is string => typeof value === "string"),
-      wouldUpdate: parsed.wouldUpdate.filter((value): value is string => typeof value === "string"),
-      totalCount: parsed.total,
-      volunteerInfo: volunteerInfo
-        .filter((item): item is VolunteerParseCsvDTO["volunteerInfo"][number] => {
-          if (!item || typeof item !== "object") {
-            return false;
-          }
-          const row = item as Partial<VolunteerParseCsvDTO["volunteerInfo"][number]>;
-          return (
-            typeof row.firstName === "string" &&
-            typeof row.lastName === "string" &&
-            typeof row.email === "string" &&
-            typeof row.phoneNumber === "string"
-          );
-        })
-        .map(
-          (item: {
-            firstName: string;
-            lastName: string;
-            email: string;
-            phoneNumber: string;
-            tags?: string[];
-          }) => ({
-            firstName: item.firstName,
-            lastName: item.lastName,
-            email: item.email,
-            phoneNumber: item.phoneNumber,
-            tags: Array.isArray(item.tags)
-              ? item.tags.filter((tag): tag is string => typeof tag === "string")
-              : undefined,
-          }),
-        ),
+      wouldCreateCount: data.wouldCreateCount,
+      wouldUpdateCount: data.wouldUpdateCount,
+      wouldCreate: data.wouldCreate,
+      wouldUpdate: data.wouldUpdate,
+      totalCount: data.total,
+      volunteerInfo: Array.isArray(data.volunteerInfo)
+        ? data.volunteerInfo.map(
+            (item: {
+              firstName: string;
+              lastName: string;
+              email: string;
+              phoneNumber: string;
+              updated: Date;
+              created: Date;
+              tags?: string[];
+            }) => ({
+              firstName: item.firstName,
+              lastName: item.lastName,
+              email: item.email,
+              phoneNumber: item.phoneNumber,
+              updated: new Date(item.updated),
+              created: new Date(item.created),
+              tags: item.tags,
+            }),
+          )
+        : [],
     };
     return { ok: true, data: result };
   } catch (error) {

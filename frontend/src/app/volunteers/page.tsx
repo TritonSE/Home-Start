@@ -40,6 +40,7 @@ export default function Page() {
       console.error("Error fetching volunteers:", error);
     }
   };
+  volunteers.sort((a, b) => b.created.getTime() - a.created.getTime());
 
   const handleSearchChange = (value: string) => {
     setSearch(value);

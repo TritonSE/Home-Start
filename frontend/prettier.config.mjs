@@ -1,5 +1,5 @@
 /** @type {import("prettier").Config} */
-const config = {
+export default {
   semi: true,
   singleQuote: false,
   tabWidth: 2,
@@ -14,5 +14,3 @@ const config = {
   // plugins: ["prettier-plugin-tailwindcss"],
   // tailwindFunctions: ["clsx", "cn", "classnames", "twMerge", "twJoin"],
 };
-
-export default config;

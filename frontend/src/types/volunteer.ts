@@ -15,4 +15,5 @@ export type Volunteer = {
   updated: Date;
   created: Date;
   tags: VolunteerTag[];
+  status: "new" | "returning";
 };

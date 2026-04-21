@@ -1,14 +1,18 @@
 "use client";
 
-import styles from "./page.module.css";
-import icCaretLeft from "../../../../../public/ic_caretleft.svg";
 import Image from "next/image";
-import { TemplateCreate } from "@/app/components/TemplateCreate";
-import Sidebar from "@/components/Sidebar";
-import { updateTemplate } from "@/app/api/template";
-import SuccessToast from "@/app/components/messages/SuccessToast";
-import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+
+import styles from "./page.module.css";
+
+import { updateTemplate } from "@/app/api/template";
+import icCaretLeftAsset from "@/assets/ic_caretleft.svg";
+import SuccessToast from "@/components/messages/SuccessToast";
+import Sidebar from "@/components/Sidebar";
+import { TemplateCreate } from "@/components/TemplateCreate";
+
+const icCaretLeft = icCaretLeftAsset as string;
 
 function EditTemplateContent() {
   const router = useRouter();
@@ -16,7 +20,7 @@ function EditTemplateContent() {
   const templateId = searchParams.get("templateId") ?? "";
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const onSave = async (title: string, message: string, type: string) => {
+  const onSave = (title: string, message: string, type: string) => {
     const createTemplateRequest = {
       title,
       message,
@@ -50,7 +54,7 @@ function EditTemplateContent() {
           onDone={onToastDone}
         />
         <header className={styles.header}>
-          <Image src={icCaretLeft} alt="" onClick={() => router.back()} />
+          <Image src={icCaretLeft} alt="" width={40} height={40} onClick={() => router.back()} />
           <h1 className={styles.headerTitle}>Edit</h1>
           <span style={{ height: "40px", width: "40px" }}></span>
         </header>

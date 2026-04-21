@@ -1,8 +1,8 @@
-import { Template } from "../api/template";
-import icMore from "../../../public/ic_more.svg";
+import Image from "next/image";
 
 import styles from "./TemplateList.module.css";
-import Image from "next/image";
+
+import type { Template } from "@/app/api/template";
 
 type TemplateListProps = {
   templates: Template[];
@@ -23,8 +23,10 @@ export function TemplateList({ templates, onTemplateClick, onMoreActions }: Temp
         >
           <span>{template.title}</span>
           <Image
-            src={icMore}
+            src={"/ic_more.svg"}
             alt=""
+            width={24}
+            height={24}
             onClick={(e) => {
               e.stopPropagation();
               onMoreActions(template);

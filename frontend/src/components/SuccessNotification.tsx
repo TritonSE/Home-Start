@@ -5,6 +5,10 @@ import { useEffect, useState } from "react";
 
 import styles from "./SuccessNotification.module.css";
 
+import checkAsset from "@/assets/check.svg";
+
+const check = checkAsset as string;
+
 export type SuccessNotificationProps = {
   message: string;
 };
@@ -26,7 +30,7 @@ const SuccessNotification: React.FC<SuccessNotificationProps> = ({ message }) =>
 
   return (
     <div className={styles.notif}>
-      <Image src="/check.svg" width={20} height={20} alt="check" />
+      <Image src={check} width={20} height={20} alt="check" />
       {message}
     </div>
   );

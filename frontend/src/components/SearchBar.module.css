@@ -20,7 +20,7 @@
   height: 48px;
   width: 100%;
   border: 1px solid #e8e8e8;
-  border-radius: 4px;
+  border-radius: 8px;
   display: flex;
   flex-direction: row;
 }
@@ -95,7 +95,8 @@
 
 .pillTagEvent:hover,
 .pillTagStatus:hover,
-.pillTagVolunteerType:hover {
+.pillTagVolunteerType:hover,
+.pillTagActive {
   background-color: #10203b;
   color: #ffffff;
   cursor: pointer;
@@ -133,7 +134,15 @@
   padding: 24px;
   gap: 8px;
   width: 391px;
-  height: 260px;
+  height: auto;
+  max-height: 700px;
+}
+
+.dropdownSmall {
+  width: 230px;
+  height: auto;
+  max-height: 700px;
+  padding: 12px;
 }
 
 .dropdownSearch {
@@ -146,10 +155,38 @@
 .dropdownItemContainer {
   display: flex;
   flex-direction: column;
-  height: 116px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding-top: 20px;
   padding-bottom: 12px;
   gap: 12px;
+}
+
+.dropdownFooter {
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.dropdownClearButton {
+  border: none;
+  background: transparent;
+  font-family: var(--font-open-sans);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.8px;
+  color: #1d3a6b;
+  cursor: pointer;
+}
+
+.dropdownClearButton:hover:enabled {
+  text-decoration: underline;
+}
+
+.dropdownClearButton:disabled {
+  color: #a0a0a0;
+  cursor: default;
 }
 
 .dropdownItem {

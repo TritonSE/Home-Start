@@ -1,8 +1,9 @@
 .volunteerTable {
-  border: 1px solid #dcdcdc;
-  border-collapse: collapse;
+  border: none;
+  border-collapse: separate;
+  border-spacing: 0;
   width: 100%;
-  margin: 20px 0;
+  margin: 0;
   min-width: 1050px;
   table-layout: fixed;
 }
@@ -29,7 +30,6 @@
 }
 
 .volunteerTable tbody tr {
-  border-bottom: 1px solid #b4b4b4;
   background-color: #ffffff;
 }
 
@@ -39,6 +39,7 @@
 
 .volunteerTable td {
   border: none;
+  border-bottom: 1px solid #b4b4b4;
   padding-left: 12px;
   padding-right: 12px;
   padding-top: 16px;
@@ -79,6 +80,17 @@
   padding-bottom: 8px;
   gap: 8px;
   font-size: 12px;
+  height: 40px;
+}
+
+.pillTagNew {
+  composes: pillTag;
+  background-color: lightblue;
+}
+
+.pillTagReturning {
+  composes: pillTag;
+  background-color: #efb446;
 }
 
 .tagsContainer {
@@ -86,41 +98,14 @@
   gap: 8px;
 }
 
-.bluePillTag {
-  background-color: #e6f2f3;
-  color: #007a8a;
-}
-
-.bluePillTag:hover {
-  background-color: #007a8ada;
-  color: #ffffff;
-}
-
-.orangePillTag {
-  background-color: #f9efe6;
-  color: #c46200;
-}
-
-.orangePillTag:hover {
-  background-color: #ffc370db;
-  color: #ffffff;
-}
-
-.greenPillTag {
-  background-color: #e6f2ec;
-  color: #007f3f;
-}
-
-.greenPillTag:hover {
-  background-color: #1fcb75cb;
-  color: #ffffff;
-}
-
 .tableWrapper {
+  margin: 20px 0;
+  border: 1px solid #dcdcdc;
   max-width: 100%;
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: hidden;
   min-height: 400px;
+  border-radius: 8px;
 }
 
 .checkboxCell {

@@ -1,24 +1,28 @@
 "use client";
 
-import { Volunteer } from "@/types/volunteer";
-import { fetchVolunteers } from "@/app/api/volunteer";
-import VolunteerTable from "@/components/VolunteerTable";
-import TitleBar from "@/components/TitleBar";
-import SearchBar from "@/components/SearchBar";
-import PageBar from "@/components/PageBar";
-import styles from "../page.module.css";
-import Sidebar from "@/components/Sidebar";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
+import type { Volunteer, VolunteerTag } from "@/types/volunteer";
+
+import { fetchTags } from "@/app/api/tag";
+import { fetchVolunteers } from "@/app/api/volunteer";
+import styles from "@/app/page.module.css";
+import PageBar from "@/components/PageBar";
+import SearchBar from "@/components/SearchBar";
+import Sidebar from "@/components/Sidebar";
+import TitleBar from "@/components/TitleBar";
+import VolunteerTable from "@/components/VolunteerTable";
 
 export default function Page() {
   // Data state
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [tags, setTags] = useState<VolunteerTag[]>([]);
 
   // Filter states
   const [search, setSearch] = useState("");
   const [selectedEvent, setSelectedEvent] = useState<Set<string>>(new Set());
-  const [selectedStatus, setSelectedStatus] = useState<Set<string>>(new Set());
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedVolunteerType, setSelectedVolunteerType] = useState<Set<string>>(new Set());
 
   // Pagination state
@@ -46,9 +50,7 @@ export default function Page() {
     setCurrentPage(1);
   };
 
-  const handleSelectedStatusChange = (
-    value: Set<string> | ((prev: Set<string>) => Set<string>),
-  ) => {
+  const handleSelectedStatusChange = (value: string | null) => {
     setSelectedStatus(value);
     setCurrentPage(1);
   };
@@ -61,28 +63,41 @@ export default function Page() {
   };
 
   useEffect(() => {
-    const loadInitialVolunteers = async () => {
-      await loadVolunteers();
-    };
-
-    void loadInitialVolunteers();
+    async function loadData() {
+      try {
+        const [volunteerData, tagData] = await Promise.all([fetchVolunteers(), fetchTags()]);
+        setVolunteers(volunteerData);
+        setTags(tagData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+    void loadData();
   }, []);
 
-  // Extract unique tags from volunteers
-  const uniqueTags = Array.from(
-    new Set(volunteers.flatMap((volunteer) => volunteer.tags.map((tag) => tag.name))),
-  );
-
-  // Combine all selected tag filters
-  const allSelectedTags = new Set([...selectedEvent, ...selectedStatus, ...selectedVolunteerType]);
-
+  // Filter tags by type
+  const eventTags = tags.filter((tag) => tag.type === "Event").map((tag) => tag.name);
+  const volunteerTypeTags = tags
+    .filter((tag) => tag.type === "Volunteer Type")
+    .map((tag) => tag.name);
   // Apply ALL filters here (search + tags)
   const filteredVolunteers = volunteers.filter((volunteer) => {
-    // Tag filter
-    if (allSelectedTags.size > 0) {
-      const hasMatchingTag = volunteer.tags.some((tag) => allSelectedTags.has(tag.name));
-      if (!hasMatchingTag) return false;
+    //Event filter
+    if (selectedEvent.size > 0) {
+      const hasMatchingEvent = volunteer.tags?.some((tag) => selectedEvent.has(tag.name));
+      if (!hasMatchingEvent) return false;
     }
+
+    //Volunteer Type filter
+    if (selectedVolunteerType.size > 0) {
+      const hasMatchingVolunteerType = volunteer.tags?.some((tag) =>
+        selectedVolunteerType.has(tag.name),
+      );
+      if (!hasMatchingVolunteerType) return false;
+    }
+
+    // Status filter
+    if (selectedStatus && volunteer.status !== selectedStatus) return false;
 
     // Search filter
     if (search.trim()) {
@@ -109,7 +124,7 @@ export default function Page() {
   const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
 
   const handleImportComplete = () => {
-    loadVolunteers();
+    void loadVolunteers();
     setShowImportSuccess(true);
   };
 
@@ -121,7 +136,7 @@ export default function Page() {
             <div className={styles.importSuccessBanner}>
               <div className={styles.importSuccessContent}>
                 <Image
-                  src="/success.svg"
+                  src={"/ic_success.svg"}
                   alt="Success"
                   className={styles.importSuccessIcon}
                   width={24}
@@ -143,7 +158,8 @@ export default function Page() {
           <SearchBar
             search={search}
             setSearch={handleSearchChange}
-            tags={uniqueTags}
+            eventTags={eventTags}
+            volunteerTypeTags={volunteerTypeTags}
             selectedEvent={selectedEvent}
             setSelectedEvent={handleSelectedEventChange}
             selectedStatus={selectedStatus}

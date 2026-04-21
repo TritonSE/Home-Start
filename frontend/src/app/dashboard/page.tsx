@@ -1,17 +1,24 @@
 "use client";
-import styles from "./page.module.css";
-import icMessage from "../../../public/ic_message.svg";
-import mail from "../../../public/mail.svg";
-import importExport from "../../../public/ion_document.svg";
-import icCaretRight from "../../../public/chevron_backward.svg";
-import Link from "next/link";
-import Image from "next/image";
-import LogoutButton from "@/components/LogoutButton";
-import { useState } from "react";
-import LogoutModal from "@/components/LogoutModal";
 import { signOut } from "firebase/auth";
-import { auth } from "@/firebase/firebase";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+
+import styles from "./page.module.css";
+
+import chevronBackwardAsset from "@/assets/chevron_backward.svg";
+import icMessageAsset from "@/assets/ic_message.svg";
+import importExportAsset from "@/assets/ion_document.svg";
+import mailAsset from "@/assets/mail.svg";
+import LogoutButton from "@/components/LogoutButton";
+import LogoutModal from "@/components/LogoutModal";
 import Sidebar from "@/components/Sidebar";
+import { auth } from "@/firebase/firebase";
+
+const chevronBackward = chevronBackwardAsset as string;
+const icMessage = icMessageAsset as string;
+const importExport = importExportAsset as string;
+const mail = mailAsset as string;
 
 export default function Dashboard() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -67,10 +74,10 @@ export default function Dashboard() {
                 >
                   <div className={styles.frame1}>
                     <div className={styles.iconFrame}>
-                      <Image src={card.icon} alt="" />
+                      <Image src={card.icon} alt="" width={24} height={24} />
                     </div>
                     <div className={styles.arrowFrame}>
-                      <Image src={icCaretRight} alt="" />
+                      <Image src={chevronBackward} alt="" width={24} height={24} />
                     </div>
                   </div>
                   <div className={styles.frame2}>
@@ -88,9 +95,9 @@ export default function Dashboard() {
         {showLogoutModal && (
           <LogoutModal
             onClose={() => setShowLogoutModal(false)}
-            onConfirm={async () => {
+            onConfirm={() => {
               setShowLogoutModal(false);
-              await handleLogout();
+              void handleLogout();
             }}
           />
         )}

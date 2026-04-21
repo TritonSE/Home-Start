@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
+import { MessageHistoryModal } from "./MessageHistoryModal";
 import styles from "./MessageHistorySections.module.css";
 
 import documentAsset from "@/assets/ion_document.svg";
@@ -9,28 +11,133 @@ const documentIcon = documentAsset as string;
 
 type MessageType = "text" | "email";
 
-type Message = {
+export type Message = {
   id: number;
   subject: string;
-  date: string;
+  date: Date;
   type: MessageType;
+  message: string;
+  recipients: string[];
+  status: string;
 };
 
 export const SCHEDULED_MESSAGES: Message[] = [
-  { id: 1, subject: "Volunteer Training Reminder", date: "02/22/26", type: "text" },
-  { id: 2, subject: "Monthly Newsletter", date: "02/21/26", type: "email" },
-  { id: 3, subject: "Shift Confirmation", date: "02/20/26", type: "text" },
-  { id: 4, subject: "Event Invitation", date: "02/03/26", type: "email" },
-  { id: 5, subject: "Holiday Schedule Update", date: "10/23/25", type: "text" },
+  {
+    id: 1,
+    subject: "Volunteer Training Reminder",
+    date: new Date("02/22/26"),
+    type: "text",
+    message: "message",
+    recipients: [
+      "email@gmail.com",
+      "email2@gmail.com",
+      "email@gmail.com",
+      "email2@gmail.com",
+      "email@gmail.com",
+      "email2@gmail.com",
+      "email@gmail.com",
+      "email2@gmail.com",
+      "email@gmail.com",
+      "email2@gmail.com",
+      "email@gmail.com",
+      "email2@gmail.com",
+      "email@gmail.com",
+      "email2@gmail.com",
+      "longerlongemail@gmail.com",
+    ],
+    status: "pending",
+  },
+  {
+    id: 2,
+    subject: "Monthly Newsletter",
+    date: new Date("02/21/26"),
+    type: "email",
+    message: "message",
+    recipients: [],
+    status: "pending",
+  },
+  {
+    id: 3,
+    subject: "Shift Confirmation",
+    date: new Date("02/20/26"),
+    type: "text",
+    message: "message",
+    recipients: [],
+    status: "pending",
+  },
+  {
+    id: 4,
+    subject: "Event Invitation",
+    date: new Date("02/03/26"),
+    type: "email",
+    message: "message",
+    recipients: [],
+    status: "pending",
+  },
+  {
+    id: 5,
+    subject: "Holiday Schedule Update",
+    date: new Date("10/23/25"),
+    type: "text",
+    message: "message",
+    recipients: [],
+    status: "pending",
+  },
 ];
 
 export const SENT_MESSAGES: Message[] = [
-  { id: 1, subject: "Welcome New Volunteers", date: "02/22/26", type: "email" },
-  { id: 2, subject: "Weekly Check-In", date: "02/21/26", type: "text" },
-  { id: 3, subject: "Program Announcement", date: "02/20/26", type: "email" },
-  { id: 4, subject: "Urgent: Schedule Change", date: "02/03/26", type: "text" },
-  { id: 5, subject: "Year-End Summary", date: "10/23/25", type: "email" },
+  {
+    id: 1,
+    subject: "Welcome New Volunteers",
+    date: new Date("02/22/26"),
+    type: "email",
+    message: "message",
+    recipients: [],
+    status: "sent",
+  },
+  {
+    id: 2,
+    subject: "Weekly Check-In",
+    date: new Date("02/21/26"),
+    type: "text",
+    message: "message",
+    recipients: [],
+    status: "sent",
+  },
+  {
+    id: 3,
+    subject: "Program Announcement",
+    date: new Date("02/20/26"),
+    type: "email",
+    message: "message",
+    recipients: [],
+    status: "sent",
+  },
+  {
+    id: 4,
+    subject: "Urgent: Schedule Change",
+    date: new Date("02/03/26"),
+    type: "text",
+    message: "message",
+    recipients: [],
+    status: "sent",
+  },
+  {
+    id: 5,
+    subject: "Year-End Summary",
+    date: new Date("10/23/25"),
+    type: "email",
+    message: "message",
+    recipients: [],
+    status: "sent",
+  },
 ];
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "numeric",
+  day: "numeric",
+  year: "2-digit",
+});
 
 function MessageRow({ message }: { message: Message }) {
   return (
@@ -39,7 +146,7 @@ function MessageRow({ message }: { message: Message }) {
         <Image src={documentIcon} alt="" width={20} height={20} />
         <span className={styles.messageSubject}>{message.subject}</span>
       </div>
-      <span className={styles.messageDate}>{message.date}</span>
+      <span className={styles.messageDate}>{dateFormatter.format(message.date)}</span>
     </div>
   );
 }
@@ -51,6 +158,8 @@ type MessageSectionProps = {
 };
 
 export function MessageSection({ title, subtitle, messages }: MessageSectionProps) {
+  const [selectedMessage, setSelectedMessage] = useState<Message | undefined>(undefined);
+
   return (
     <div className={styles.messageSection}>
       <div className={styles.messageSectionHeader}>
@@ -59,7 +168,12 @@ export function MessageSection({ title, subtitle, messages }: MessageSectionProp
       </div>
       <div className={styles.messageList}>
         {messages.map((msg, idx) => (
-          <div key={msg.id}>
+          <div
+            key={msg.id}
+            onClick={() => {
+              setSelectedMessage(msg);
+            }}
+          >
             <MessageRow message={msg} />
             {idx < messages.length - 1 && <div className={styles.messageDivider} />}
           </div>
@@ -70,6 +184,18 @@ export function MessageSection({ title, subtitle, messages }: MessageSectionProp
           View Entire History
         </Link>
       </div>
+      {selectedMessage && (
+        <MessageHistoryModal
+          message={selectedMessage}
+          onClose={() => {
+            setSelectedMessage(undefined);
+          }}
+          onActionButton={() => {
+            // go to edit message flow
+            console.info("Go to edit message flow");
+          }}
+        />
+      )}
     </div>
   );
 }

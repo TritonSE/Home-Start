@@ -72,7 +72,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
             tags: volunteer.tags,
           })),
         ] as ParsedVolunteerChange[],
-      } as ParsedCSVResult;
+      };
 
       setCSVParsedInfo(data);
       setStatus("success");

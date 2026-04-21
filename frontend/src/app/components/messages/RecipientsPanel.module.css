@@ -69,12 +69,17 @@
 }
 
 .desktopFilters {
-  display: none;
+  display: flex;
+  max-width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+  white-space: normal;
 }
 
 .desktopFilterGroup {
   position: relative;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .desktopFilterChip {
@@ -432,12 +437,16 @@
     gap: 10px;
     margin-top: 12px;
     margin-bottom: 18px;
-    flex-wrap: nowrap;
-    white-space: nowrap;
+    flex-wrap: wrap;
+    white-space: normal;
     font-family: "Open Sans", sans-serif;
   }
 
   .sheetOverlay {
     display: none;
   }
+}
+
+.newClass {
+  background: green;
 }

@@ -6,7 +6,7 @@
 }
 
 .page {
-  height: 100vh;
+  height: auto;
   background: #ffffff;
   display: flex;
   flex-direction: column;
@@ -238,7 +238,7 @@
 .messageBox {
   margin-top: 8px;
   min-height: 220px;
-  max-height: 281px;
+  max-height: 261px;
   width: 100%;
   overflow-y: auto;
   border-radius: 8px;
@@ -414,11 +414,12 @@
 
   .rightPane {
     min-height: 0;
-    height: 100%;
-    overflow-y: auto;
+    height: auto;
+    overflow-y: visible;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     padding-right: 12px;
+    align-self: start;
   }
 
   .leftScroll {

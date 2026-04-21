@@ -11,6 +11,7 @@ import { getEventTags } from "@/app/api/tag";
 import { getSelectedVolunteers, getVolunteerRows } from "@/app/api/volunteer";
 import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
 import unionIconAsset from "@/assets/Union.svg";
+import Pagination from "./pagination";
 
 const unionIcon = unionIconAsset as string;
 
@@ -157,24 +158,43 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
     setRecipientIds(Array.from(current));
   }, [allFilteredSelected, filteredIds, selectedRecipientIds, setRecipientIds]);
 
-  const toggleFilterChip = (kind: "event" | "status" | "volunteerType", value: string) => {
+  const toggleFilterChip = (kind: "event" | "status" | "volunteerType", value: string): string[] => {
     if (kind === "event") {
-      setSelectedEvents((prev) =>
-        prev.includes(value) ? prev.filter((x) => x !== value) : [...prev, value],
-      );
-      return;
+      let nextSelectedEvents: string[];
+      if (selectedEvents.includes(value)) {
+        nextSelectedEvents = selectedEvents.filter((x) => x !== value);
+      } else {
+        nextSelectedEvents = [...selectedEvents, value];
+      }
+      setSelectedEvents(nextSelectedEvents);
+      return nextSelectedEvents;
     }
 
     if (kind === "status") {
-      setSelectedStatuses((prev) =>
-        prev.includes(value) ? prev.filter((x) => x !== value) : [...prev, value],
-      );
-      return;
+      let nextSelectedStatuses: string[];
+      if (selectedStatuses.includes(value)) {
+        nextSelectedStatuses = selectedStatuses.filter((x) => x !== value);
+      } else {
+        nextSelectedStatuses = [...selectedStatuses, value];
+      }
+      setSelectedStatuses(nextSelectedStatuses);
+      return nextSelectedStatuses;
     }
 
-    setSelectedVolunteerTypes((prev) =>
-      prev.includes(value) ? prev.filter((x) => x !== value) : [...prev, value],
-    );
+    if (kind === "volunteerType") {
+      let nextSelectedVolunteerTypes: string[];
+      if (selectedVolunteerTypes.includes(value)) {
+        nextSelectedVolunteerTypes = selectedVolunteerTypes.filter((x) => x !== value);
+      } else {
+        nextSelectedVolunteerTypes = [...selectedVolunteerTypes, value];
+      }
+      setSelectedVolunteerTypes(nextSelectedVolunteerTypes);
+      return nextSelectedVolunteerTypes;
+    }
+
+    else {
+      throw new Error(`Invalid filter kind: ${kind}`);
+    }
   };
 
   const clearAllFilters = () => {
@@ -184,7 +204,7 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
     setOpenMenu(null);
   };
 
-  const applyFilters = async () => {
+  const applyFilters = async (selectedEvents: string[], selectedStatuses: string[]) => {
     try {
       const data: Recipient[] = await getSelectedVolunteers({
         events: selectedEvents,
@@ -262,14 +282,17 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
 
             {openMenu === "event" ? (
               <div className={styles.desktopFilterMenu}>
-                {EVENTS.map((item) => {
+                {events.map((item) => {
                   const on = selectedEvents.includes(item);
                   return (
                     <button
                       key={item}
                       type="button"
                       className={`${styles.desktopFilterMenuButton} ${on ? styles.desktopFilterMenuButtonActive : ""}`}
-                      onClick={() => toggleFilterChip("event", item)}
+                      onClick={() => {
+                        const currentSelectedEvents: string[] = toggleFilterChip("event", item);
+                        applyFilters(currentSelectedEvents, selectedStatuses);
+                      }}
                     >
                       {item}
                     </button>
@@ -298,7 +321,10 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
                       key={item}
                       type="button"
                       className={`${styles.desktopFilterMenuButton} ${on ? styles.desktopFilterMenuButtonActive : ""}`}
-                      onClick={() => toggleFilterChip("status", item)}
+                      onClick={() => {
+                        const currentSelectedStatuses: string[] = toggleFilterChip("status", item);
+                        applyFilters(selectedEvents, currentSelectedStatuses);
+                      }}
                     >
                       {item}
                     </button>
@@ -347,19 +373,8 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
         </button>
       </div>
 
-      <div className={styles.list}>
-        {filtered.map((r) => (
-          <RecipientRow
-            key={r.id}
-            name={`${r.firstName} ${r.lastName}`}
-            tags={r.tags}
-            selected={selectedSet.has(r.id)}
-            onToggle={() => toggleRecipient(r.id)}
-            checkboxPosition="left"
-            disableSelectedStyle
-          />
-        ))}
-      </div>
+      <Pagination volunteers={filtered} />
+
 
       {mode === "page" ? (
         <div className={styles.bottomCta}>
@@ -453,7 +468,7 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
                 type="button"
                 className={styles.applyBtn}
                 onClick={() => {
-                  void applyFilters();
+                  void applyFilters(selectedEvents, selectedStatuses);
                 }}
               >
                 Apply Filters

@@ -221,7 +221,7 @@ function Composer({
         <div className={styles.toRowNew}>
           <span className={styles.toLabelNew}>To:</span>
 
-          {recipientsCount > 0 ? (
+          {!isDesktop ? (recipientsCount > 0 ? (
             <div className={styles.toSelectedWrap}>
               <span className={styles.toSelectedPill}>{recipientsCount} Volunteers</span>
               <button
@@ -243,7 +243,7 @@ function Composer({
               Select Recipients
               <Image src={blueChevronLeft} alt="" />
             </button>
-          )}
+          )): null}
         </div>
       </section>
 

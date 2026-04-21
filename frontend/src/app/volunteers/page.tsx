@@ -30,7 +30,7 @@ export default function Page() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showImportSuccess, setShowImportSuccess] = useState(false);
   const [selectedCount, setSelectedCount] = useState(0);
-  const itemsPerPage = 6;
+  const itemsPerPage = 100;
 
   const loadVolunteers = async () => {
     try {
@@ -184,7 +184,7 @@ export default function Page() {
                 {selectedCount > 0 ? `${selectedCount} selected` : ""}
               </span>
               <span className={styles.tableSummaryRight}>
-                Total volunteers: {volunteers.length}
+                Total volunteers: {filteredVolunteers.length}
               </span>
             </div>
           </div>

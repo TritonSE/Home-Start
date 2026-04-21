@@ -126,19 +126,19 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
     throw new TypeError(`Expected array but got ${typeof data}`);
   }
 
-    data.forEach((volunteer, index) => {
-      if (
-        !volunteer._id ||
-        !volunteer.firstName ||
-        !volunteer.lastName ||
-        !volunteer.email ||
-        !volunteer.phoneNumber ||
-        !volunteer.updated ||
-        !volunteer.created
-      ) {
-        console.warn(`Volunteer at index ${index} has missing fields:`, volunteer);
-      }
-    });
+  data.forEach((volunteer, index) => {
+    if (
+      !volunteer._id ||
+      !volunteer.firstName ||
+      !volunteer.lastName ||
+      !volunteer.email ||
+      !volunteer.phoneNumber ||
+      !volunteer.updated ||
+      !volunteer.created
+    ) {
+      console.warn(`Volunteer at index ${index} has missing fields:`, volunteer);
+    }
+  });
 
   const typedData: Volunteer[] = data.map(normalizeVolunteer);
   return typedData;

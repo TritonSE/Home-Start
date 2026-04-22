@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import styles from "../page.module.css";
 
@@ -83,46 +83,48 @@ export default function Page() {
     .filter((tag) => tag.type === "Volunteer Type")
     .map((tag) => tag.name);
   // Apply ALL filters here (search + tags)
-  const filteredVolunteers = volunteers.filter((volunteer) => {
-    //Event filter
-    if (selectedEvent.size > 0) {
-      const hasMatchingEvent = volunteer.tags?.some((tag) => selectedEvent.has(tag.name));
-      if (!hasMatchingEvent) return false;
-    }
+  const filteredVolunteers = useMemo(() => {
+    return volunteers.filter((volunteer) => {
+      //Event filter
+      if (selectedEvent.size > 0) {
+        const hasMatchingEvent = volunteer.tags?.some((tag) => selectedEvent.has(tag.name));
+        if (!hasMatchingEvent) return false;
+      }
 
-    //Volunteer Type filter
-    if (selectedVolunteerType.size > 0) {
-      const hasMatchingVolunteerType = volunteer.tags?.some((tag) =>
-        selectedVolunteerType.has(tag.name),
-      );
-      if (!hasMatchingVolunteerType) return false;
-    }
+      //Volunteer Type filter
+      if (selectedVolunteerType.size > 0) {
+        const hasMatchingVolunteerType = volunteer.tags?.some((tag) =>
+          selectedVolunteerType.has(tag.name),
+        );
+        if (!hasMatchingVolunteerType) return false;
+      }
 
-    // Status filter
-    if (selectedStatus && volunteer.status !== selectedStatus) return false;
+      // Status filter
+      if (selectedStatus && volunteer.status !== selectedStatus) return false;
 
-    // Search filter
-    if (search.trim()) {
-      const query = search.trim().toLowerCase();
-      const firstName = volunteer.firstName.toLowerCase();
-      const lastName = volunteer.lastName.toLowerCase();
-      const fullName = `${firstName} ${lastName}`;
-      const reverseFullName = `${lastName} ${firstName}`;
-      const phoneNumber = volunteer.phoneNumber.toLowerCase();
-      const email = volunteer.email.toLowerCase();
+      // Search filter
+      if (search.trim()) {
+        const query = search.trim().toLowerCase();
+        const firstName = volunteer.firstName.toLowerCase();
+        const lastName = volunteer.lastName.toLowerCase();
+        const fullName = `${firstName} ${lastName}`;
+        const reverseFullName = `${lastName} ${firstName}`;
+        const phoneNumber = volunteer.phoneNumber.toLowerCase();
+        const email = volunteer.email.toLowerCase();
 
-      const matchesSearch =
-        firstName.includes(query) ||
-        lastName.includes(query) ||
-        fullName.includes(query) ||
-        reverseFullName.includes(query) ||
-        phoneNumber.includes(query) ||
-        email.includes(query);
-      if (!matchesSearch) return false;
-    }
+        const matchesSearch =
+          firstName.includes(query) ||
+          lastName.includes(query) ||
+          fullName.includes(query) ||
+          reverseFullName.includes(query) ||
+          phoneNumber.includes(query) ||
+          email.includes(query);
+        if (!matchesSearch) return false;
+      }
 
-    return true;
-  });
+      return true;
+    });
+  }, [selectedEvent, selectedStatus, selectedVolunteerType, search, volunteers]);
 
   // Calculate pagination slice
   const startIndex = (currentPage - 1) * itemsPerPage;

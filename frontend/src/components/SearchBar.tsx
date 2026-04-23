@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 import styles from "./SearchBar.module.css";
+import SortSelectionButton from "./SortSelectorButton";
 
 import checkboxIconAsset from "@/assets/Checkbox.svg";
 import unionIconAsset from "@/assets/Union.svg";
@@ -16,6 +17,8 @@ type SearchBarProps = {
   setSearch: (value: string) => void;
   eventTags: string[];
   volunteerTypeTags: string[];
+  sortType: "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A";
+  onSortOptionChange: (option: "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A") => void;
 
   selectedEvent: Set<string>;
   setSelectedEvent: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
@@ -30,6 +33,8 @@ export default function SearchBar({
   setSearch,
   eventTags,
   volunteerTypeTags,
+  sortType,
+  onSortOptionChange,
   selectedEvent,
   setSelectedEvent,
   selectedStatus,
@@ -258,6 +263,10 @@ export default function SearchBar({
           >
             Clear All
           </button>
+        </div>
+
+        <div className={styles.sortContainer}>
+          <SortSelectionButton sortType={sortType} onSortOptionChange={onSortOptionChange} />
         </div>
       </div>
     </div>

@@ -30,6 +30,7 @@ export default function Page() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showImportSuccess, setShowImportSuccess] = useState(false);
   const [selectedCount, setSelectedCount] = useState(0);
+  const [sortOption, setSortOption] = useState<"Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A">("Newest");
   const itemsPerPage = 100;
 
   const loadVolunteers = async () => {
@@ -40,7 +41,10 @@ export default function Page() {
       console.error("Error fetching volunteers:", error);
     }
   };
-  volunteers.sort((a, b) => b.created.getTime() - a.created.getTime());
+
+  const handleSortOptionChange = (option: "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A") => {
+    setSortOption(option);
+  }
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -126,10 +130,31 @@ export default function Page() {
     });
   }, [selectedEvent, selectedStatus, selectedVolunteerType, search, volunteers]);
 
+  const sortedFilteredVolunteers = useMemo(() => {
+    const sorted = [...filteredVolunteers];
+
+    switch (sortOption) {
+      case "Newest":
+        return sorted.sort((a, b) => b.created.getTime() - a.created.getTime());
+      case "Oldest":
+        return sorted.sort((a, b) => a.created.getTime() - b.created.getTime());
+      case "First Name A-Z":
+        return sorted.sort((a, b) => a.firstName.localeCompare(b.firstName));
+      case "First Name Z-A":
+        return sorted.sort((a, b) => b.firstName.localeCompare(a.firstName));
+      case "Last Name A-Z":
+        return sorted.sort((a, b) => a.lastName.localeCompare(b.lastName));
+      case "Last Name Z-A":
+        return sorted.sort((a, b) => b.lastName.localeCompare(a.lastName));
+      default:
+        return sorted;
+    }
+  }, [filteredVolunteers, sortOption]);
+
   // Calculate pagination slice
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
+  const displayedVolunteers = sortedFilteredVolunteers.slice(startIndex, endIndex);
 
   const handleImportComplete = () => {
     void loadVolunteers();
@@ -158,7 +183,6 @@ export default function Page() {
                 onClick={() => setShowImportSuccess(false)}
                 aria-label="Dismiss success message"
               >
-                ×
               </button>
             </div>
           )}
@@ -168,6 +192,8 @@ export default function Page() {
             setSearch={handleSearchChange}
             eventTags={eventTags}
             volunteerTypeTags={volunteerTypeTags}
+            sortType={sortOption}
+            onSortOptionChange={handleSortOptionChange}
             selectedEvent={selectedEvent}
             setSelectedEvent={handleSelectedEventChange}
             selectedStatus={selectedStatus}

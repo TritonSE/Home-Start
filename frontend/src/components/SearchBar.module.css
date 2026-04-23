@@ -71,6 +71,12 @@
   gap: 12px;
 }
 
+.sortContainer {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
 .pillWrapper {
   position: relative;
   display: inline-block;

@@ -9,6 +9,7 @@ import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 
 import { fetchTags } from "@/app/api/tag";
 import { fetchVolunteers } from "@/app/api/volunteer";
+import CreateTagModal from "@/components/CreateTagModal";
 import PageBar from "@/components/PageBar";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
@@ -165,6 +166,10 @@ export default function Page() {
     <Sidebar>
       <div className={styles.page}>
         <main className={styles.main}>
+          {/* TEMPORARY: Keep the create-tag modal always visible while developing its UI. */}
+          {/* Remove this block once modal open/close is wired to real page state. */}
+          <CreateTagModal onClose={() => {}} />
+
           {showImportSuccess && (
             <div className={styles.importSuccessBanner}>
               <div className={styles.importSuccessContent}>

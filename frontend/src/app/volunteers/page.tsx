@@ -20,6 +20,7 @@ export default function Page() {
   // Data state
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
+  const [showCreateTagModal, setShowCreateTagModal] = useState(false);
 
   // Filter states
   const [search, setSearch] = useState("");
@@ -162,13 +163,24 @@ export default function Page() {
     setShowImportSuccess(true);
   };
 
+  const renderCreateTagModal = () => {
+    if (!showCreateTagModal) {
+      return null;
+    }
+
+    return <CreateTagModal onClose={() => setShowCreateTagModal(false)} />;
+  };
+
   return (
     <Sidebar>
       <div className={styles.page}>
         <main className={styles.main}>
-          {/* TEMPORARY: Keep the create-tag modal always visible while developing its UI. */}
-          {/* Remove this block once modal open/close is wired to real page state. */}
-          <CreateTagModal onClose={() => {}} />
+          {renderCreateTagModal()}
+
+          Remove this button after user profiles are implemented 
+          <button type="button" onClick={() => setShowCreateTagModal(true)}>
+            Open Create Tag Modal (Test)
+          </button>
 
           {showImportSuccess && (
             <div className={styles.importSuccessBanner}>

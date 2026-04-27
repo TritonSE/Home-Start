@@ -3,8 +3,12 @@ import Link from "next/link";
 
 import styles from "./MessageHistorySections.module.css";
 
+import messageAsset from "@/assets/ic_message.svg";
 import documentAsset from "@/assets/ion_document.svg";
+import mailAsset from "@/assets/mail.svg";
 
+const messageIcon = messageAsset as string;
+const mailIcon = mailAsset as string;
 const documentIcon = documentAsset as string;
 
 type MessageType = "text" | "email";
@@ -33,10 +37,18 @@ export const SENT_MESSAGES: Message[] = [
 ];
 
 function MessageRow({ message }: { message: Message }) {
+  let iconSrc;
+  if (message.type === "text") {
+    iconSrc = messageIcon;
+  } else if (message.type === "email") {
+    iconSrc = mailIcon;
+  } else {
+    iconSrc = documentIcon;
+  }
   return (
     <div className={styles.messageRow}>
       <div className={styles.messageRowLeft}>
-        <Image src={documentIcon} alt="" width={20} height={20} />
+        <Image src={iconSrc} alt="" width={20} height={20} />
         <span className={styles.messageSubject}>{message.subject}</span>
       </div>
       <span className={styles.messageDate}>{message.date}</span>

@@ -221,29 +221,31 @@ function Composer({
         <div className={styles.toRowNew}>
           <span className={styles.toLabelNew}>To:</span>
 
-          {!isDesktop ? (recipientsCount > 0 ? (
-            <div className={styles.toSelectedWrap}>
-              <span className={styles.toSelectedPill}>{recipientsCount} Volunteers</span>
+          {!isDesktop ? (
+            recipientsCount > 0 ? (
+              <div className={styles.toSelectedWrap}>
+                <span className={styles.toSelectedPill}>{recipientsCount} Volunteers</span>
+                <button
+                  type="button"
+                  className={styles.toIconButton}
+                  onClick={clickableTo ? onGoRecipients : undefined}
+                  aria-label="Edit recipients"
+                >
+                  <Image src={addPersonIcon} alt="" className={styles.toIconImage} />
+                </button>
+              </div>
+            ) : (
               <button
                 type="button"
-                className={styles.toIconButton}
+                className={styles.selectRecipientsBtn}
                 onClick={clickableTo ? onGoRecipients : undefined}
-                aria-label="Edit recipients"
+                aria-disabled={!clickableTo}
               >
-                <Image src={addPersonIcon} alt="" className={styles.toIconImage} />
+                Select Recipients
+                <Image src={blueChevronLeft} alt="" />
               </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className={styles.selectRecipientsBtn}
-              onClick={clickableTo ? onGoRecipients : undefined}
-              aria-disabled={!clickableTo}
-            >
-              Select Recipients
-              <Image src={blueChevronLeft} alt="" />
-            </button>
-          )): null}
+            )
+          ) : null}
         </div>
       </section>
 

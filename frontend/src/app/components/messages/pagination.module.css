@@ -1,8 +1,15 @@
 .container {
   display: flex;
   flex-direction: column;
-  height: 420px;
-  min-height: 420px;
+  height: auto;
+  min-height: 0;
+  flex: 1;
+}
+
+@media (min-width: 1024px) {
+  .container {
+    height: 430px;
+  }
 }
 
 .list {
@@ -105,7 +112,6 @@
   line-height: var(--paragraph-xsm-line-height, 16px); /* 133.333% */
 }
 
-
 .rightNumber {
   display: flex;
   width: 40px;
@@ -118,14 +124,14 @@
   border-radius: 4px 4px 0 0;
 
   color: var(--Lofi-Gray-4, #676767);
-text-align: center;
-/* Body/md */
-font-family: var(--Font-family-Body, "Open Sans");
-font-size: var(--paragraph-md-font-size, 16px);
-font-style: normal;
-font-weight: 400;
-line-height: var(--paragraph-md-line-height, 20px); /* 125% */
-letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
+  text-align: center;
+  /* Body/md */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-md-font-size, 16px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-md-line-height, 20px); /* 125% */
+  letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
 }
 
 .rightPagination {
@@ -171,4 +177,10 @@ letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
   display: flex;
   width: 24px;
   height: 24px;
+}
+
+.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
 }

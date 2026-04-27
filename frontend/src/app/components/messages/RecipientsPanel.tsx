@@ -4,14 +4,13 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import RecipientRow from "./RecipientRow";
+import Pagination from "./pagination";
 import styles from "./RecipientsPanel.module.css";
 
 import { getEventTags } from "@/app/api/tag";
 import { getSelectedVolunteers, getVolunteerRows } from "@/app/api/volunteer";
 import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
 import unionIconAsset from "@/assets/Union.svg";
-import Pagination from "./pagination";
 
 const unionIcon = unionIconAsset as string;
 
@@ -64,6 +63,7 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
   const [volunteerRows, setVolunteerRows] = useState<VolunteerRow[]>([]);
   const [, setLoading] = useState(true);
   const [, setError] = useState<string | null>(null);
+  const setPageIndex = useTextingFlowStore((s) => s.setPageIndex);
 
   useEffect(() => {
     let cancelled: boolean = false;
@@ -74,7 +74,12 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
         setError(null);
 
         const data = await getVolunteerRows();
-        if (!cancelled) setVolunteerRows(data);
+        if (!cancelled) {
+          setVolunteerRows(data);
+          if (data.length > 0) {
+            setPageIndex(0);
+          }
+        }
       } catch (e: unknown) {
         if (e instanceof Error) {
           setError(e.message);
@@ -158,7 +163,10 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
     setRecipientIds(Array.from(current));
   }, [allFilteredSelected, filteredIds, selectedRecipientIds, setRecipientIds]);
 
-  const toggleFilterChip = (kind: "event" | "status" | "volunteerType", value: string): string[] => {
+  const toggleFilterChip = (
+    kind: "event" | "status" | "volunteerType",
+    value: string,
+  ): string[] => {
     if (kind === "event") {
       let nextSelectedEvents: string[];
       if (selectedEvents.includes(value)) {
@@ -190,10 +198,8 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
       }
       setSelectedVolunteerTypes(nextSelectedVolunteerTypes);
       return nextSelectedVolunteerTypes;
-    }
-
-    else {
-      throw new Error(`Invalid filter kind: ${kind}`);
+    } else {
+      throw new Error(`Invalid filter kind: ${kind as string}`);
     }
   };
 
@@ -204,11 +210,11 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
     setOpenMenu(null);
   };
 
-  const applyFilters = async (selectedEvents: string[], selectedStatuses: string[]) => {
+  const applyFilters = async (eventsSelected: string[], statusesSelected: string[]) => {
     try {
       const data: Recipient[] = await getSelectedVolunteers({
-        events: selectedEvents,
-        statuses: selectedStatuses,
+        events: eventsSelected,
+        statuses: statusesSelected,
       });
       clearRecipients();
       setRecipients(data);
@@ -291,7 +297,7 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
                       className={`${styles.desktopFilterMenuButton} ${on ? styles.desktopFilterMenuButtonActive : ""}`}
                       onClick={() => {
                         const currentSelectedEvents: string[] = toggleFilterChip("event", item);
-                        applyFilters(currentSelectedEvents, selectedStatuses);
+                        void applyFilters(currentSelectedEvents, selectedStatuses);
                       }}
                     >
                       {item}
@@ -323,7 +329,7 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
                       className={`${styles.desktopFilterMenuButton} ${on ? styles.desktopFilterMenuButtonActive : ""}`}
                       onClick={() => {
                         const currentSelectedStatuses: string[] = toggleFilterChip("status", item);
-                        applyFilters(selectedEvents, currentSelectedStatuses);
+                        void applyFilters(selectedEvents, currentSelectedStatuses);
                       }}
                     >
                       {item}
@@ -374,7 +380,6 @@ export default function RecipientsPanel({ mode }: { mode: Mode }) {
       </div>
 
       <Pagination volunteers={filtered} />
-
 
       {mode === "page" ? (
         <div className={styles.bottomCta}>

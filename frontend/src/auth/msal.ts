@@ -11,7 +11,7 @@ const msal = new PublicClientApplication({
 });
 
 const request = {
-  scopes: ["User.Read", "Mail.Send"],
+  scopes: ["Mail.Send"],
 };
 
 let initialized = false;

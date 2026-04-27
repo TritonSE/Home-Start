@@ -13,6 +13,8 @@ type TextingFlowState = {
   selectedRecipientIds: string[];
   selectedRecipients: Recipient[];
 
+  pageIndex: number;
+
   setMode: (mode: MessageMode) => void;
 
   setSubject: (subject: string) => void;
@@ -25,6 +27,7 @@ type TextingFlowState = {
   getRecipients: () => Recipient[];
 
   resetDraft: () => void;
+  setPageIndex: (index: number) => void;
 };
 
 type Recipient = {
@@ -44,6 +47,8 @@ export const useTextingFlowStore = create<TextingFlowState>()(
       message: "",
       selectedRecipientIds: [],
       selectedRecipients: [],
+
+      pageIndex: 0,
 
       setMode: (mode) => set({ mode }),
       setSubject: (subject) => set({ subject }),
@@ -69,6 +74,7 @@ export const useTextingFlowStore = create<TextingFlowState>()(
           message: "",
           selectedRecipientIds: [],
         }),
+      setPageIndex: (index) => set({ pageIndex: index }),
     }),
     {
       name: "texting-flow-draft",

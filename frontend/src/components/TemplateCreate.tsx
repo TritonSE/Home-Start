@@ -5,10 +5,10 @@ import styles from "./TemplateCreate.module.css";
 
 import { TemplateType } from "@/app/api/template";
 import bluePlusAsset from "@/assets/blue_plus.svg";
-import mdiInfoAsset from "@/assets/mdi_information.svg";
+import infoAsset from "@/assets/mdi_information.svg";
 
 const bluePlus = bluePlusAsset as string;
-const mdiInfo = mdiInfoAsset as string;
+const infoIcon = infoAsset as string;
 
 type TemplateCreateProps = {
   onSave: (title: string, message: string, type: TemplateType, subject: string) => void;
@@ -128,12 +128,12 @@ export function TemplateCreate({ onSave, title, message, subject, type }: Templa
               insertText("[First Name]");
             }}
           >
-            <Image src={bluePlus} alt="" width={16} height={16} />
+            <Image src={bluePlus} alt="" width={20} height={20} />
             Insert First Name
           </button>
 
           <div className={styles.helper}>
-            <Image src={mdiInfo} alt="" className={styles.helperIcon} width={16} height={16} />
+            <Image src={infoIcon} alt="" className={styles.helperIcon} width={20} height={20} />
             <span className={styles.bottomText}>
               Tap the button to insert a volunteer{"'"}s name wherever you want it to appear.
             </span>

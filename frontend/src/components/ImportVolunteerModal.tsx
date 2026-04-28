@@ -1,10 +1,10 @@
 import Image from "next/image";
 import { useState } from "react";
 
-import { parseVolunteersCsv, uploadVolunteerBatch } from "../app/api/volunteer";
-
 import styles from "./ImportVolunteerModal.module.css";
+import Modal from "./Modal";
 
+import { parseVolunteersCsv, uploadVolunteerBatch } from "@/app/api/volunteer";
 import icErrorAsset from "@/assets/ic_error.svg";
 import icNewAsset from "@/assets/ic_new.svg";
 import icSuccessAsset from "@/assets/ic_success.svg";
@@ -134,188 +134,185 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
   const isReview = step === "review";
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <div className={styles.header}>
-          <h2>Import Volunteer Matrix</h2>
-          <button className={styles.close} onClick={onClose}>
-            ×
-          </button>
+    <Modal
+      onClose={onClose}
+      width="1050px"
+      radius="12px"
+      title="Import Volunteer Matrix"
+      titleFontSize="32px"
+      titleLineHeight={40}
+      padding="28px"
+    >
+      <div className={styles.step}>
+        <div className={styles.stepItem}>
+          <div className={isReview ? styles.stepCircleInactive : styles.stepCircleActive}>1</div>
+          <div className={isReview ? styles.stepLabelInactive : styles.stepLabelActive}>Upload</div>
         </div>
-
-        <div className={styles.step}>
-          <div className={styles.stepItem}>
-            <div className={isReview ? styles.stepCircleInactive : styles.stepCircleActive}>1</div>
-            <div className={isReview ? styles.stepLabelInactive : styles.stepLabelActive}>
-              Upload
-            </div>
-          </div>
-          <span>→</span>
-          <div className={styles.stepItem}>
-            <div className={isReview ? styles.stepCircleActive : styles.stepCircleInactive}>2</div>
-            <div className={isReview ? styles.stepLabelActive : styles.stepLabelInactive}>
-              Review
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.body}>
-          {!isReview && (
-            <>
-              <div className={styles.sectionTitle}>Upload CSV File</div>
-
-              {status === "idle" && (
-                <>
-                  <label
-                    className={`${styles.uploadBox} ${isDragging ? styles.uploadBoxDragging : ""}`}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                  >
-                    <input type="file" accept=".csv" hidden onChange={handleFileChange} />
-                    <div className={styles.uploadContent}>
-                      <Image
-                        src={uploadIcon}
-                        alt="Upload icon"
-                        className={styles.uploadIcon}
-                        width={24}
-                        height={24}
-                      />
-                      <div className={styles.uploadText}>
-                        Drag and drop your CSV file here, or click to browse
-                      </div>
-                      <div className={styles.uploadSubtext}>Supported format: CSV Only</div>
-                    </div>
-                  </label>
-
-                  <div className={styles.warning}>
-                    <Image
-                      src={icWarning}
-                      alt="Warning icon"
-                      className={styles.warningIcon}
-                      width={24}
-                      height={24}
-                    />
-                    <div>Make sure the CSV is in this order: Name, Phone Number, Email, etc.</div>
-                  </div>
-                </>
-              )}
-
-              {status === "error" && (
-                <div className={`${styles.uploadBox} ${styles.uploadBoxError}`}>
-                  <div className={styles.uploadContent}>
-                    <Image
-                      src={icError}
-                      alt="Error icon"
-                      className={styles.errorIcon}
-                      width={24}
-                      height={24}
-                    />
-                    <div className={styles.errorText}>Unsupported file uploaded</div>
-                    <div className={styles.uploadSubtext}>
-                      Make sure the headers for the CSV are correct!
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {status === "success" && (
-                <div className={`${styles.uploadBox} ${styles.uploadBoxSuccess}`}>
-                  <div className={styles.uploadContent}>
-                    <Image
-                      src={icSuccess}
-                      alt="Success icon"
-                      className={styles.successIcon}
-                      width={24}
-                      height={24}
-                    />
-                    <div className={styles.successText}>{fileName} successfully uploaded</div>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {isReview && (
-            <>
-              <div className={styles.summaryRow}>
-                <div className={`${styles.summaryCard} ${styles.summaryCardNew}`}>
-                  <div className={styles.summaryHeader}>
-                    <Image
-                      src={icSuccess}
-                      alt="Success icon"
-                      className={styles.summaryIcon}
-                      width={24}
-                      height={24}
-                    />
-                    <span>New Volunteers</span>
-                  </div>
-                  <div className={styles.summaryCount}>{csvParsedInfo?.newCount || 0}</div>
-                </div>
-                <div className={`${styles.summaryCard} ${styles.summaryCardUpdated}`}>
-                  <div className={styles.summaryHeader}>
-                    <Image
-                      src={icNew}
-                      alt="New icon"
-                      className={styles.summaryIcon}
-                      width={24}
-                      height={24}
-                    />
-                    <span>Updated Volunteers</span>
-                  </div>
-                  <div className={styles.summaryCount}>{csvParsedInfo?.updatedCount || 0}</div>
-                </div>
-              </div>
-
-              <div className={styles.detailSection}>
-                <div className={styles.sectionTitle}>Detailed Changes</div>
-                <div className={styles.detailCard}>
-                  <div className={styles.detailList}>
-                    {csvParsedInfo?.changes?.map((change, index) => (
-                      <div key={`${change.email}-${index}`} className={styles.detailItem}>
-                        <div className={styles.detailHeader}>
-                          <span
-                            className={`${styles.detailBadge} ${
-                              change.status === "New"
-                                ? styles.detailBadgeNew
-                                : styles.detailBadgeUpdated
-                            }`}
-                          >
-                            {change.status}
-                          </span>
-                          <span className={styles.detailName}>
-                            {change.firstName} {change.lastName}
-                          </span>
-                        </div>
-                        <div className={styles.detailMeta}>Email: {change.email}</div>
-                        <div className={styles.detailMeta}>Phone: {change.phoneNumber}</div>
-                        {index < (csvParsedInfo?.changes.length || 0) - 1 && (
-                          <div className={styles.detailDivider} />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className={styles.footer}>
-          <button className={styles.cancel} onClick={onClose}>
-            Cancel
-          </button>
-          <button
-            className={styles.continue}
-            disabled={isContinueDisabled}
-            onClick={() => {
-              void handleContinue();
-            }}
-          >
-            Continue
-          </button>
+        <span>→</span>
+        <div className={styles.stepItem}>
+          <div className={isReview ? styles.stepCircleActive : styles.stepCircleInactive}>2</div>
+          <div className={isReview ? styles.stepLabelActive : styles.stepLabelInactive}>Review</div>
         </div>
       </div>
-    </div>
+
+      <div className={styles.body}>
+        {!isReview && (
+          <>
+            <div className={styles.sectionTitle}>Upload CSV File</div>
+
+            {status === "idle" && (
+              <>
+                <label
+                  className={`${styles.uploadBox} ${isDragging ? styles.uploadBoxDragging : ""}`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
+                  <input type="file" accept=".csv" hidden onChange={handleFileChange} />
+                  <div className={styles.uploadContent}>
+                    <Image
+                      src={uploadIcon}
+                      alt="Upload icon"
+                      className={styles.uploadIcon}
+                      width={24}
+                      height={24}
+                    />
+                    <div className={styles.uploadText}>
+                      Drag and drop your CSV file here, or click to browse
+                    </div>
+                    <div className={styles.uploadSubtext}>Supported format: CSV Only</div>
+                  </div>
+                </label>
+
+                <div className={styles.warning}>
+                  <Image
+                    src={icWarning}
+                    alt="Warning icon"
+                    className={styles.warningIcon}
+                    width={24}
+                    height={24}
+                  />
+                  <div>Make sure the CSV is in this order: Name, Phone Number, Email, etc.</div>
+                </div>
+              </>
+            )}
+
+            {status === "error" && (
+              <div className={`${styles.uploadBox} ${styles.uploadBoxError}`}>
+                <div className={styles.uploadContent}>
+                  <Image
+                    src={icError}
+                    alt="Error icon"
+                    className={styles.errorIcon}
+                    width={24}
+                    height={24}
+                  />
+                  <div className={styles.errorText}>Unsupported file uploaded</div>
+                  <div className={styles.uploadSubtext}>
+                    Make sure the headers for the CSV are correct!
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {status === "success" && (
+              <div className={`${styles.uploadBox} ${styles.uploadBoxSuccess}`}>
+                <div className={styles.uploadContent}>
+                  <Image
+                    src={icSuccess}
+                    alt="Success icon"
+                    className={styles.successIcon}
+                    width={24}
+                    height={24}
+                  />
+                  <div className={styles.successText}>{fileName} successfully uploaded</div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {isReview && (
+          <>
+            <div className={styles.summaryRow}>
+              <div className={`${styles.summaryCard} ${styles.summaryCardNew}`}>
+                <div className={styles.summaryHeader}>
+                  <Image
+                    src={icSuccess}
+                    alt="Success icon"
+                    className={styles.summaryIcon}
+                    width={24}
+                    height={24}
+                  />
+                  <span>New Volunteers</span>
+                </div>
+                <div className={styles.summaryCount}>{csvParsedInfo?.newCount || 0}</div>
+              </div>
+              <div className={`${styles.summaryCard} ${styles.summaryCardUpdated}`}>
+                <div className={styles.summaryHeader}>
+                  <Image
+                    src={icNew}
+                    alt="New icon"
+                    className={styles.summaryIcon}
+                    width={24}
+                    height={24}
+                  />
+                  <span>Updated Volunteers</span>
+                </div>
+                <div className={styles.summaryCount}>{csvParsedInfo?.updatedCount || 0}</div>
+              </div>
+            </div>
+
+            <div className={styles.detailSection}>
+              <div className={styles.sectionTitle} style={{ marginLeft: "16px" }}>
+                Detailed Changes
+              </div>
+              <div className={styles.detailCard}>
+                <div className={styles.detailList}>
+                  {csvParsedInfo?.changes?.map((change, index) => (
+                    <div key={`${change.email}-${index}`} className={styles.detailItem}>
+                      <div className={styles.detailHeader}>
+                        <span
+                          className={`${styles.detailBadge} ${
+                            change.status === "New"
+                              ? styles.detailBadgeNew
+                              : styles.detailBadgeUpdated
+                          }`}
+                        >
+                          {change.status}
+                        </span>
+                        <span className={styles.detailName}>
+                          {change.firstName} {change.lastName}
+                        </span>
+                      </div>
+                      <div className={styles.detailMeta}>Email: {change.email}</div>
+                      <div className={styles.detailMeta}>Phone: {change.phoneNumber}</div>
+                      {index < (csvParsedInfo?.changes.length || 0) - 1 && (
+                        <div className={styles.detailDivider} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className={styles.footer}>
+        <button className={styles.cancel} onClick={onClose}>
+          Cancel
+        </button>
+        <button
+          className={styles.continue}
+          disabled={isContinueDisabled}
+          onClick={() => {
+            void handleContinue();
+          }}
+        >
+          Continue
+        </button>
+      </div>
+    </Modal>
   );
 }

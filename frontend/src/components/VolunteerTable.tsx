@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import styles from "./VolunteerTable.module.css";
 
-import type { Volunteer } from "../types/volunteer";
+import type { Volunteer } from "@/types/volunteer";
 
 type VolunteerTableProps = {
   volunteers: Volunteer[];
@@ -39,11 +39,13 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
         <colgroup>
-          <col style={{ width: "44px" }} />
-          <col style={{ width: "197px" }} />
-          <col style={{ width: "251px" }} />
-          <col style={{ width: "251px" }} />
-          <col style={{ width: "302px" }} />
+          <col style={{ width: "60px" }} />
+          <col style={{ width: "150px" }} />
+          <col style={{ width: "160px" }} />
+          <col style={{ width: "230px" }} />
+          <col style={{ width: "180px" }} />
+          <col style={{ width: "230px" }} />
+          <col style={{ width: "350px" }} />
         </colgroup>
         <thead>
           <tr>
@@ -76,7 +78,17 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
             </th>
             <th>
               <div className={styles.headerContent}>
-                <span>Tags</span>
+                <span>Status</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Volunteer Type</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Event</span>
               </div>
             </th>
           </tr>
@@ -101,27 +113,64 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
               </td>
               <td>{volunteer.phoneNumber}</td>
               <td>{volunteer.email}</td>
+
               <td>
                 <div className={styles.tagsContainer}>
-                  {volunteer.tags.map((tag, index) => {
-                    let colorClass = styles.greenPillTag;
-
-                    if (tag.name === "Intern") {
-                      colorClass = styles.bluePillTag;
+                  <span
+                    className={
+                      volunteer.status === "new" ? styles.pillTagNew : styles.pillTagReturning
                     }
+                  >
+                    {volunteer.status.charAt(0).toUpperCase() + volunteer.status.slice(1)}
+                  </span>
+                </div>
+              </td>
 
-                    if (tag.name === "Outside Volunteer") {
-                      colorClass = styles.orangePillTag;
-                    }
-                    return (
-                      <span
-                        key={`col1-${volunteer._id}-${tag._id}-${index}`}
-                        className={`${styles.pillTag} ${colorClass}`}
-                      >
-                        {tag.name}
-                      </span>
-                    );
-                  })}
+              <td>
+                <div className={styles.tagsContainer}>
+                  {volunteer.tags
+                    ?.filter((tag) => tag.type === "Volunteer Type")
+                    .map((tag, index) => {
+                      const colorClass = styles.pillTag;
+                      const bgColor = tag?.color
+                        ? tag.color.startsWith("#")
+                          ? tag.color
+                          : `#${tag.color}`
+                        : undefined;
+                      return (
+                        <span
+                          key={`col2-${volunteer._id}-${tag.name}-${index}`}
+                          className={`${styles.pillTag} ${colorClass}`}
+                          style={{ backgroundColor: bgColor }}
+                        >
+                          {tag.name}
+                        </span>
+                      );
+                    })}
+                </div>
+              </td>
+
+              <td>
+                <div className={styles.tagsContainer}>
+                  {volunteer.tags
+                    ?.filter((tag) => tag.type === "Event")
+                    .map((tag, index) => {
+                      const colorClass = styles.pillTag;
+                      const bgColor = tag?.color
+                        ? tag.color.startsWith("#")
+                          ? tag.color
+                          : `#${tag.color}`
+                        : undefined;
+                      return (
+                        <span
+                          key={`col2-${volunteer._id}-${tag.name}-${index}`}
+                          className={`${styles.pillTag} ${colorClass}`}
+                          style={{ backgroundColor: bgColor }}
+                        >
+                          {tag.name}
+                        </span>
+                      );
+                    })}
                 </div>
               </td>
             </tr>

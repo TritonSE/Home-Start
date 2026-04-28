@@ -150,6 +150,7 @@ export const updateVolunteerContact: RequestHandler = async (req, res, next) => 
     const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
       phoneNumber,
       email,
+      $currentDate: { updated: true },
     }).populate(defaultPopulateConfig);
 
     if (!volunteer) {
@@ -174,9 +175,14 @@ export const assignTagsToVolunteer: RequestHandler = async (req, res, next) => {
     validationErrorParser(errors);
 
     const { tags } = req.body as AssignTagsBody;
-    const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
-      $addToSet: { tags: { $each: tags } },
-    }).populate(defaultPopulateConfig);
+    const volunteer = await VolunteerModel.findByIdAndUpdate(
+      volunteerId,
+      {
+        $addToSet: { tags: { $each: tags } },
+        $currentDate: { updated: true },
+      },
+      { new: true },
+    ).populate(defaultPopulateConfig);
 
     if (!volunteer) {
       throw createError(404, "Could not find volunteer");
@@ -200,9 +206,14 @@ export const removeTagsFromVolunteer: RequestHandler = async (req, res, next) =>
     validationErrorParser(errors);
 
     const { tags } = req.body as RemoveTagsFromVolunteerBody;
-    const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
-      $pullAll: { tags },
-    }).populate(defaultPopulateConfig);
+    const volunteer = await VolunteerModel.findByIdAndUpdate(
+      volunteerId,
+      {
+        $pullAll: { tags },
+        $currentDate: { updated: true as const },
+      },
+      { new: true },
+    ).populate(defaultPopulateConfig);
 
     if (!volunteer) {
       throw createError(404, "Could not find volunteer");
@@ -234,6 +245,17 @@ type UpdateVolunteerOp = {
   };
 };
 
+const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
+  const { tags, ...rest } = body;
+  const temp = {
+    ...rest,
+    ...(tags && {
+      tags: tags.map((id) => new Types.ObjectId(id)),
+    }),
+  };
+  return temp;
+};
+
 export const uploadVolunteerBatch: RequestHandler<
   object,
   object,
@@ -251,6 +273,8 @@ export const uploadVolunteerBatch: RequestHandler<
         },
         update: {
           $set: normalizeVolunteerForBulkWrite(body),
+          // Mongo operator to set a field to the current date
+          $currentDate: { updated: true as const },
         },
         upsert: true,
       },
@@ -298,17 +322,6 @@ const validateVolunteer = (volunteer: unknown) => {
     return false;
   }
   return true;
-};
-
-const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
-  const { tags, ...rest } = body;
-  const temp = {
-    ...rest,
-    ...(tags && {
-      tags: tags.map((id) => new Types.ObjectId(id)),
-    }),
-  };
-  return temp;
 };
 
 const statusKeyToEnum = (key: string): string => {
@@ -430,6 +443,8 @@ export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
         },
         update: {
           $set: normalizeVolunteerForBulkWrite(body),
+          // Mongo operator to set a field to the current date
+          $currentDate: { updated: true as const },
         },
         upsert: true,
       },

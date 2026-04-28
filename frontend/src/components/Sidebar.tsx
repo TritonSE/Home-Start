@@ -5,10 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import layoutStyles from "../app/layout.module.css";
-
 import styles from "./Sidebar.module.css";
 
+import layoutStyles from "@/app/layout.module.css";
 import icCommunicationAsset from "@/assets/ic_communication.svg";
 import icDashboardAsset from "@/assets/ic_dashboard.svg";
 import icVolunteersAsset from "@/assets/ic_volunteers.svg";

@@ -39,6 +39,8 @@ type VolunteerParseCsvDTO = {
     lastName: string;
     email: string;
     phoneNumber: string;
+    updated: string | Date;
+    created: string | Date;
     tags?: string[];
   }[];
 };
@@ -63,6 +65,25 @@ const toVolunteerTag = (tag: unknown): VolunteerTag | null => {
   };
 };
 
+const normalizeVolunteerStatus = (status: unknown): Volunteer["status"] => {
+  return status === "returning" ? "returning" : "new";
+};
+
+const toDate = (value: unknown): Date => {
+  if (value instanceof Date) {
+    return value;
+  }
+
+  if (typeof value === "string" || typeof value === "number") {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  return new Date();
+};
+
 const normalizeVolunteer = (volunteer: unknown): Volunteer => {
   const source = (volunteer ?? {}) as Partial<Volunteer> & {
     tags?: unknown;
@@ -78,7 +99,10 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
     lastName: String(source.lastName ?? ""),
     email: String(source.email ?? ""),
     phoneNumber: String(source.phoneNumber ?? ""),
+    updated: toDate(source.updated),
+    created: toDate(source.created),
     tags,
+    status: normalizeVolunteerStatus(source.status),
   };
 };
 
@@ -126,7 +150,9 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
       !normalized.firstName ||
       !normalized.lastName ||
       !normalized.email ||
-      !normalized.phoneNumber
+      !normalized.phoneNumber ||
+      !normalized.updated ||
+      !normalized.created
     ) {
       console.warn(`Volunteer at index ${index} has missing fields:`, volunteer);
     }
@@ -142,11 +168,14 @@ export type VolunteerCsvParseResult = {
   wouldCreate: string[];
   wouldUpdate: string[];
   totalCount: number;
+
   volunteerInfo: {
     firstName: string;
     lastName: string;
     email: string;
     phoneNumber: string;
+    updated: Date;
+    created: Date;
     tags?: string[];
   }[];
 };
@@ -207,26 +236,22 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
             typeof row.firstName === "string" &&
             typeof row.lastName === "string" &&
             typeof row.email === "string" &&
-            typeof row.phoneNumber === "string"
+            typeof row.phoneNumber === "string" &&
+            row.updated !== undefined &&
+            row.created !== undefined
           );
         })
-        .map(
-          (item: {
-            firstName: string;
-            lastName: string;
-            email: string;
-            phoneNumber: string;
-            tags?: string[];
-          }) => ({
-            firstName: item.firstName,
-            lastName: item.lastName,
-            email: item.email,
-            phoneNumber: item.phoneNumber,
-            tags: Array.isArray(item.tags)
-              ? item.tags.filter((tag): tag is string => typeof tag === "string")
-              : undefined,
-          }),
-        ),
+        .map((item) => ({
+          firstName: item.firstName,
+          lastName: item.lastName,
+          email: item.email,
+          phoneNumber: item.phoneNumber,
+          updated: toDate(item.updated),
+          created: toDate(item.created),
+          tags: Array.isArray(item.tags)
+            ? item.tags.filter((tag): tag is string => typeof tag === "string")
+            : undefined,
+        })),
     };
     return { ok: true, data: result };
   } catch (error) {

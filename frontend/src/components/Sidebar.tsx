@@ -44,7 +44,7 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
 
   const handleCommunicationClick = () => {
     setMode("text");
-    router.push("/communication");
+    void router.push("/communication");
   };
 
   return (

@@ -1,4 +1,4 @@
-.searchBar {
+searchBar.searchBar {
   gap: 12px;
   height: 92px;
   width: 100%;
@@ -136,6 +136,7 @@
   width: 391px;
   height: auto;
   max-height: 700px;
+  z-index: 30;
 }
 
 .dropdownSmall {

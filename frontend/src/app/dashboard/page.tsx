@@ -31,7 +31,7 @@ export default function Dashboard() {
   const sendEmails = async () => {
     setMode("email");
     if (await initMsal()) {
-      router.push("/communication");
+      void router.push("/communication");
       return;
     }
 

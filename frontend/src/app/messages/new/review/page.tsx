@@ -162,7 +162,7 @@ export default function ReviewAndSendPage() {
           <button
             type="button"
             className={styles.editLink}
-            onClick={() => router.push("/messages/new/recipients")}
+            onClick={() => void router.push("/messages/new/recipients")}
           >
             Edit
           </button>
@@ -182,7 +182,7 @@ export default function ReviewAndSendPage() {
           <button
             type="button"
             className={styles.editLink}
-            onClick={() => router.push("/messages/new")}
+            onClick={() => void router.push("/messages/new")}
           >
             Edit
           </button>

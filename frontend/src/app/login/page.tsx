@@ -40,7 +40,7 @@ function LoginFormContent() {
       if (window.location.pathname === "/") {
         window.location.reload();
       } else {
-        router.push("/dashboard");
+        void router.push("/dashboard");
       }
     } catch (caughtError) {
       if (caughtError instanceof FirebaseError) {

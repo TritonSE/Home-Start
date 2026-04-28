@@ -220,11 +220,10 @@ function Composer({
       <section className={styles.toSectionNew}>
         <div className={styles.toRowNew}>
           <span className={styles.toLabelNew}>To:</span>
-
-          {!isDesktop ? (
-            recipientsCount > 0 ? (
-              <div className={styles.toSelectedWrap}>
-                <span className={styles.toSelectedPill}>{recipientsCount} Volunteers</span>
+          <div className={styles.toSelectedWrap}>
+            <span className={styles.toSelectedPill}>{recipientsCount} Volunteers</span>
+            {!isDesktop ? (
+              recipientsCount > 0 ? (
                 <button
                   type="button"
                   className={styles.toIconButton}
@@ -233,19 +232,19 @@ function Composer({
                 >
                   <Image src={addPersonIcon} alt="" className={styles.toIconImage} />
                 </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className={styles.selectRecipientsBtn}
-                onClick={clickableTo ? onGoRecipients : undefined}
-                aria-disabled={!clickableTo}
-              >
-                Select Recipients
-                <Image src={blueChevronLeft} alt="" />
-              </button>
-            )
-          ) : null}
+              ) : (
+                <button
+                  type="button"
+                  className={styles.selectRecipientsBtn}
+                  onClick={clickableTo ? onGoRecipients : undefined}
+                  aria-disabled={!clickableTo}
+                >
+                  Select Recipients
+                  <Image src={blueChevronLeft} alt="" />
+                </button>
+              )
+            ) : null}
+          </div>
         </div>
       </section>
 
@@ -358,15 +357,15 @@ export default function NewMessagePage() {
   }, [mode, recipientsCount, subject, message]);
 
   const goDashboard = useCallback(() => {
-    router.push("/dashboard");
+    void router.push("/dashboard");
   }, [router]);
 
   const goRecipientsMobile = useCallback(() => {
-    router.push("/messages/new/recipients");
+    void router.push("/messages/new/recipients");
   }, [router]);
 
   const goReview = useCallback(() => {
-    router.push("/messages/new/review");
+    void router.push("/messages/new/review");
   }, [router]);
 
   const commonProps = {

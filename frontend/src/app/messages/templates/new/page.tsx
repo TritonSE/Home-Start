@@ -39,7 +39,7 @@ export default function CreateTemplatePage() {
 
   const onToastDone = () => {
     setShowSuccess(false);
-    router.push("/messages/templates");
+    void router.push("/messages/templates");
   };
 
   return (

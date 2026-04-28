@@ -2,9 +2,11 @@
 
 import styles from "./RecipientRow.module.css";
 
+import type { VolunteerTag } from "@/types/volunteer";
+
 type Props = {
   name: string;
-  tags: string[];
+  tags: VolunteerTag[];
   selected: boolean;
   onToggle: () => void;
   checkboxPosition?: "left" | "right";
@@ -19,7 +21,7 @@ export default function RecipientRow({
   checkboxPosition = "right",
   disableSelectedStyle = false,
 }: Props) {
-  const primary = tags[0];
+  const primary = "intern"; // THIS NEEDS TO BE FIXED
 
   return (
     <button

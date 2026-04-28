@@ -50,13 +50,13 @@ export default function TemplatePage() {
 
   const handleAddTemplateClicked = () => {
     const path = join(pathname, "new");
-    router.push(path);
+    void router.push(path);
   };
 
   const handleEditTemplateClicked = () => {
     if (selectedTemplate) {
       const path = join(pathname, `edit?templateId=${selectedTemplate._id}`);
-      router.push(path);
+      void router.push(path);
     }
   };
 

@@ -3,6 +3,8 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import type { Volunteer } from "@/types/volunteer";
+
 export type MessageMode = "text" | "email";
 
 type TextingFlowState = {
@@ -10,8 +12,12 @@ type TextingFlowState = {
 
   subject: string;
   message: string;
+  selectedRecipients: Volunteer[];
   selectedRecipientIds: string[];
-  selectedRecipients: Recipient[];
+  numSelectedRecipientIds: number;
+  recipients: Volunteer[];
+  recipientIds: string[];
+  numRecipientIds: number;
 
   pageIndex: number;
 
@@ -21,21 +27,16 @@ type TextingFlowState = {
   setMessage: (msg: string) => void;
 
   toggleRecipient: (id: string) => void;
-  setRecipientIds: (ids: string[]) => void;
-  setRecipients: (recipients: Recipient[]) => void;
-  clearRecipients: () => void;
-  getRecipients: () => Recipient[];
+  setSelectedRecipients: (recipients: Volunteer[]) => void;
+  clearSelectedRecipients: () => void;
+  getSelectedRecipients: () => Volunteer[];
+  getNumSelectedRecipientIds: () => number;
+  getNumRecipientIds: () => number;
+  setRecipients: (recipients: Volunteer[]) => void;
+  toggleSelectAll: () => void;
 
   resetDraft: () => void;
   setPageIndex: (index: number) => void;
-};
-
-type Recipient = {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
 };
 
 export const useTextingFlowStore = create<TextingFlowState>()(
@@ -45,8 +46,12 @@ export const useTextingFlowStore = create<TextingFlowState>()(
 
       subject: "",
       message: "",
-      selectedRecipientIds: [],
       selectedRecipients: [],
+      selectedRecipientIds: [],
+      recipients: [],
+      recipientIds: [],
+      numSelectedRecipientIds: 0,
+      numRecipientIds: 0,
 
       pageIndex: 0,
 
@@ -55,17 +60,83 @@ export const useTextingFlowStore = create<TextingFlowState>()(
       setMessage: (msg) => set({ message: msg }),
 
       toggleRecipient: (id) => {
-        const prev = get().selectedRecipientIds;
-        const exists = prev.includes(id);
+        const recipients = get().recipients;
+        const prev = get().selectedRecipients;
+        const prevIds = get().selectedRecipientIds;
+        const exists = prevIds.includes(id);
+        const recipient = recipients.find((item) => item._id === id);
+
         set({
-          selectedRecipientIds: exists ? prev.filter((x) => x !== id) : [...prev, id],
+          selectedRecipientIds: exists ? prevIds.filter((x) => x !== id) : [...prevIds, id],
         });
+
+        if (exists) {
+          set({
+            selectedRecipients: prev.filter((item) => item._id !== id),
+          });
+          return;
+        }
+
+        if (recipient) {
+          set({
+            selectedRecipients: [...prev, recipient],
+          });
+        }
       },
 
-      setRecipientIds: (ids) => set({ selectedRecipientIds: ids }),
-      setRecipients: (recipients) => set({ selectedRecipients: recipients }),
-      clearRecipients: () => set({ selectedRecipientIds: [] }),
-      getRecipients: () => get().selectedRecipients,
+      setSelectedRecipients: (recipients) =>
+        set({
+          selectedRecipients: recipients,
+          selectedRecipientIds: recipients.map((recipient) => recipient._id),
+        }),
+      clearSelectedRecipients: () =>
+        set({
+          selectedRecipientIds: [],
+          selectedRecipients: [],
+        }),
+      getSelectedRecipients: () => get().selectedRecipients,
+      getNumSelectedRecipientIds: () => get().selectedRecipientIds.length,
+      getNumRecipientIds: () => get().recipientIds.length,
+      setRecipients: (recipients) => {
+        set({
+          recipients,
+          recipientIds: recipients.map((recipient) => recipient._id),
+          selectedRecipients: [],
+          selectedRecipientIds: [],
+          numSelectedRecipientIds: 0,
+          numRecipientIds: recipients.length,
+        });
+      },
+      toggleSelectAll: () => {
+        const recipients = get().recipients;
+        const recipientIds = get().recipientIds;
+        const selectedRecipientIds = get().selectedRecipientIds;
+
+        if (recipientIds.length === 0) {
+          set({
+            selectedRecipientIds: [],
+            selectedRecipients: [],
+          });
+          return;
+        }
+
+        const allSelected = recipientIds.every((id) => selectedRecipientIds.includes(id));
+
+        if (allSelected) {
+          set({
+            selectedRecipientIds: [],
+            selectedRecipients: [],
+          });
+          return;
+        }
+
+        set({
+          selectedRecipientIds: recipientIds,
+          selectedRecipients: recipients.filter((recipient) =>
+            recipientIds.includes(recipient._id),
+          ),
+        });
+      },
 
       resetDraft: () =>
         set({
@@ -73,6 +144,7 @@ export const useTextingFlowStore = create<TextingFlowState>()(
           subject: "",
           message: "",
           selectedRecipientIds: [],
+          selectedRecipients: [],
         }),
       setPageIndex: (index) => set({ pageIndex: index }),
     }),

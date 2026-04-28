@@ -8,6 +8,8 @@ import icCloseLargeAsset from "@/assets/ic_close_large.svg";
 
 const icCloseLarge = icCloseLargeAsset as string;
 
+type TagType = "assignment" | "project" | "shift" | "program";
+
 type CheckIconProps = {
   color: string;
 };
@@ -42,10 +44,11 @@ const COLOR_OPTIONS: ColorOption[] = [
 ];
 
 type Props = {
+  type: TagType;
   onClose: () => void;
 };
 
-export default function CreateTagModal({ onClose }: Props) {
+export default function CreateTagModal({ type, onClose }: Props) {
   const [tagName, setTagName] = useState("");
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
 

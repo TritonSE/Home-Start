@@ -21,6 +21,7 @@ export default function Page() {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
   const [showCreateTagModal, setShowCreateTagModal] = useState(false);
+  const [createTagType, setCreateTagType] = useState<"assignment" | "project" | "shift" | "program" | null>(null);
 
   // Filter states
   const [search, setSearch] = useState("");
@@ -163,12 +164,18 @@ export default function Page() {
     setShowImportSuccess(true);
   };
 
-  const renderCreateTagModal = () => {
-    if (!showCreateTagModal) {
+  // If `type` is provided this function will open the modal with that type.
+  // Otherwise it renders the modal when `showCreateTagModal` is true.
+  const renderCreateTagModal = (type?: "assignment" | "project" | "shift" | "program") => {
+    if (type) {
+      setCreateTagType(type);
+      setShowCreateTagModal(true);
       return null;
     }
 
-    return <CreateTagModal onClose={() => setShowCreateTagModal(false)} />;
+    if (!showCreateTagModal || !createTagType) return null;
+
+    return <CreateTagModal type={createTagType} onClose={() => setShowCreateTagModal(false)} />;
   };
 
   return (
@@ -177,10 +184,13 @@ export default function Page() {
         <main className={styles.main}>
           {renderCreateTagModal()}
 
-          Remove this button after user profiles are implemented 
-          <button type="button" onClick={() => setShowCreateTagModal(true)}>
-            Open Create Tag Modal (Test)
-          </button>
+            {/* Test buttons - each opens the CreateTagModal with a different type. */}
+            <div>
+              <button type="button" onClick={() => renderCreateTagModal("assignment")}>Open assignment modal</button>
+              <button type="button" onClick={() => renderCreateTagModal("project")}>Open project modal</button>
+              <button type="button" onClick={() => renderCreateTagModal("shift")}>Open shift modal</button>
+              <button type="button" onClick={() => renderCreateTagModal("program")}>Open program modal</button>
+            </div>
 
           {showImportSuccess && (
             <div className={styles.importSuccessBanner}>

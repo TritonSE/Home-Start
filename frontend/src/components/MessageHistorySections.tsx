@@ -13,49 +13,69 @@ const mailIcon = mailAsset as string;
 
 type MessageType = "text" | "email";
 
-type Message = {
-  id: number;
-  subject: string;
-  preview: string;
-  date: string;
-  type: MessageType;
+const formatMessageDate = (date: Date): string => {
+  return date.toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "2-digit",
+  });
 };
 
+export type Message = {
+  id: number;
+  subject: string;
+  date: Date;
+  type: MessageType;
+  message: string;
+  recipients: string[];
+  status: string;
+};
 export const SCHEDULED_MESSAGES: Message[] = [
   {
     id: 1,
     subject: "Volunteer Training Reminder",
-    preview: "Don't forget your upcoming training session this Friday at 9am.",
-    date: "02/22/26",
+    message: "Don't forget your upcoming training session this Friday at 9am.",
+    date: new Date("02/22/26"),
     type: "text",
+    status: "pending",
+    recipients: ["id1", "id2", "id3"],
   },
   {
     id: 2,
     subject: "Monthly Newsletter",
-    preview: "Here's a roundup of this month's highlights and upcoming events.",
-    date: "02/21/26",
+    message: "Here's a roundup of this month's highlights and upcoming events.",
+    date: new Date("02/21/26"),
     type: "email",
+    status: "pending",
+    recipients: ["id4", "id5"],
   },
   {
     id: 3,
     subject: "Shift Confirmation",
-    preview: "Your shift on Saturday has been confirmed. Please arrive 10 minutes early.",
-    date: "02/20/26",
+    message:
+      "Your shift on Saturday has been confirmed. Please arrive 10 minutes early. test test test test test test test test test test test test test",
+    date: new Date("02/20/26"),
     type: "text",
+    status: "pending",
+    recipients: ["id6", "id7", "id8"],
   },
   {
     id: 4,
     subject: "Event Invitation",
-    preview: "You're invited to our annual volunteer appreciation dinner on March 5th.",
-    date: "02/03/26",
+    message: "You're invited to our annual volunteer appreciation dinner on March 5th.",
+    date: new Date("02/03/26"),
     type: "email",
+    status: "pending",
+    recipients: ["id9"],
   },
   {
     id: 5,
     subject: "Holiday Schedule Update",
-    preview: "Please review the updated holiday schedule for the upcoming season.",
-    date: "10/23/25",
+    message: "Please review the updated holiday schedule for the upcoming season.",
+    date: new Date("10/23/25"),
     type: "text",
+    status: "pending",
+    recipients: ["id10", "id11"],
   },
 ];
 
@@ -63,37 +83,47 @@ export const SENT_MESSAGES: Message[] = [
   {
     id: 1,
     subject: "Welcome New Volunteers",
-    preview: "We're thrilled to have you join our team! Here's what to expect.",
-    date: "02/22/26",
+    message: "We're thrilled to have you join our team! Here's what to expect.",
+    date: new Date("02/22/26"),
     type: "email",
+    status: "sent",
+    recipients: ["id1", "id2", "id3"],
   },
   {
     id: 2,
     subject: "Weekly Check-In",
-    preview: "Just checking in on this week's tasks and any questions you may have.",
-    date: "02/21/26",
+    message: "Just checking in on this week's tasks and any questions you may have.",
+    date: new Date("02/21/26"),
     type: "text",
+    status: "sent",
+    recipients: ["id4", "id5"],
   },
   {
     id: 3,
     subject: "Program Announcement",
-    preview: "Exciting news — we're launching a new community outreach program next month.",
-    date: "02/20/26",
+    message: "Exciting news — we're launching a new community outreach program next month.",
+    date: new Date("02/20/26"),
     type: "email",
+    status: "sent",
+    recipients: ["id6", "id7", "id8"],
   },
   {
     id: 4,
     subject: "Urgent: Schedule Change",
-    preview: "Due to unforeseen circumstances, Saturday's shift has been rescheduled.",
-    date: "02/03/26",
+    message: "Due to unforeseen circumstances, Saturday's shift has been rescheduled.",
+    date: new Date("02/03/26"),
     type: "text",
+    status: "sent",
+    recipients: ["id9"],
   },
   {
     id: 5,
     subject: "Year-End Summary",
-    preview: "Thank you for an incredible year. Here's a look back at our impact.",
-    date: "10/23/25",
+    message: "Thank you for an incredible year. Here's a look back at our impact.",
+    date: new Date("10/23/25"),
     type: "email",
+    status: "sent",
+    recipients: ["id10", "id11"],
   },
 ];
 
@@ -108,10 +138,10 @@ function MessageRow({ message }: { message: Message }) {
         <div className={styles.messageSubjectCol}>
           <span className={styles.messageSubject}>{message.subject}</span>
         </div>
-        <div className={styles.messagePreviewCol}>
-          <span className={styles.messagePreview}>{message.preview}</span>
+        <div className={styles.messagemessageCol}>
+          <span className={styles.messagemessage}>{message.message}</span>
         </div>
-        <span className={styles.messageDate}>{message.date}</span>
+        <span className={styles.messageDate}>{formatMessageDate(message.date)}</span>
       </div>
     </div>
   );

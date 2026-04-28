@@ -150,6 +150,7 @@ export const updateVolunteerContact: RequestHandler = async (req, res, next) => 
     const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
       phoneNumber,
       email,
+      $currentDate: { updated: true },
     }).populate(defaultPopulateConfig);
 
     if (!volunteer) {
@@ -178,6 +179,7 @@ export const assignTagsToVolunteer: RequestHandler = async (req, res, next) => {
       volunteerId,
       {
         $addToSet: { tags: { $each: tags } },
+        $currentDate: { updated: true },
       },
       { new: true },
     ).populate(defaultPopulateConfig);
@@ -208,6 +210,7 @@ export const removeTagsFromVolunteer: RequestHandler = async (req, res, next) =>
       volunteerId,
       {
         $pullAll: { tags },
+        $currentDate: { updated: true as const },
       },
       { new: true },
     ).populate(defaultPopulateConfig);
@@ -270,6 +273,8 @@ export const uploadVolunteerBatch: RequestHandler<
         },
         update: {
           $set: normalizeVolunteerForBulkWrite(body),
+          // Mongo operator to set a field to the current date
+          $currentDate: { updated: true as const },
         },
         upsert: true,
       },
@@ -438,6 +443,8 @@ export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
         },
         update: {
           $set: normalizeVolunteerForBulkWrite(body),
+          // Mongo operator to set a field to the current date
+          $currentDate: { updated: true as const },
         },
         upsert: true,
       },

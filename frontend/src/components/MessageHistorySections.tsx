@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
+import { MessageHistoryModal } from "./MessageHistoryModal";
 import styles from "./MessageHistorySections.module.css";
 
 import messageAsset from "@/assets/ic_message.svg";
@@ -34,48 +35,63 @@ export const SCHEDULED_MESSAGES: Message[] = [
   {
     id: 1,
     subject: "Volunteer Training Reminder",
-    message: "Don't forget your upcoming training session this Friday at 9am.",
     date: new Date("02/22/26"),
     type: "text",
+    message: "message",
+    recipients: [
+      "email@gmail.com",
+      "email2@gmail.com",
+      "email@gmail.com",
+      "email2@gmail.com",
+      "email@gmail.com",
+      "email2@gmail.com",
+      "email@gmail.com",
+      "email2@gmail.com",
+      "email@gmail.com",
+      "email2@gmail.com",
+      "email@gmail.com",
+      "email2@gmail.com",
+      "email@gmail.com",
+      "email2@gmail.com",
+      "longerlongemail@gmail.com",
+    ],
     status: "pending",
-    recipients: ["id1", "id2", "id3"],
   },
   {
     id: 2,
     subject: "Monthly Newsletter",
-    message: "Here's a roundup of this month's highlights and upcoming events.",
     date: new Date("02/21/26"),
     type: "email",
+    message: "message",
+    recipients: [],
     status: "pending",
-    recipients: ["id4", "id5"],
   },
   {
     id: 3,
     subject: "Shift Confirmation",
-    message:
-      "Your shift on Saturday has been confirmed. Please arrive 10 minutes early. test test test test test test test test test test test test test",
     date: new Date("02/20/26"),
     type: "text",
+    message: "message",
+    recipients: [],
     status: "pending",
-    recipients: ["id6", "id7", "id8"],
   },
   {
     id: 4,
     subject: "Event Invitation",
-    message: "You're invited to our annual volunteer appreciation dinner on March 5th.",
     date: new Date("02/03/26"),
     type: "email",
+    message: "message",
+    recipients: [],
     status: "pending",
-    recipients: ["id9"],
   },
   {
     id: 5,
     subject: "Holiday Schedule Update",
-    message: "Please review the updated holiday schedule for the upcoming season.",
     date: new Date("10/23/25"),
     type: "text",
+    message: "message",
+    recipients: [],
     status: "pending",
-    recipients: ["id10", "id11"],
   },
 ];
 
@@ -83,54 +99,60 @@ export const SENT_MESSAGES: Message[] = [
   {
     id: 1,
     subject: "Welcome New Volunteers",
-    message: "We're thrilled to have you join our team! Here's what to expect.",
     date: new Date("02/22/26"),
     type: "email",
+    message: "message",
+    recipients: [],
     status: "sent",
-    recipients: ["id1", "id2", "id3"],
   },
   {
     id: 2,
     subject: "Weekly Check-In",
-    message: "Just checking in on this week's tasks and any questions you may have.",
     date: new Date("02/21/26"),
     type: "text",
+    message: "message",
+    recipients: [],
     status: "sent",
-    recipients: ["id4", "id5"],
   },
   {
     id: 3,
     subject: "Program Announcement",
-    message: "Exciting news — we're launching a new community outreach program next month.",
     date: new Date("02/20/26"),
     type: "email",
+    message: "message",
+    recipients: [],
     status: "sent",
-    recipients: ["id6", "id7", "id8"],
   },
   {
     id: 4,
     subject: "Urgent: Schedule Change",
-    message: "Due to unforeseen circumstances, Saturday's shift has been rescheduled.",
     date: new Date("02/03/26"),
     type: "text",
+    message: "message",
+    recipients: [],
     status: "sent",
-    recipients: ["id9"],
   },
   {
     id: 5,
     subject: "Year-End Summary",
-    message: "Thank you for an incredible year. Here's a look back at our impact.",
     date: new Date("10/23/25"),
     type: "email",
+    message: "message",
+    recipients: [],
     status: "sent",
-    recipients: ["id10", "id11"],
   },
 ];
 
-function MessageRow({ message }: { message: Message }) {
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "numeric",
+  day: "numeric",
+  year: "2-digit",
+});
+
+function MessageRow({ message, onClick }: { message: Message; onClick: () => void }) {
   const iconSrc = message.type === "text" ? messageIcon : mailIcon;
   return (
-    <div className={styles.messageRow}>
+    <div className={styles.messageRow} onClick={onClick} role="button" tabIndex={0}>
       <div className={styles.messageIconWrapper}>
         <Image src={iconSrc} alt="" width={24} height={24} />
       </div>
@@ -147,34 +169,9 @@ function MessageRow({ message }: { message: Message }) {
   );
 }
 
-type MessageSectionProps = {
-  title: string;
-  subtitle: string;
-  messages: Message[];
-};
-
-export function MessageSection({ title, subtitle, messages }: MessageSectionProps) {
-  return (
-    <div className={styles.messageSection}>
-      <div className={styles.messageSectionHeader}>
-        <p className={styles.sectionTitle}>{title}</p>
-        <p className={styles.sectionSubtitle}>{subtitle}</p>
-      </div>
-      <div className={styles.messageList}>
-        {messages.map((msg) => (
-          <MessageRow key={msg.id} message={msg} />
-        ))}
-      </div>
-      <div className={styles.viewHistoryRow}>
-        <Link href="#" className={styles.viewHistoryLink}>
-          View Entire History
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 export function MessageHistory() {
+  const [selectedMessage, setSelectedMessage] = useState<Message | undefined>(undefined);
+
   const [activeTab, setActiveTab] = useState<"sent" | "scheduled">("scheduled");
   const messages = activeTab === "sent" ? SENT_MESSAGES : SCHEDULED_MESSAGES;
 
@@ -200,7 +197,13 @@ export function MessageHistory() {
       </div>
       <div className={styles.messageList}>
         {messages.map((msg) => (
-          <MessageRow key={msg.id} message={msg} />
+          <MessageRow
+            key={msg.id}
+            onClick={() => {
+              setSelectedMessage(msg);
+            }}
+            message={msg}
+          />
         ))}
       </div>
       <div className={styles.viewHistoryRow}>
@@ -208,6 +211,18 @@ export function MessageHistory() {
           View Entire History
         </Link>
       </div>
+      {selectedMessage && (
+        <MessageHistoryModal
+          message={selectedMessage}
+          onClose={() => {
+            setSelectedMessage(undefined);
+          }}
+          onActionButton={() => {
+            // go to edit message flow
+            console.info("Go to edit message flow");
+          }}
+        />
+      )}
     </div>
   );
 }

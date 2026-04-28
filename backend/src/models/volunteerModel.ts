@@ -13,6 +13,8 @@ const volunteerSchema = new Schema({
     default: [],
     required: true,
   },
+  created: { type: Date, default: Date.now },
+  updated: { type: Date, default: Date.now },
   status: {
     type: String,
     enum: ["returning", "new"],

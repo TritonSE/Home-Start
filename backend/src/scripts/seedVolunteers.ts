@@ -123,7 +123,7 @@ const makeColorFromName = (name: string) => {
     hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
   }
 
-  const color = (hash & 0xffffff).toString(16).toUpperCase().padStart(6, "0");
+  const color = (hash & 16_777_215).toString(16).toUpperCase().padStart(6, "0");
   return `#${color}`;
 };
 

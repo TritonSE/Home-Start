@@ -4,6 +4,12 @@ import VolunteerAssignmentModel from "../models/volunteerAssignmentModel";
 
 import type { RequestHandler } from "express";
 
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === "string" && value.trim().length > 0;
+
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((entry) => typeof entry === "string");
+
 export const getVolunteerAssignments: RequestHandler = async (req, res, next) => {
   try {
     const assignments = await VolunteerAssignmentModel.find()
@@ -33,10 +39,19 @@ export const getVolunteerAssignmentsByVolunteerId: RequestHandler = async (req, 
 };
 
 export const createVolunteerAssignment: RequestHandler = async (req, res, next) => {
-  const { volunteerId, assignmentTagId, projectTagId, shiftTagIds } = req.body;
+  const body: unknown = req.body;
+  const record = (body ?? {}) as Record<string, unknown>;
+  const volunteerId = record.volunteerId;
+  const assignmentTagId = record.assignmentTagId;
+  const projectTagId = record.projectTagId;
+  const shiftTagIds = record.shiftTagIds;
 
   try {
-    if (!volunteerId || !assignmentTagId || !projectTagId) {
+    if (
+      !isNonEmptyString(volunteerId) ||
+      !isNonEmptyString(assignmentTagId) ||
+      !isNonEmptyString(projectTagId)
+    ) {
       throw createError(400, "Missing required fields: volunteerId, assignmentTagId, projectTagId");
     }
 
@@ -44,7 +59,7 @@ export const createVolunteerAssignment: RequestHandler = async (req, res, next) 
       volunteerId,
       assignmentTagId,
       projectTagId,
-      shiftTagIds: shiftTagIds || [],
+      shiftTagIds: isStringArray(shiftTagIds) ? shiftTagIds : [],
     });
 
     await assignment.populate(["assignmentTagId", "projectTagId", "shiftTagIds"]);
@@ -57,18 +72,27 @@ export const createVolunteerAssignment: RequestHandler = async (req, res, next) 
 
 export const updateVolunteerAssignment: RequestHandler = async (req, res, next) => {
   const assignmentId = req.params.id;
-  const { assignmentTagId, projectTagId, shiftTagIds } = req.body;
+  const body: unknown = req.body;
+  const record = (body ?? {}) as Record<string, unknown>;
+  const assignmentTagId = record.assignmentTagId;
+  const projectTagId = record.projectTagId;
+  const shiftTagIds = record.shiftTagIds;
 
   try {
-    const assignment = await VolunteerAssignmentModel.findByIdAndUpdate(
-      assignmentId,
-      {
-        assignmentTagId,
-        projectTagId,
-        shiftTagIds,
-      },
-      { new: true },
-    )
+    const update: Record<string, unknown> = {};
+    if (isNonEmptyString(assignmentTagId)) update.assignmentTagId = assignmentTagId;
+    if (isNonEmptyString(projectTagId)) update.projectTagId = projectTagId;
+    if (shiftTagIds === undefined || shiftTagIds === null) {
+      // leave untouched
+    } else if (isStringArray(shiftTagIds)) {
+      update.shiftTagIds = shiftTagIds;
+    } else {
+      throw createError(400, "shiftTagIds must be an array of strings");
+    }
+
+    const assignment = await VolunteerAssignmentModel.findByIdAndUpdate(assignmentId, update, {
+      new: true,
+    })
       .populate("assignmentTagId")
       .populate("projectTagId")
       .populate("shiftTagIds");

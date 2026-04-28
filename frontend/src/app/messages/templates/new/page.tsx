@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 import styles from "./page.module.css";
 
@@ -14,7 +14,7 @@ import { TemplateCreate } from "@/components/TemplateCreate";
 
 const icCaretLeft = icCaretLeftAsset as string;
 
-export default function CreateTemplatePage() {
+function CreateTemplateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -66,5 +66,13 @@ export default function CreateTemplatePage() {
         <TemplateCreate onSave={onSave} title="" message="" type={templateType} />
       </div>
     </Sidebar>
+  );
+}
+
+export default function CreateTemplate() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreateTemplateContent />
+    </Suspense>
   );
 }

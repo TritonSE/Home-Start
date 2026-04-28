@@ -13,11 +13,7 @@ import mailAsset from "@/assets/mail.svg";
 import LogoutButton from "@/components/LogoutButton";
 import LogoutModal from "@/components/LogoutModal";
 // Temp for hardcoded data
-import {
-  MessageSection,
-  SCHEDULED_MESSAGES,
-  SENT_MESSAGES,
-} from "@/components/MessageHistorySections";
+import { MessageHistory } from "@/components/MessageHistorySections";
 import Sidebar from "@/components/Sidebar";
 import { auth } from "@/firebase/firebase";
 
@@ -97,16 +93,7 @@ export default function Dashboard() {
             })}
           </div>
         </div>
-        <MessageSection
-          title="Scheduled Messages"
-          subtitle="See an overview of the messages to be sent"
-          messages={SCHEDULED_MESSAGES}
-        />
-        <MessageSection
-          title="Message History"
-          subtitle="See an overview of all the messages sent"
-          messages={SENT_MESSAGES}
-        />
+        <MessageHistory />
         <LogoutButton onLogout={() => setShowLogoutModal(true)} />
         {showLogoutModal && (
           <LogoutModal

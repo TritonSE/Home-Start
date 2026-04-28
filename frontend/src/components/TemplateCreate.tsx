@@ -18,6 +18,10 @@ type TemplateCreateProps = {
   subject?: string;
 };
 
+const MAX_TITLE_LEN = 50;
+const MAX_SUBJECT_LEN = 50;
+const MAX_MESSAGE_LEN = 1000;
+
 export function TemplateCreate({ onSave, title, message, subject, type }: TemplateCreateProps) {
   const [currTitle, setCurrTitle] = useState<string>(title);
   const [currMessage, setCurrMessage] = useState<string>(message);
@@ -40,7 +44,7 @@ export function TemplateCreate({ onSave, title, message, subject, type }: Templa
 
   const insertText = (text: string) => {
     const textarea = inputRef.current;
-    if (!textarea) return;
+    if (!textarea || text.length + currMessage.length > MAX_MESSAGE_LEN) return;
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
@@ -57,9 +61,14 @@ export function TemplateCreate({ onSave, title, message, subject, type }: Templa
     }, 0);
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onSave(currTitle, currMessage, type, currSubject);
+  };
+
   return (
     <div className={styles.content}>
-      <form className={styles.form}>
+      <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.inputGroup}>
           <p className={styles.label}>Enter Title of Template</p>
           <input
@@ -69,8 +78,12 @@ export function TemplateCreate({ onSave, title, message, subject, type }: Templa
             onChange={(e) => {
               setCurrTitle(e.target.value);
             }}
+            maxLength={MAX_TITLE_LEN}
+            required
           />
-          <p className={styles.characterLimit}>{currTitle.length}/50 Characters</p>
+          <p className={styles.characterLimit}>
+            {currTitle.length}/{MAX_TITLE_LEN} Characters
+          </p>
           {type === TemplateType.EMAIL && (
             <>
               <input
@@ -80,8 +93,12 @@ export function TemplateCreate({ onSave, title, message, subject, type }: Templa
                 onChange={(e) => {
                   setCurrSubject(e.target.value);
                 }}
+                maxLength={MAX_SUBJECT_LEN}
+                required
               />
-              <p className={styles.characterLimit}>{currTitle.length}/50 Characters</p>
+              <p className={styles.characterLimit}>
+                {currSubject.length}/{MAX_SUBJECT_LEN} Characters
+              </p>
             </>
           )}
         </div>
@@ -96,8 +113,12 @@ export function TemplateCreate({ onSave, title, message, subject, type }: Templa
             onChange={(e) => {
               setCurrMessage(e.target.value);
             }}
+            maxLength={MAX_MESSAGE_LEN}
+            required
           />
-          <p className={styles.characterLimit}>{currMessage.length}/1000 Characters</p>
+          <p className={styles.characterLimit}>
+            {currMessage.length}/{MAX_MESSAGE_LEN} Characters
+          </p>
         </div>
         <div className={styles.insertSectionNew}>
           <button
@@ -119,14 +140,7 @@ export function TemplateCreate({ onSave, title, message, subject, type }: Templa
           </div>
         </div>
         <div className={styles.saveFixed}>
-          <button
-            type="button"
-            className={styles.saveBtn}
-            onClick={(e) => {
-              e.preventDefault();
-              onSave(currTitle, currMessage, type, currSubject);
-            }}
-          >
+          <button type="submit" className={styles.saveBtn}>
             <span className={styles.saveBtnText}>Save</span>
           </button>
         </div>

@@ -25,8 +25,9 @@ export function TemplateList({ templates, onTemplateClick, onMoreActions }: Temp
             onTemplateClick(template);
           }}
         >
-          <span>{template.title}</span>
+          <span className={styles.templateTitle}>{template.title}</span>
           <Image
+            className={styles.more}
             src={icMore}
             alt=""
             width={24}

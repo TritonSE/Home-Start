@@ -22,6 +22,8 @@
   letter-spacing: 0.5px;
   color: #000000;
   padding: 10px;
+
+  overflow-wrap: break-word;
 }
 
 .subject {
@@ -33,6 +35,8 @@
   letter-spacing: 0.5px;
   color: #000000;
   padding-left: 10px;
+
+  overflow-wrap: break-word;
 }
 
 .message {

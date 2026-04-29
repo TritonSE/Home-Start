@@ -16,6 +16,7 @@ type CheckIconProps = {
 
 function CheckIcon({ color }: CheckIconProps) {
   return (
+    //manual check icon for color masking
     <svg className={styles.checkIcon} viewBox="0 0 11 10" aria-hidden>
       <path
         fillRule="evenodd"

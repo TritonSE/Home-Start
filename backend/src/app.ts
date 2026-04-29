@@ -5,6 +5,7 @@ import { isHttpError } from "http-errors";
 import "./firebase/admin";
 import { frontend_origin } from "./config";
 import { verifyToken } from "./middleware/auth";
+import messageRoutes from "./routes/messageRoutes";
 import tagRoutes from "./routes/tagRoutes";
 import templateRoutes from "./routes/templateRoutes";
 import volunteerRoutes from "./routes/volunteerRoutes";
@@ -44,6 +45,7 @@ app.use(
 app.use("/api/volunteer", verifyToken, volunteerRoutes);
 app.use("/api/tag", verifyToken, tagRoutes);
 app.use("/api/template", verifyToken, templateRoutes);
+app.use("/api/message", verifyToken, messageRoutes);
 
 app.use(handleError);
 

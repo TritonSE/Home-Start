@@ -38,10 +38,6 @@ type VolunteerTableProps = {
   volunteers: Volunteer[];
 };
 
-const renderVolunteerTags = (tags: VolunteerTag[], type: string) => {
-  return tags.filter((tag) => tag.type === type);
-};
-
 export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 

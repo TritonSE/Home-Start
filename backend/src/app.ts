@@ -5,6 +5,7 @@ import { isHttpError } from "http-errors";
 import "./firebase/admin";
 import { frontend_origin } from "./config";
 import { verifyToken } from "./middleware/auth";
+import sessionRoutes from "./routes/sessionRoutes";
 import tagRoutes from "./routes/tagRoutes";
 import templateRoutes from "./routes/templateRoutes";
 import volunteerRoutes from "./routes/volunteerRoutes";
@@ -38,9 +39,11 @@ app.use(express.json());
 app.use(
   cors({
     origin: frontend_origin,
+    credentials: true,
   }),
 );
 
+app.use("/api", sessionRoutes);
 app.use("/api/volunteer", verifyToken, volunteerRoutes);
 app.use("/api/tag", verifyToken, tagRoutes);
 app.use("/api/template", verifyToken, templateRoutes);

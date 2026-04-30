@@ -21,7 +21,15 @@ type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
  * in Vite projects.
  */
 // const API_BASE_URL = import.env.VITE_API_BASE_URL;
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+export const API_BASE_URL = (() => {
+  const value = process.env.NEXT_PUBLIC_API_URL;
+  if (!value) {
+    throw new Error(
+      "NEXT_PUBLIC_API_URL is not set. Expected something like 'http://localhost:4000/api' (local) or '/api' (Firebase Hosting).",
+    );
+  }
+  return value;
+})();
 
 // Gets firebase auth token
 async function waitForAuth(): Promise<string> {
@@ -58,8 +66,17 @@ async function fetchRequest(
 ): Promise<Response> {
   const hasBody = body !== undefined;
 
-  // Grab token for auth headers
-  const token = await waitForAuth();
+  // Always allow session cookies to be sent (for server-set __session auth).
+  options.credentials ??= "include";
+
+  // Grab token for auth headers if available, but don't hard-fail if it isn't
+  // yet (session cookie can still authenticate requests).
+  let token: string | undefined;
+  try {
+    token = await waitForAuth();
+  } catch {
+    token = undefined;
+  }
 
   // Add auth header
   if (token) {

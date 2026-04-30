@@ -2,9 +2,8 @@ import { onAuthStateChanged } from "firebase/auth";
 
 import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 
+import { API_BASE_URL } from "@/app/api/requests";
 import { auth } from "@/firebase/firebase";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 async function waitForAuth(): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -111,8 +110,9 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
 
   let response: Response;
   try {
-    response = await fetch(`${API_URL}/api/volunteer`, {
+    response = await fetch(`${API_BASE_URL}/volunteer`, {
       headers,
+      credentials: "include",
     });
   } catch (fetchError) {
     console.error("Fetch network error:", fetchError);
@@ -190,9 +190,10 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
     const formData = new FormData();
     formData.append("csv", csv);
 
-    const response = await fetch(`${API_URL}/api/volunteer/parse-csv`, {
+    const response = await fetch(`${API_BASE_URL}/volunteer/parse-csv`, {
       method: "POST",
       headers,
+      credentials: "include",
       body: formData,
     });
 
@@ -278,9 +279,10 @@ export async function uploadVolunteerBatch(
   try {
     const headers = await getAuthHeaders();
 
-    const response = await fetch(`${API_URL}/api/volunteer/batch`, {
+    const response = await fetch(`${API_BASE_URL}/volunteer/batch`, {
       method: "POST",
       headers: { ...headers, "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ volunteers: data }),
     });
 

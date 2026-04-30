@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 
+import { API_BASE_URL } from "@/app/api/requests";
 import { auth } from "@/firebase/firebase";
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -10,13 +11,21 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       void (async () => {
         try {
           if (user) {
-            const token = await user.getIdToken();
-            document.cookie = `firebaseAuthToken=${token}; path=/; Secure; SameSite=Strict`;
+            const idToken = await user.getIdToken();
+            await fetch(`${API_BASE_URL}/sessionLogin`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ idToken }),
+            });
           } else {
-            document.cookie = `firebaseAuthToken=; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+            await fetch(`${API_BASE_URL}/sessionLogout`, {
+              method: "POST",
+              credentials: "include",
+            });
           }
         } catch {
-          document.cookie = `firebaseAuthToken=; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+          // best-effort; route middleware will handle missing sessions
         }
       })();
     });

@@ -8,6 +8,7 @@ import React, { Suspense, useState } from "react";
 
 import styles from "./page.module.css";
 
+import { API_BASE_URL } from "@/app/api/requests";
 import homeStartLogoAsset from "@/assets/homestart_logo.svg";
 import icHideAsset from "@/assets/ic_hide.svg";
 import icShowAsset from "@/assets/ic_show.svg";
@@ -37,9 +38,14 @@ function LoginFormContent() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
 
-      const token = await auth.currentUser?.getIdToken();
-      if (token) {
-        document.cookie = `firebaseAuthToken=${token}; path=/; Secure; SameSite=Strict`;
+      const idToken = await auth.currentUser?.getIdToken();
+      if (idToken) {
+        await fetch(`${API_BASE_URL}/sessionLogin`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ idToken }),
+        });
       }
 
       setShowLoggedin(true);

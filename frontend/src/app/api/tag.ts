@@ -2,9 +2,8 @@ import { onAuthStateChanged } from "firebase/auth";
 
 import type { VolunteerTag } from "@/types/volunteer";
 
+import { API_BASE_URL } from "@/app/api/requests";
 import { auth } from "@/firebase/firebase";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 type TagDTO = {
   _id: string;
@@ -49,8 +48,9 @@ export async function fetchTags(): Promise<VolunteerTag[]> {
   try {
     const headers = await getAuthHeaders();
 
-    const response = await fetch(`${API_URL}/api/tag`, {
+    const response = await fetch(`${API_BASE_URL}/tag`, {
       headers,
+      credentials: "include",
     });
 
     if (!response.ok) {

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get("firebaseAuthToken");
+  const session = request.cookies.get("__session");
   const { pathname } = request.nextUrl;
 
   // Allowed routes w/o authentication
@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Unauthenticated users get redirected to login page
-  if (!token) {
+  if (!session) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }

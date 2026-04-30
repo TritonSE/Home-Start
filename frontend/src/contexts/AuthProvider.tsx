@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import { auth } from "@/firebase/firebase";
+import { clearFirebaseAuthCookie, setFirebaseAuthCookie } from "@/util/authCookie";
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -11,12 +12,12 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         try {
           if (user) {
             const token = await user.getIdToken();
-            document.cookie = `firebaseAuthToken=${token}; path=/; Secure; SameSite=Strict`;
+            setFirebaseAuthCookie(token);
           } else {
-            document.cookie = `firebaseAuthToken=; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+            clearFirebaseAuthCookie();
           }
         } catch {
-          document.cookie = `firebaseAuthToken=; path=/; Secure; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+          clearFirebaseAuthCookie();
         }
       })();
     });

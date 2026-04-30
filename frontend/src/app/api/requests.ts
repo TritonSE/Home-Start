@@ -21,7 +21,20 @@ type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
  * in Vite projects.
  */
 // const API_BASE_URL = import.env.VITE_API_BASE_URL;
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000").replace(
+  /\/+$/,
+  "",
+);
+
+export function buildApiUrl(path: string): string {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
+  if (API_BASE_URL.endsWith("/api")) {
+    return `${API_BASE_URL}${normalizedPath}`;
+  }
+
+  return `${API_BASE_URL}/api${normalizedPath}`;
+}
 
 // Gets firebase auth token
 async function waitForAuth(): Promise<string> {
@@ -120,7 +133,7 @@ export async function get(url: string, options: RequestInit = {}): Promise<Respo
   // GET requests do not have a body
   const response = await fetchRequest(
     "GET",
-    API_BASE_URL + url,
+    buildApiUrl(url),
     undefined,
     headers as Record<string, string>,
     opts,
@@ -146,7 +159,7 @@ export async function post(
 
   const response = await fetchRequest(
     "POST",
-    API_BASE_URL + url,
+    buildApiUrl(url),
     body,
     headers as Record<string, string>,
     opts,
@@ -172,7 +185,7 @@ export async function put(
 
   const response = await fetchRequest(
     "PUT",
-    API_BASE_URL + url,
+    buildApiUrl(url),
     body,
     headers as Record<string, string>,
     opts,
@@ -198,7 +211,7 @@ export async function patch(
 
   const response = await fetchRequest(
     "PATCH",
-    API_BASE_URL + url,
+    buildApiUrl(url),
     body,
     headers as Record<string, string>,
     opts,
@@ -224,7 +237,7 @@ export async function del(
 
   const response = await fetchRequest(
     "DELETE",
-    API_BASE_URL + url,
+    buildApiUrl(url),
     body,
     headers as Record<string, string>,
     opts,

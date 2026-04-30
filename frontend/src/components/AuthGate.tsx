@@ -5,11 +5,7 @@ import { useEffect } from "react";
 
 import { useAuth } from "@/contexts/AuthProvider";
 
-export default function AuthGate({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement | null {
+export default function AuthGate({ children }: { children: React.ReactNode }): React.ReactNode {
   const { user, loading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();

@@ -73,13 +73,14 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
       <table className={styles.volunteerTable}>
         <colgroup>
           <col style={{ width: "60px" }} />
-          <col style={{ width: "150px" }} />
-          <col style={{ width: "160px" }} />
-          <col style={{ width: "230px" }} />
-          <col style={{ width: "180px" }} />
-          <col style={{ width: "230px" }} />
-          <col style={{ width: "280px" }} />
-          <col style={{ width: "410px" }} />
+          <col style={{ width: "200px" }} />
+          <col style={{ width: "200px" }} />
+          <col style={{ width: "107px" }} />
+          <col style={{ width: "304px" }} />
+          <col style={{ width: "304px" }} />
+          <col style={{ width: "304px" }} />
+          <col style={{ width: "240px" }} />
+          <col style={{ width: "240px" }} />
         </colgroup>
         <thead>
           <tr>
@@ -97,22 +98,22 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
             </th>
             <th>
               <div className={styles.headerContent}>
-                <span>Volunteer</span>
+                <span>Last Name</span>
               </div>
             </th>
             <th>
               <div className={styles.headerContent}>
-                <span>Phone Number</span>
-              </div>
-            </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Email</span>
+                <span>First Name</span>
               </div>
             </th>
             <th>
               <div className={styles.headerContent}>
                 <span>Status</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Program</span>
               </div>
             </th>
             <th>
@@ -127,7 +128,12 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
             </th>
             <th>
               <div className={styles.headerContent}>
-                <span>Program</span>
+                <span>Email</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Phone Number</span>
               </div>
             </th>
           </tr>
@@ -147,11 +153,8 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
                   aria-label={`Select ${volunteer.firstName} ${volunteer.lastName}`}
                 />
               </td>
-              <td>
-                {volunteer.firstName}, {volunteer.lastName}
-              </td>
-              <td>{volunteer.phoneNumber}</td>
-              <td>{volunteer.email}</td>
+              <td>{volunteer.lastName}</td>
+              <td>{volunteer.firstName}</td>
 
               <td>
                 <div className={styles.tagsContainer}>
@@ -166,24 +169,72 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
               </td>
 
               <td>
-                <div className={styles.tagsContainer}>
-                  {renderVolunteerTags(volunteer.tags ?? [], "assignment")
-                    .filter((tag) => tag.type === "assignment")
-                    .map((tag, index) => {
-                      const tagStyle = getTagPaletteStyle(tag);
-                      return (
-                        <span
-                          key={`col2-${volunteer._id}-${tag.name}-${index}`}
-                          className={styles.pillTag}
-                          style={{
-                            backgroundColor: tagStyle.backgroundColor,
-                            color: tagStyle.color,
-                          }}
-                        >
-                          {tag.name}
-                        </span>
-                      );
-                    })}
+                <div className={styles.tagsContainerNoWrap}>
+                  {(() => {
+                    const { visibleTags, hiddenCount } = getVisibleTags(
+                      volunteer.tags ?? [],
+                      "program",
+                      1,
+                    );
+
+                    return (
+                      <>
+                        {visibleTags.map((tag, index) => {
+                          const tagStyle = getTagPaletteStyle(tag);
+                          return (
+                            <span
+                              key={`col4-${volunteer._id}-${tag.name}-${index}`}
+                              className={styles.pillTag}
+                              style={{
+                                backgroundColor: tagStyle.backgroundColor,
+                                color: tagStyle.color,
+                              }}
+                            >
+                              {tag.name}
+                            </span>
+                          );
+                        })}
+                        {hiddenCount > 0 && (
+                          <span className={styles.tagOverflowPill}>{hiddenCount}+</span>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              </td>
+
+              <td>
+                <div className={styles.tagsContainerNoWrap}>
+                  {(() => {
+                    const { visibleTags, hiddenCount } = getVisibleTags(
+                      volunteer.tags ?? [],
+                      "assignment",
+                      2,
+                    );
+
+                    return (
+                      <>
+                        {visibleTags.map((tag, index) => {
+                          const tagStyle = getTagPaletteStyle(tag);
+                          return (
+                            <span
+                              key={`col2-${volunteer._id}-${tag.name}-${index}`}
+                              className={styles.pillTag}
+                              style={{
+                                backgroundColor: tagStyle.backgroundColor,
+                                color: tagStyle.color,
+                              }}
+                            >
+                              {tag.name}
+                            </span>
+                          );
+                        })}
+                        {hiddenCount > 0 && (
+                          <span className={styles.tagOverflowPill}>{hiddenCount}+</span>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </td>
 
@@ -222,40 +273,8 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
                 </div>
               </td>
 
-              <td>
-                <div className={styles.tagsContainerNoWrap}>
-                  {(() => {
-                    const { visibleTags, hiddenCount } = getVisibleTags(
-                      volunteer.tags ?? [],
-                      "program",
-                      2,
-                    );
-
-                    return (
-                      <>
-                        {visibleTags.map((tag, index) => {
-                          const tagStyle = getTagPaletteStyle(tag);
-                          return (
-                            <span
-                              key={`col4-${volunteer._id}-${tag.name}-${index}`}
-                              className={styles.pillTag}
-                              style={{
-                                backgroundColor: tagStyle.backgroundColor,
-                                color: tagStyle.color,
-                              }}
-                            >
-                              {tag.name}
-                            </span>
-                          );
-                        })}
-                        {hiddenCount > 0 && (
-                          <span className={styles.tagOverflowPill}>{hiddenCount}+</span>
-                        )}
-                      </>
-                    );
-                  })()}
-                </div>
-              </td>
+              <td>{volunteer.email}</td>
+              <td>{volunteer.phoneNumber}</td>
             </tr>
           ))}
         </tbody>

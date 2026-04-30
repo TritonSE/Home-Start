@@ -21,7 +21,7 @@
 
 .volunteerTable th {
   background-color: #ecf3f3;
-  font-weight: 400;
+  font-weight: 600;
   font-style: regular;
   font-size: 16px;
   line-height: 20px;
@@ -153,7 +153,7 @@
   display: flex;
   gap: 8px;
   flex-wrap: nowrap;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .tableWrapper {

@@ -14,27 +14,16 @@ type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 /**
  * The first part of the backend API URL, which we will automatically prepend to
- * every request. This means in the rest of our code, we can write "/api/foo"
+ * every request. This means in the rest of our code, we can write "/foo"
  * instead of "http://localhost:3001/api/foo".
  *
  * See https://vitejs.dev/guide/env-and-mode for more info about env variables
  * in Vite projects.
  */
 // const API_BASE_URL = import.env.VITE_API_BASE_URL;
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000").replace(
-  /\/+$/,
-  "",
-);
-
-export function buildApiUrl(path: string): string {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-
-  if (API_BASE_URL.endsWith("/api")) {
-    return `${API_BASE_URL}${normalizedPath}`;
-  }
-
-  return `${API_BASE_URL}/api${normalizedPath}`;
-}
+export const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api"
+).replace(/\/+$/, "");
 
 // Gets firebase auth token
 async function waitForAuth(): Promise<string> {
@@ -133,7 +122,7 @@ export async function get(url: string, options: RequestInit = {}): Promise<Respo
   // GET requests do not have a body
   const response = await fetchRequest(
     "GET",
-    buildApiUrl(url),
+    API_BASE_URL + url,
     undefined,
     headers as Record<string, string>,
     opts,
@@ -159,7 +148,7 @@ export async function post(
 
   const response = await fetchRequest(
     "POST",
-    buildApiUrl(url),
+    API_BASE_URL + url,
     body,
     headers as Record<string, string>,
     opts,
@@ -185,7 +174,7 @@ export async function put(
 
   const response = await fetchRequest(
     "PUT",
-    buildApiUrl(url),
+    API_BASE_URL + url,
     body,
     headers as Record<string, string>,
     opts,
@@ -211,7 +200,7 @@ export async function patch(
 
   const response = await fetchRequest(
     "PATCH",
-    buildApiUrl(url),
+    API_BASE_URL + url,
     body,
     headers as Record<string, string>,
     opts,
@@ -237,7 +226,7 @@ export async function del(
 
   const response = await fetchRequest(
     "DELETE",
-    buildApiUrl(url),
+    API_BASE_URL + url,
     body,
     headers as Record<string, string>,
     opts,

@@ -1,6 +1,6 @@
 import { onAuthStateChanged } from "firebase/auth";
 
-import { buildApiUrl } from "./requests";
+import { API_BASE_URL } from "./requests";
 
 import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 
@@ -111,7 +111,7 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
 
   let response: Response;
   try {
-    response = await fetch(buildApiUrl("/volunteer"), {
+    response = await fetch(`${API_BASE_URL}/volunteer`, {
       headers,
     });
   } catch (fetchError) {
@@ -190,7 +190,7 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
     const formData = new FormData();
     formData.append("csv", csv);
 
-    const response = await fetch(buildApiUrl("/volunteer/parse-csv"), {
+    const response = await fetch(`${API_BASE_URL}/volunteer/parse-csv`, {
       method: "POST",
       headers,
       body: formData,
@@ -278,7 +278,7 @@ export async function uploadVolunteerBatch(
   try {
     const headers = await getAuthHeaders();
 
-    const response = await fetch(buildApiUrl("/volunteer/batch"), {
+    const response = await fetch(`${API_BASE_URL}/volunteer/batch`, {
       method: "POST",
       headers: { ...headers, "Content-Type": "application/json" },
       body: JSON.stringify({ volunteers: data }),

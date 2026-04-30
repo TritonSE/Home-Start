@@ -1,6 +1,6 @@
 import { onAuthStateChanged } from "firebase/auth";
 
-import { buildApiUrl } from "./requests";
+import { API_BASE_URL } from "./requests";
 
 import type { VolunteerTag } from "@/types/volunteer";
 
@@ -49,7 +49,7 @@ export async function fetchTags(): Promise<VolunteerTag[]> {
   try {
     const headers = await getAuthHeaders();
 
-    const response = await fetch(buildApiUrl("/tag"), {
+    const response = await fetch(`${API_BASE_URL}/tag`, {
       headers,
     });
 

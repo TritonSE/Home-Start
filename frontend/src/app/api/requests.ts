@@ -14,14 +14,16 @@ type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 /**
  * The first part of the backend API URL, which we will automatically prepend to
- * every request. This means in the rest of our code, we can write "/api/foo"
+ * every request. This means in the rest of our code, we can write "/foo"
  * instead of "http://localhost:3001/api/foo".
  *
  * See https://vitejs.dev/guide/env-and-mode for more info about env variables
  * in Vite projects.
  */
 // const API_BASE_URL = import.env.VITE_API_BASE_URL;
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+export const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api"
+).replace(/\/+$/, "");
 
 // Gets firebase auth token
 async function waitForAuth(): Promise<string> {

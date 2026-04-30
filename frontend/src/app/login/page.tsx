@@ -13,7 +13,6 @@ import icHideAsset from "@/assets/ic_hide.svg";
 import icShowAsset from "@/assets/ic_show.svg";
 import SuccessNotification from "@/components/SuccessNotification";
 import { auth } from "@/firebase/firebase";
-import { setFirebaseAuthCookie } from "@/util/authCookie";
 
 const homeStartLogo = homeStartLogoAsset as string;
 const icHide = icHideAsset as string;
@@ -35,11 +34,8 @@ function LoginFormContent() {
 
   const handleLogin = async () => {
     try {
-      const credential = await signInWithEmailAndPassword(auth, email, password);
-      const token = await credential.user.getIdToken();
-      setFirebaseAuthCookie(token);
+      await signInWithEmailAndPassword(auth, email, password);
       setShowLoggedin(true);
-      window.location.assign("/dashboard");
     } catch (caughtError) {
       if (caughtError instanceof FirebaseError) {
         switch (caughtError.code) {

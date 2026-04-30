@@ -36,6 +36,12 @@ function LoginFormContent() {
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
+
+      const token = await auth.currentUser?.getIdToken();
+      if (token) {
+        document.cookie = `firebaseAuthToken=${token}; path=/; Secure; SameSite=Strict`;
+      }
+
       setShowLoggedin(true);
       if (window.location.pathname === "/") {
         window.location.reload();

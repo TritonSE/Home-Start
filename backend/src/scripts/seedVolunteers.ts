@@ -1,3 +1,4 @@
+import "../config";
 import { connectToDatabase } from "../database/connect";
 import GroupModel from "../models/groupModel";
 import ProjectProgramMapModel from "../models/projectProgramMapModel";

@@ -1,6 +1,6 @@
 import { onAuthStateChanged } from "firebase/auth";
 
-import type { Volunteer, VolunteerTag } from "@/types/volunteer";
+import type { Volunteer, VolunteerAssignment } from "@/types/volunteer";
 
 import { auth } from "@/firebase/firebase";
 
@@ -39,28 +39,11 @@ type VolunteerParseCsvDTO = {
     lastName: string;
     email: string;
     phoneNumber: string;
+    assignmentName?: string;
+    projectName?: string;
+    shiftNames?: string[];
     tags?: string[];
   }[];
-};
-
-const toVolunteerTag = (tag: unknown): VolunteerTag | null => {
-  if (!tag || typeof tag !== "object") {
-    return null;
-  }
-
-  const source = tag as Partial<VolunteerTag>;
-
-  if (typeof source._id !== "string" || typeof source.name !== "string") {
-    return null;
-  }
-
-  return {
-    _id: source._id,
-    name: source.name,
-    color: typeof source.color === "string" ? source.color : "",
-    type: typeof source.type === "string" ? source.type : "",
-    __v: typeof source.__v === "number" ? source.__v : undefined,
-  };
 };
 
 const normalizeVolunteerStatus = (status: unknown): Volunteer["status"] => {
@@ -68,13 +51,7 @@ const normalizeVolunteerStatus = (status: unknown): Volunteer["status"] => {
 };
 
 const normalizeVolunteer = (volunteer: unknown): Volunteer => {
-  const source = (volunteer ?? {}) as Partial<Volunteer> & {
-    tags?: unknown;
-  };
-
-  const tags = Array.isArray(source.tags)
-    ? source.tags.map(toVolunteerTag).filter((tag): tag is VolunteerTag => Boolean(tag))
-    : [];
+  const source = (volunteer ?? {}) as Partial<Volunteer>;
 
   return {
     _id: String(source._id ?? ""),
@@ -82,9 +59,7 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
     lastName: String(source.lastName ?? ""),
     email: String(source.email ?? ""),
     phoneNumber: String(source.phoneNumber ?? ""),
-    updated: source.updated ? new Date(source.updated) : new Date(),
-    created: source.created ? new Date(source.created) : new Date(),
-    tags,
+    tags: [],
     status: normalizeVolunteerStatus(source.status),
   };
 };
@@ -144,6 +119,20 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
   return typedData;
 }
 
+export async function fetchVolunteerAssignments(): Promise<VolunteerAssignment[]> {
+  const headers = await getAuthHeaders();
+
+  const res = await fetch(`${API_URL}/api/volunteerAssignment`, {
+    headers,
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch volunteer assignments");
+  }
+
+  return (await res.json()) as VolunteerAssignment[];
+}
+
 export type VolunteerCsvParseResult = {
   wouldCreateCount: number;
   wouldUpdateCount: number;
@@ -156,8 +145,9 @@ export type VolunteerCsvParseResult = {
     lastName: string;
     email: string;
     phoneNumber: string;
-    updated: Date;
-    created: Date;
+    assignmentName?: string;
+    projectName?: string;
+    shiftNames?: string[];
     tags?: string[];
   }[];
 };
@@ -203,32 +193,32 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
 
     const volunteerInfo = Array.isArray(parsed.volunteerInfo) ? parsed.volunteerInfo : [];
     const result: VolunteerCsvParseResult = {
-      wouldCreateCount: data.wouldCreateCount,
-      wouldUpdateCount: data.wouldUpdateCount,
-      wouldCreate: data.wouldCreate,
-      wouldUpdate: data.wouldUpdate,
-      totalCount: data.total,
-      volunteerInfo: Array.isArray(data.volunteerInfo)
-        ? data.volunteerInfo.map(
-            (item: {
-              firstName: string;
-              lastName: string;
-              email: string;
-              phoneNumber: string;
-              updated: Date;
-              created: Date;
-              tags?: string[];
-            }) => ({
-              firstName: item.firstName,
-              lastName: item.lastName,
-              email: item.email,
-              phoneNumber: item.phoneNumber,
-              updated: new Date(item.updated),
-              created: new Date(item.created),
-              tags: item.tags,
-            }),
-          )
-        : [],
+      wouldCreateCount: parsed.wouldCreateCount,
+      wouldUpdateCount: parsed.wouldUpdateCount,
+      wouldCreate: parsed.wouldCreate.filter((value): value is string => typeof value === "string"),
+      wouldUpdate: parsed.wouldUpdate.filter((value): value is string => typeof value === "string"),
+      totalCount: parsed.total,
+      volunteerInfo: volunteerInfo
+        .filter((item): item is VolunteerParseCsvDTO["volunteerInfo"][number] => {
+          if (!item || typeof item !== "object") return false;
+          const row = item as Partial<VolunteerParseCsvDTO["volunteerInfo"][number]>;
+          return (
+            typeof row.firstName === "string" &&
+            typeof row.lastName === "string" &&
+            typeof row.email === "string" &&
+            typeof row.phoneNumber === "string"
+          );
+        })
+        .map((item) => ({
+          firstName: item.firstName,
+          lastName: item.lastName,
+          email: item.email,
+          phoneNumber: item.phoneNumber,
+          assignmentName: typeof item.assignmentName === "string" ? item.assignmentName : undefined,
+          projectName: typeof item.projectName === "string" ? item.projectName : undefined,
+          shiftNames: Array.isArray(item.shiftNames) ? item.shiftNames.filter((v): v is string => typeof v === "string") : undefined,
+          tags: Array.isArray(item.tags) ? item.tags.filter((t): t is string => typeof t === "string") : undefined,
+        })),
     };
     return { ok: true, data: result };
   } catch (error) {
@@ -245,6 +235,9 @@ type VolunteerCreationBody = {
   email: string;
   phoneNumber: string;
   tags?: string[];
+  assignmentName?: string;
+  projectName?: string;
+  shiftNames?: string[];
 };
 
 export type UploadVolunteerBatchResponse = { ok: true } | { ok: false; error: string };

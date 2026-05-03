@@ -13,6 +13,12 @@ type TagDTO = {
   type: string;
 };
 
+type ProjectProgramMapDTO = {
+  _id: string;
+  projectTagId: TagDTO;
+  programTagId: TagDTO;
+};
+
 function isTagDTO(value: unknown): value is TagDTO {
   if (typeof value !== "object" || value === null) {
     return false;
@@ -24,6 +30,19 @@ function isTagDTO(value: unknown): value is TagDTO {
     typeof candidate.name === "string" &&
     typeof candidate.color === "string" &&
     typeof candidate.type === "string"
+  );
+}
+
+function isProjectProgramMapDTO(value: unknown): value is ProjectProgramMapDTO {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate._id === "string" &&
+    isTagDTO(candidate.projectTagId) &&
+    isTagDTO(candidate.programTagId)
   );
 }
 
@@ -77,5 +96,33 @@ export async function fetchTags(): Promise<VolunteerTag[]> {
     throw error instanceof Error
       ? error
       : new Error("An unknown error occurred while fetching tags");
+  }
+}
+
+export async function fetchProjectProgramMaps(): Promise<ProjectProgramMapDTO[]> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_URL}/api/tag/project-program-maps`, {
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch project-program maps: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data: unknown = await response.json();
+    if (!Array.isArray(data)) {
+      throw new TypeError("Unexpected response format: expected an array of project-program maps");
+    }
+
+    return data.filter(isProjectProgramMapDTO);
+  } catch (error) {
+    console.error("Error fetching project-program maps:", error);
+    throw error instanceof Error
+      ? error
+      : new Error("An unknown error occurred while fetching project-program maps");
   }
 }

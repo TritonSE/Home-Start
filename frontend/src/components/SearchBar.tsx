@@ -7,43 +7,52 @@ import styles from "./SearchBar.module.css";
 import SortSelectionButton from "./SortSelectorButton";
 
 import checkboxIconAsset from "@/assets/Checkbox.svg";
+import caretIconAsset from "@/assets/ic_caretdown.svg";
 import unionIconAsset from "@/assets/Union.svg";
 
 const checkboxIcon = checkboxIconAsset as string;
+const caretIcon = caretIconAsset as string;
 const unionIcon = unionIconAsset as string;
 
 type SearchBarProps = {
   search: string;
   setSearch: (value: string) => void;
-  eventTags: string[];
-  volunteerTypeTags: string[];
+  projectTags: string[];
+  assignmentTags: string[];
+  programTags: string[];
+
   sortType: "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A";
   onSortOptionChange: (option: "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A") => void;
 
-  selectedEvent: Set<string>;
-  setSelectedEvent: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  selectedProject: Set<string>;
+  setSelectedProject: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   selectedStatus: string | null;
   setSelectedStatus: (value: string | null) => void;
-  selectedVolunteerType: Set<string>;
-  setSelectedVolunteerType: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  selectedAssignment: Set<string>;
+  setSelectedAssignment: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  selectedProgram: Set<string>;
+  setSelectedProgram: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
 };
 
 export default function SearchBar({
   search,
   setSearch,
-  eventTags,
-  volunteerTypeTags,
+  projectTags,
+  assignmentTags,
+  programTags,
   sortType,
   onSortOptionChange,
-  selectedEvent,
-  setSelectedEvent,
+  selectedProject,
+  setSelectedProject,
   selectedStatus,
   setSelectedStatus,
-  selectedVolunteerType,
-  setSelectedVolunteerType,
+  selectedAssignment,
+  setSelectedAssignment,
+  selectedProgram,
+  setSelectedProgram,
 }: SearchBarProps) {
   const [tagSearch, setTagSearch] = useState("");
-  const [open, setOpen] = useState<"event" | "status" | "volunteerType" | null>(null);
+  const [open, setOpen] = useState<"project" | "status" | "assignment" | "program" | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -57,13 +66,13 @@ export default function SearchBar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  function toggle(cat: "event" | "status" | "volunteerType") {
+  function toggle(cat: "project" | "status" | "assignment" | "program") {
     setOpen((prev) => (prev === cat ? null : cat));
   }
 
-  function toggleTag(item: string, cat: "event" | "status" | "volunteerType") {
-    if (cat === "event") {
-      setSelectedEvent((prev) => {
+  function toggleTag(item: string, cat: "project" | "status" | "assignment" | "program") {
+    if (cat === "project") {
+      setSelectedProject((prev) => {
         const updated = new Set(prev);
         if (updated.has(item)) {
           updated.delete(item);
@@ -75,8 +84,18 @@ export default function SearchBar({
     } else if (cat === "status") {
       const newStatus = selectedStatus === item ? null : item;
       setSelectedStatus(newStatus);
-    } else if (cat === "volunteerType") {
-      setSelectedVolunteerType((prev) => {
+    } else if (cat === "assignment") {
+      setSelectedAssignment((prev) => {
+        const updated = new Set(prev);
+        if (updated.has(item)) {
+          updated.delete(item);
+        } else {
+          updated.add(item);
+        }
+        return updated;
+      });
+    } else if (cat === "program") {
+      setSelectedProgram((prev) => {
         const updated = new Set(prev);
         if (updated.has(item)) {
           updated.delete(item);
@@ -88,20 +107,21 @@ export default function SearchBar({
     }
   }
 
-  function getSelectedSet(cat: "event" | "status" | "volunteerType") {
-    if (cat === "event") return selectedEvent;
+  function getSelectedSet(cat: "project" | "status" | "assignment" | "program") {
+    if (cat === "project") return selectedProject;
     if (cat === "status") return new Set(selectedStatus ? [selectedStatus] : []);
-    return selectedVolunteerType;
+    if (cat === "assignment") return selectedAssignment;
+    return selectedProgram;
   }
 
-  function formatOptionLabel(item: string, cat: "event" | "status" | "volunteerType") {
+  function formatOptionLabel(item: string, cat: "project" | "status" | "assignment" | "program") {
     if (cat !== "status") return item;
     return item.charAt(0).toUpperCase() + item.slice(1);
   }
 
-  function clearCategory(cat: "event" | "status" | "volunteerType") {
-    if (cat === "event") {
-      setSelectedEvent(new Set());
+  function clearCategory(cat: "project" | "status" | "assignment" | "program") {
+    if (cat === "project") {
+      setSelectedProject(new Set());
       return;
     }
 
@@ -110,17 +130,22 @@ export default function SearchBar({
       return;
     }
 
-    setSelectedVolunteerType(new Set());
+    if (cat === "assignment") {
+      setSelectedAssignment(new Set());
+      return;
+    }
+
+    setSelectedProgram(new Set());
   }
 
-  function getClearButtonLabel(cat: "event" | "status" | "volunteerType") {
+  function getClearButtonLabel(cat: "project" | "status" | "assignment" | "program") {
     if (cat === "status") return "Clear";
     return "Clear All";
   }
 
   function renderDropdown(
     items: string[],
-    cat: "event" | "status" | "volunteerType",
+    cat: "project" | "status" | "assignment" | "program",
     hasSearch: boolean = true,
   ) {
     if (open !== cat) return null;
@@ -225,40 +250,96 @@ export default function SearchBar({
             aria-expanded={open === "status"}
             onClick={() => toggle("status")}
           >
-            <span className={styles.pillTagText}>Status</span>
+            <span className={styles.pillTagContent}>
+              <span className={styles.pillTagText}>Status</span>
+              <span className={styles.pillTagIconBox} aria-hidden="true">
+                <Image
+                  src={caretIcon}
+                  alt="Caret down"
+                  className={styles.pillTagIcon}
+                  width={16}
+                  height={16}
+                />
+              </span>
+            </span>
           </button>
           {renderDropdown(["returning", "new"], "status", false)}
         </div>
 
         <div className={styles.pillWrapper}>
           <button
-            className={`${styles.pillTagVolunteerType} ${selectedVolunteerType.size > 0 ? styles.pillTagActive : ""}`}
-            aria-expanded={open === "volunteerType"}
-            onClick={() => toggle("volunteerType")}
+            className={`${styles.pillTagVolunteerType} ${selectedAssignment.size > 0 ? styles.pillTagActive : ""}`}
+            aria-expanded={open === "assignment"}
+            onClick={() => toggle("assignment")}
           >
-            <span className={styles.pillTagText}>Volunteer Type</span>
+            <span className={styles.pillTagContent}>
+              <span className={styles.pillTagText}>Assignment</span>
+              <span className={styles.pillTagIconBox} aria-hidden="true">
+                <Image
+                  src={caretIcon}
+                  alt="Caret down"
+                  className={styles.pillTagIcon}
+                  width={16}
+                  height={16}
+                />
+              </span>
+            </span>
           </button>
-          {renderDropdown(volunteerTypeTags, "volunteerType")}
+          {renderDropdown(assignmentTags, "assignment")}
         </div>
 
         <div className={styles.pillWrapper}>
           <button
-            className={`${styles.pillTagEvent} ${selectedEvent.size > 0 ? styles.pillTagActive : ""}`}
-            aria-expanded={open === "event"}
-            onClick={() => toggle("event")}
+            className={`${styles.pillTagEvent} ${selectedProject.size > 0 ? styles.pillTagActive : ""}`}
+            aria-expanded={open === "project"}
+            onClick={() => toggle("project")}
           >
-            <span className={styles.pillTagText}>Event</span>
+            <span className={styles.pillTagContent}>
+              <span className={styles.pillTagText}>Project</span>
+              <span className={styles.pillTagIconBox} aria-hidden="true">
+                <Image
+                  src={caretIcon}
+                  alt="Caret down"
+                  className={styles.pillTagIcon}
+                  width={16}
+                  height={16}
+                />
+              </span>
+            </span>
           </button>
-          {renderDropdown(eventTags, "event")}
+          {renderDropdown(projectTags, "project")}
+        </div>
+
+        <div className={styles.pillWrapper}>
+          <button
+            className={`${styles.pillTagEvent} ${selectedProgram.size > 0 ? styles.pillTagActive : ""}`}
+            aria-expanded={open === "program"}
+            onClick={() => toggle("program")}
+          >
+            <span className={styles.pillTagContent}>
+              <span className={styles.pillTagText}>Program</span>
+              <span className={styles.pillTagIconBox} aria-hidden="true">
+                <Image
+                  src={caretIcon}
+                  alt="Caret down"
+                  className={styles.pillTagIcon}
+                  width={16}
+                  height={16}
+                />
+              </span>
+            </span>
+          </button>
+          {renderDropdown(programTags, "program")}
         </div>
 
         <div className={styles.clearFiltersContainer}>
           <button
             className={styles.clearFilterButton}
             onClick={() => {
-              setSelectedEvent(new Set());
+              setSelectedProject(new Set());
               setSelectedStatus(null);
-              setSelectedVolunteerType(new Set());
+              setSelectedAssignment(new Set());
+              setSelectedProgram(new Set());
             }}
           >
             Clear All

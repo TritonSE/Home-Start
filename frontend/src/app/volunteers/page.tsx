@@ -3,33 +3,42 @@
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
-import styles from "../page.module.css";
-
 import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 
-import { fetchTags } from "@/app/api/tag";
-import { fetchVolunteers } from "@/app/api/volunteer";
+import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
+import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
 import CreateTagModal from "@/components/CreateTagModal";
 import PageBar from "@/components/PageBar";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
 import VolunteerTable from "@/components/VolunteerTable";
+import styles from "@/app/page.module.css";
+
+type PopulatedAssignment = {
+  volunteerId: string;
+  assignmentTagId: VolunteerTag;
+  projectTagId: VolunteerTag;
+  shiftTagIds: VolunteerTag[];
+};
+
+type ProjectProgramMap = {
+  projectTagId: VolunteerTag;
+  programTagId: VolunteerTag;
+};
 
 export default function Page() {
-  // Data state
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
   const [showCreateTagModal, setShowCreateTagModal] = useState(false);
   const [createTagType, setCreateTagType] = useState<"assignment" | "project" | "shift" | "program" | null>(null);
 
-  // Filter states
   const [search, setSearch] = useState("");
-  const [selectedEvent, setSelectedEvent] = useState<Set<string>>(new Set());
+  const [selectedProject, setSelectedProject] = useState<Set<string>>(new Set());
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [selectedVolunteerType, setSelectedVolunteerType] = useState<Set<string>>(new Set());
+  const [selectedAssignment, setSelectedAssignment] = useState<Set<string>>(new Set());
+  const [selectedProgram, setSelectedProgram] = useState<Set<string>>(new Set());
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [showImportSuccess, setShowImportSuccess] = useState(false);
   const [selectedCount, setSelectedCount] = useState(0);
@@ -38,24 +47,56 @@ export default function Page() {
 
   const loadVolunteers = async () => {
     try {
-      const data = await fetchVolunteers();
-      setVolunteers(data);
+      const [volunteerData, tagData, assignmentData, projectProgramMapData] = await Promise.all([
+        fetchVolunteers(),
+        fetchTags(),
+        fetchVolunteerAssignments(),
+        fetchProjectProgramMaps(),
+      ]);
+
+      const programByProjectId = new Map<string, VolunteerTag>();
+      for (const map of projectProgramMapData as ProjectProgramMap[]) {
+        programByProjectId.set(map.projectTagId._id, map.programTagId);
+      }
+
+      const volunteersWithTags = (volunteerData as Volunteer[]).map((volunteer) => {
+        const volunteerAssignments = (assignmentData as PopulatedAssignment[]).filter(
+          (assignment) => assignment.volunteerId === volunteer._id,
+        );
+        const seenTagIds = new Set<string>();
+        const volunteerTags: VolunteerTag[] = [];
+
+        const pushTag = (tag: VolunteerTag | undefined) => {
+          if (!tag || seenTagIds.has(tag._id)) return;
+          seenTagIds.add(tag._id);
+          volunteerTags.push(tag);
+        };
+
+        for (const assignment of volunteerAssignments) {
+          pushTag(assignment.assignmentTagId);
+          pushTag(assignment.projectTagId);
+          pushTag(programByProjectId.get(assignment.projectTagId._id));
+
+          for (const shiftTag of assignment.shiftTagIds ?? []) pushTag(shiftTag);
+        }
+
+        return { ...volunteer, tags: volunteerTags } as Volunteer;
+      });
+
+      setVolunteers(volunteersWithTags);
+      setTags(tagData as VolunteerTag[]);
     } catch (error) {
-      console.error("Error fetching volunteers:", error);
+      console.error("Error fetching data:", error);
     }
   };
-
-  const handleSortOptionChange = (option: "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A") => {
-    setSortOption(option);
-  }
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setCurrentPage(1);
   };
 
-  const handleSelectedEventChange = (value: Set<string> | ((prev: Set<string>) => Set<string>)) => {
-    setSelectedEvent(value);
+  const handleSelectedProjectChange = (value: Set<string> | ((prev: Set<string>) => Set<string>)) => {
+    setSelectedProject(value);
     setCurrentPage(1);
   };
 
@@ -64,83 +105,69 @@ export default function Page() {
     setCurrentPage(1);
   };
 
-  const handleSelectedVolunteerTypeChange = (
-    value: Set<string> | ((prev: Set<string>) => Set<string>),
-  ) => {
-    setSelectedVolunteerType(value);
+  const handleSelectedAssignmentChange = (value: Set<string> | ((prev: Set<string>) => Set<string>)) => {
+    setSelectedAssignment(value);
+    setCurrentPage(1);
+  };
+
+  const handleSelectedProgramChange = (value: Set<string> | ((prev: Set<string>) => Set<string>)) => {
+    setSelectedProgram(value);
     setCurrentPage(1);
   };
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [volunteerData, tagData] = await Promise.all([fetchVolunteers(), fetchTags()]);
-        setVolunteers(volunteerData);
-        setTags(tagData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    }
-    void loadData();
+    void loadVolunteers();
   }, []);
 
-  // Filter tags by type
-  const eventTags = tags.filter((tag) => tag.type === "Event").map((tag) => tag.name);
-  const volunteerTypeTags = tags
-    .filter((tag) => tag.type === "Volunteer Type")
-    .map((tag) => tag.name);
-  // Apply ALL filters here (search + tags)
+  const projectTags = [
+    ...new Set(volunteers.flatMap((v) => v.tags ?? []).filter((t) => t.type === "project").map((t) => t.name)),
+  ];
+  const assignmentTags = tags.filter((t) => t.type === "assignment").map((t) => t.name);
+  const programTags = tags.filter((t) => t.type === "program").map((t) => t.name);
+
   const filteredVolunteers = useMemo(() => {
     return volunteers.filter((volunteer) => {
-      //Event filter
-      if (selectedEvent.size > 0) {
-        const hasMatchingEvent = volunteer.tags?.some((tag) => selectedEvent.has(tag.name));
-        if (!hasMatchingEvent) return false;
+      const volunteerTags = volunteer.tags ?? [];
+
+      if (selectedProject.size > 0) {
+        const hasMatchingProject = volunteerTags.some((tag) => selectedProject.has(tag.name) && tag.type === "project");
+        if (!hasMatchingProject) return false;
       }
 
-      //Volunteer Type filter
-      if (selectedVolunteerType.size > 0) {
-        const hasMatchingVolunteerType = volunteer.tags?.some((tag) =>
-          selectedVolunteerType.has(tag.name),
-        );
-        if (!hasMatchingVolunteerType) return false;
+      if (selectedAssignment.size > 0) {
+        const hasMatchingAssignment = volunteerTags.some((tag) => selectedAssignment.has(tag.name) && tag.type === "assignment");
+        if (!hasMatchingAssignment) return false;
       }
 
-      // Status filter
+      if (selectedProgram.size > 0) {
+        const hasMatchingProgram = volunteerTags.some((tag) => selectedProgram.has(tag.name) && tag.type === "program");
+        if (!hasMatchingProgram) return false;
+      }
+
       if (selectedStatus && volunteer.status !== selectedStatus) return false;
 
-      // Search filter
       if (search.trim()) {
-        const query = search.trim().toLowerCase();
+        const q = search.trim().toLowerCase();
         const firstName = volunteer.firstName.toLowerCase();
         const lastName = volunteer.lastName.toLowerCase();
         const fullName = `${firstName} ${lastName}`;
         const reverseFullName = `${lastName} ${firstName}`;
-        const phoneNumber = volunteer.phoneNumber.toLowerCase();
-        const email = volunteer.email.toLowerCase();
 
-        const matchesSearch =
-          firstName.includes(query) ||
-          lastName.includes(query) ||
-          fullName.includes(query) ||
-          reverseFullName.includes(query) ||
-          phoneNumber.includes(query) ||
-          email.includes(query);
-        if (!matchesSearch) return false;
+        const matches = firstName.includes(q) || lastName.includes(q) || fullName.includes(q) || reverseFullName.includes(q);
+        if (!matches) return false;
       }
 
       return true;
     });
-  }, [selectedEvent, selectedStatus, selectedVolunteerType, search, volunteers]);
+  }, [volunteers, selectedProject, selectedAssignment, selectedProgram, selectedStatus, search]);
 
   const sortedFilteredVolunteers = useMemo(() => {
     const sorted = [...filteredVolunteers];
-
     switch (sortOption) {
       case "Newest":
-        return sorted.sort((a, b) => b.created.getTime() - a.created.getTime());
+        return sorted.sort((a, b) => (b.created?.getTime?.() ?? 0) - (a.created?.getTime?.() ?? 0));
       case "Oldest":
-        return sorted.sort((a, b) => a.created.getTime() - b.created.getTime());
+        return sorted.sort((a, b) => (a.created?.getTime?.() ?? 0) - (b.created?.getTime?.() ?? 0));
       case "First Name A-Z":
         return sorted.sort((a, b) => a.firstName.localeCompare(b.firstName));
       case "First Name Z-A":
@@ -154,7 +181,6 @@ export default function Page() {
     }
   }, [filteredVolunteers, sortOption]);
 
-  // Calculate pagination slice
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const displayedVolunteers = sortedFilteredVolunteers.slice(startIndex, endIndex);
@@ -164,8 +190,6 @@ export default function Page() {
     setShowImportSuccess(true);
   };
 
-  // If `type` is provided this function will open the modal with that type.
-  // Otherwise it renders the modal when `showCreateTagModal` is true.
   const renderCreateTagModal = (type?: "assignment" | "project" | "shift" | "program") => {
     if (type) {
       setCreateTagType(type);
@@ -184,71 +208,45 @@ export default function Page() {
         <main className={styles.main}>
           {renderCreateTagModal()}
 
-            {/* Test buttons - each opens the CreateTagModal with a different type. */}
-            <div>
-              <button type="button" onClick={() => renderCreateTagModal("assignment")}>Open assignment modal</button>
-              <button type="button" onClick={() => renderCreateTagModal("project")}>Open project modal</button>
-              <button type="button" onClick={() => renderCreateTagModal("shift")}>Open shift modal</button>
-              <button type="button" onClick={() => renderCreateTagModal("program")}>Open program modal</button>
-            </div>
-
           {showImportSuccess && (
             <div className={styles.importSuccessBanner}>
               <div className={styles.importSuccessContent}>
-                <Image
-                  src={"/ic_success.svg"}
-                  alt="Success"
-                  className={styles.importSuccessIcon}
-                  width={24}
-                  height={24}
-                />
+                <Image src={'/ic_success.svg'} alt="Success" className={styles.importSuccessIcon} width={24} height={24} />
                 <span className={styles.importSuccessText}>CSV Successfully Uploaded</span>
               </div>
-              <button
-                type="button"
-                className={styles.importSuccessClose}
-                onClick={() => setShowImportSuccess(false)}
-                aria-label="Dismiss success message"
-              >
-              </button>
+              <button type="button" className={styles.importSuccessClose} onClick={() => setShowImportSuccess(false)} aria-label="Dismiss success message" />
             </div>
           )}
+
           <TitleBar onImportComplete={handleImportComplete} />
+
           <SearchBar
             search={search}
             setSearch={handleSearchChange}
-            eventTags={eventTags}
-            volunteerTypeTags={volunteerTypeTags}
+            projectTags={projectTags}
+            assignmentTags={assignmentTags}
+            programTags={programTags}
             sortType={sortOption}
-            onSortOptionChange={handleSortOptionChange}
-            selectedEvent={selectedEvent}
-            setSelectedEvent={handleSelectedEventChange}
+            onSortOptionChange={setSortOption}
+            selectedProject={selectedProject}
+            setSelectedProject={handleSelectedProjectChange}
             selectedStatus={selectedStatus}
             setSelectedStatus={handleSelectedStatusChange}
-            selectedVolunteerType={selectedVolunteerType}
-            setSelectedVolunteerType={handleSelectedVolunteerTypeChange}
+            selectedAssignment={selectedAssignment}
+            setSelectedAssignment={handleSelectedAssignmentChange}
+            selectedProgram={selectedProgram}
+            setSelectedProgram={handleSelectedProgramChange}
           />
+
           <div className={styles.tableSection}>
-            <VolunteerTable
-              volunteers={displayedVolunteers}
-              selectableVolunteers={filteredVolunteers}
-              onSelectedCountChange={setSelectedCount}
-            />
+            <VolunteerTable volunteers={displayedVolunteers} selectableVolunteers={filteredVolunteers} onSelectedCountChange={setSelectedCount} />
             <div className={styles.tableSummaryRow}>
-              <span className={styles.tableSummaryLeft}>
-                {selectedCount > 0 ? `${selectedCount} selected` : ""}
-              </span>
-              <span className={styles.tableSummaryRight}>
-                Total volunteers: {filteredVolunteers.length}
-              </span>
+              <span className={styles.tableSummaryLeft}>{selectedCount > 0 ? `${selectedCount} selected` : ''}</span>
+              <span className={styles.tableSummaryRight}>Total volunteers: {filteredVolunteers.length}</span>
             </div>
           </div>
-          <PageBar
-            totalItems={filteredVolunteers.length}
-            currentPage={currentPage}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-          />
+
+          <PageBar totalItems={filteredVolunteers.length} currentPage={currentPage} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
         </main>
       </div>
     </Sidebar>

@@ -11,13 +11,13 @@ import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore"
 import SearchBar from "@/components/SearchBar";
 import volunteerFilterHook from "@/hooks/volunteerFilterHook";
 
-type RecipientsPanel2Props = {
+type RecipientsPanelProps = {
   mode: "panel" | "page";
 };
 
 const NUMBER_OF_VOLUNTEERS_PER_PAGE = 15;
 
-export default function RecipientsPanel2({ mode }: RecipientsPanel2Props) {
+export default function RecipientsPanel({ mode }: RecipientsPanelProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -45,11 +45,17 @@ export default function RecipientsPanel2({ mode }: RecipientsPanel2Props) {
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
   const selectedSet = useMemo(() => new Set(selectedRecipientIds), [selectedRecipientIds]);
   const toggleRecipient = useTextingFlowStore((s) => s.toggleRecipient);
+  const toggleSelectAll = useTextingFlowStore((s) => s.toggleSelectAll);
+
+  // Determine if all filtered volunteers are selected
+  const allFilteredSelected =
+    filteredVolunteers.length > 0 && filteredVolunteers.every((v) => selectedSet.has(v._id));
+  console.log(selectedSet);
+  console.log(selectedRecipientIds);
 
   const numSelectedRecipientIds = useTextingFlowStore((s) => s.getNumSelectedRecipientIds());
   const numRecipientsIds = useTextingFlowStore((s) => s.getNumRecipientIds());
-  const allSelected = numSelectedRecipientIds === numRecipientsIds;
-  const toggleSelectAll = useTextingFlowStore((s) => s.toggleSelectAll);
+  const allSelected = filteredVolunteers.every((v) => selectedRecipientIds.includes(v._id));
 
   const selectEnabled = numSelectedRecipientIds > 0;
   const handleSelect = useCallback(() => {
@@ -77,8 +83,12 @@ export default function RecipientsPanel2({ mode }: RecipientsPanel2Props) {
         </div>
 
         {mounted && (
-          <button type="button" className={styles.selectAllLink} onClick={toggleSelectAll}>
-            {allSelected ? "Deselect All" : "Select All"}
+          <button
+            type="button"
+            className={styles.selectAllLink}
+            onClick={() => toggleSelectAll(filteredVolunteers)}
+          >
+            {allFilteredSelected ? "Deselect All" : "Select All"}
           </button>
         )}
       </div>
@@ -102,18 +112,6 @@ export default function RecipientsPanel2({ mode }: RecipientsPanel2Props) {
         itemsPerPage={itemsPerPage}
         setPageIndex={setCurrentPage}
       ></Pagination>
-      {mode === "page" ? (
-        <div className={styles.bottomCta}>
-          <button
-            type="button"
-            className={selectEnabled ? styles.cta : styles.ctaDisabled}
-            disabled={!selectEnabled}
-            onClick={handleSelect}
-          >
-            Select Recipients
-          </button>
-        </div>
-      ) : null}
     </div>
   );
 }

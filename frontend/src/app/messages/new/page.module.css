@@ -1,18 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=Viga&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap");
-
 :root {
   --header-h: 64px;
 }
 
 .page {
-  height: auto;
+  min-height: 0;
   background: #ffffff;
   display: flex;
   flex-direction: column;
   font-family: "Open Sans", sans-serif;
   font-weight: 400;
-  height: 100%;
 }
 
 .page * {
@@ -20,7 +16,8 @@
 }
 
 .header {
-  top: 0;
+  position: sticky;
+  top: env(safe-area-inset-top, 0);
   left: 0;
   right: 0;
   z-index: 999;
@@ -64,14 +61,12 @@
 
 .content {
   display: flex;
-  height: 100%;
+  justify-content: center;
   flex-direction: column;
-  align-items: flex-start;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-top: 16px;
+  padding-top: 50px;
   max-width: 720px;
   margin: 0 auto;
   padding-bottom: 20px;
@@ -81,6 +76,13 @@
   .content {
     max-width: none;
     margin: 0;
+  }
+}
+
+@media (min-width: 768px) {
+  /* header is hidden at >=768px, remove the mobile top padding */
+  .content {
+    padding-top: 0;
   }
 }
 
@@ -326,15 +328,12 @@
 }
 
 .reviewFixed {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
   width: min(420px, calc(100% - 30px));
   bottom: calc(102px + 12px + env(safe-area-inset-bottom));
-  margin-top: 0;
-  z-index: 1000;
   display: flex;
-  justify-content: center;
+  align-self: center;
+  justify-self: flex-start;
+  margin-top: 16px;
 }
 
 .reviewBtn,
@@ -373,18 +372,18 @@
 
 @media (min-width: 1024px) {
   .content {
-    display: none;
-  }
-
-  .reviewFixed {
-    display: none;
-  }
-
-  .desktopMain {
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    flex-direction: column;
     flex: 1;
     min-height: 0;
-    overflow: hidden;
-    padding: 0 24px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-top: calc(var(--header-h) + env(safe-area-inset-top, 0));
+    max-width: 720px;
+    margin: 0 auto;
+    padding-bottom: 20px;
     margin: 0;
   }
 

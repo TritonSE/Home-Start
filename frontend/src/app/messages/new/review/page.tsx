@@ -5,15 +5,15 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useTextingFlowStore } from "../_store/textingFlowStore";
-import SuccessToast from "../../../components/messages/SuccessToast";
 
 import styles from "./page.module.css";
 
 import { fetchVolunteers } from "@/app/api/volunteer";
-import RecipientsPanel from "@/app/components/messages/RecipientsPanel";
 import backIconAsset from "@/assets/back.svg";
 import groupsIconAsset from "@/assets/icVolunteers.svg";
 import { getGraphToken, signInWithOutlook } from "@/auth/msal";
+import RecipientsPanel from "@/components/messages/RecipientsPanel";
+import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 import { auth } from "@/firebase/firebase";
 

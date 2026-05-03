@@ -33,7 +33,7 @@ type TextingFlowState = {
   getNumSelectedRecipientIds: () => number;
   getNumRecipientIds: () => number;
   setRecipients: (recipients: Volunteer[]) => void;
-  toggleSelectAll: () => void;
+  toggleSelectAll: (filteredVolunteers: Volunteer[]) => void;
 
   resetDraft: () => void;
   setPageIndex: (index: number) => void;
@@ -107,7 +107,7 @@ export const useTextingFlowStore = create<TextingFlowState>()(
           numRecipientIds: recipients.length,
         });
       },
-      toggleSelectAll: () => {
+      toggleSelectAll: (filteredVolunteers) => {
         const recipients = get().recipients;
         const recipientIds = get().recipientIds;
         const selectedRecipientIds = get().selectedRecipientIds;
@@ -120,21 +120,38 @@ export const useTextingFlowStore = create<TextingFlowState>()(
           return;
         }
 
-        const allSelected = recipientIds.every((id) => selectedRecipientIds.includes(id));
-
+        const allSelected = filteredVolunteers.every((v) => selectedRecipientIds.includes(v._id));
+        const selectedRecipientIdsTemp = [...get().selectedRecipientIds];
+        const selectedRecipientsTemp = [...get().selectedRecipients];
         if (allSelected) {
+          for (const volunteer of filteredVolunteers) {
+            const indexId = selectedRecipientIdsTemp.indexOf(volunteer._id);
+            const index = selectedRecipientsTemp.findIndex((r) => r._id === volunteer._id);
+            if (index > -1) {
+              selectedRecipientsTemp.splice(index, 1);
+            }
+            if (indexId > -1) {
+              selectedRecipientIdsTemp.splice(indexId, 1);
+            }
+          }
           set({
-            selectedRecipientIds: [],
-            selectedRecipients: [],
+            selectedRecipientIds: selectedRecipientIdsTemp,
+            selectedRecipients: selectedRecipientsTemp,
           });
           return;
         }
-
+        for (const volunteer of filteredVolunteers) {
+          if (!selectedRecipientIds.includes(volunteer._id)) {
+            selectedRecipientIdsTemp.push(volunteer._id);
+            const recipient = recipients.find((r) => r._id === volunteer._id);
+            if (recipient) {
+              selectedRecipientsTemp.push(recipient);
+            }
+          }
+        }
         set({
-          selectedRecipientIds: recipientIds,
-          selectedRecipients: recipients.filter((recipient) =>
-            recipientIds.includes(recipient._id),
-          ),
+          selectedRecipientIds: selectedRecipientIdsTemp,
+          selectedRecipients: selectedRecipientsTemp,
         });
       },
 

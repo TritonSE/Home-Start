@@ -4,11 +4,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 
-import RecipientsPanel from "../../../components/messages/RecipientsPanel";
-
 import styles from "./page.module.css";
 
 import backIconAsset from "@/assets/back.svg";
+import RecipientsPanel from "@/components/messages/RecipientsPanel";
 import Sidebar from "@/components/Sidebar";
 
 const backIcon = backIconAsset as string;

@@ -9,13 +9,13 @@ import styles from "./page.module.css";
 
 import type { MouseEvent } from "react";
 
-import RecipientsPanel from "@/app/components/messages/RecipientsPanel";
 import addPersonIconAsset from "@/assets/addPersonIcon.svg";
 import blueChevronLeftAsset from "@/assets/blueChevronLeft.svg";
 import bluePlusAsset from "@/assets/bluePlus.svg";
 import icCaretLeftAsset from "@/assets/icCaretleft.svg";
 import mdiInformationAsset from "@/assets/mdi_information.svg";
 import { initMsal, signInWithOutlook } from "@/auth/msal";
+import RecipientsPanel from "@/components/messages/RecipientsPanel";
 import Sidebar from "@/components/Sidebar";
 
 const addPersonIcon = addPersonIconAsset as string;

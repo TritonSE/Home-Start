@@ -31,7 +31,6 @@ export default function Page() {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
   const [showCreateTagModal, setShowCreateTagModal] = useState(false);
-  const [createTagType, setCreateTagType] = useState<"assignment" | "project" | "shift" | "program" | null>(null);
 
   const [search, setSearch] = useState("");
   const [selectedProject, setSelectedProject] = useState<Set<string>>(new Set());
@@ -192,16 +191,10 @@ export default function Page() {
     setShowImportSuccess(true);
   };
 
-  const renderCreateTagModal = (type?: "assignment" | "project" | "shift" | "program") => {
-    if (type) {
-      setCreateTagType(type);
-      setShowCreateTagModal(true);
-      return null;
-    }
+  const renderCreateTagModal = () => {
+    if (!showCreateTagModal) return null;
 
-    if (!showCreateTagModal || !createTagType) return null;
-
-    return <CreateTagModal type={createTagType} onClose={() => setShowCreateTagModal(false)} />;
+    return <CreateTagModal onClose={() => setShowCreateTagModal(false)} />;
   };
 
   return (
@@ -211,13 +204,10 @@ export default function Page() {
           {renderCreateTagModal()}
 
           <div>
-            <button type="button" onClick={() => renderCreateTagModal("assignment")}>Open assignment modal</button>
-            <button type="button" onClick={() => renderCreateTagModal("project")}>Open project modal</button>
-            <button type="button" onClick={() => renderCreateTagModal("shift")}>Open shift modal</button>
-            <button type="button" onClick={() => renderCreateTagModal("program")}>Open program modal</button>
+            <button type="button" onClick={() => setShowCreateTagModal(true)}>Open create role modal</button>
           </div>
 
-          <p>remove these buttons one user profiles is done</p>
+          <p>remove this buttons one user profiles is done</p>
 
           {showImportSuccess && (
             <div className={styles.importSuccessBanner}>

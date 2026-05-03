@@ -5,10 +5,10 @@ import { useState } from "react";
 import styles from "./CreateTagModal.module.css";
 
 import icCloseLargeAsset from "@/assets/ic_close_large.svg";
+import rightArrowAsset from "@/assets/rightarrow.svg";
 
 const icCloseLarge = icCloseLargeAsset as string;
-
-type TagType = "assignment" | "project" | "shift" | "program";
+const rightArrow = rightArrowAsset as string;
 
 type CheckIconProps = {
   color: string;
@@ -45,32 +45,62 @@ const COLOR_OPTIONS: ColorOption[] = [
 ];
 
 type Props = {
-  type: TagType;
   onClose: () => void;
 };
 
-export default function CreateTagModal({ type, onClose }: Props) {
-  const [tagName, setTagName] = useState("");
+export default function CreateTagModal({ onClose }: Props) {
+  const [step, setStep] = useState(1);
+  const [assignmentName, setAssignmentName] = useState("");
+  const [projectName, setProjectName] = useState("");
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
+
+  const isFirstPage = step === 1;
+  const inputValue = isFirstPage ? assignmentName : projectName;
+  const setInputValue = isFirstPage ? setAssignmentName : setProjectName;
+
+  const handleClose = () => {
+    setStep(1);
+    onClose();
+  };
 
   return (
     <>
-      <div className={styles.overlay} onClick={onClose} />
+      <div className={styles.overlay} onClick={handleClose} />
       <div className={styles.modal}>
         <div className={styles.header}>
-          <p className={styles.title}>Create Tag</p>
-          <button className={styles.close} onClick={onClose} aria-label="Close">
+          <p className={styles.title}>Create Role</p>
+          <button className={styles.close} onClick={handleClose} aria-label="Close">
             <Image src={icCloseLarge} alt="" width={24} height={24} />
           </button>
         </div>
+
+        <div className={styles.stepIndicator}>
+          <div className={styles.stepItem}>
+            <span className={`${styles.stepCircle} ${isFirstPage ? styles.stepCircleActive : styles.stepCircleInactive}`}>1</span>
+            <span className={`${styles.stepLabel} ${isFirstPage ? styles.stepLabelActive : styles.stepLabelInactive}`}>Add Assignment</span>
+          </div>
+
+          <Image src={rightArrow} alt="" aria-hidden width={24} height={24} className={styles.stepArrow} />
+
+          <div className={styles.stepItem}>
+            <span className={`${styles.stepCircle} ${!isFirstPage ? styles.stepCircleActive : styles.stepCircleInactive}`}>2</span>
+            <span className={`${styles.stepLabel} ${!isFirstPage ? styles.stepLabelActive : styles.stepLabelInactive}`}>Add Project</span>
+          </div>
+        </div>
+
+        <div className={styles.divider} />
+
+        <label className={styles.inputLabel}>
+          {isFirstPage ? "Assignment name" : "Project name"}
+        </label>
 
         <div className={styles.inputField}>
           <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
             <input
               type="text"
-              value={tagName}
-              onChange={(e) => setTagName(e.target.value)}
-              placeholder="Enter tag name..."
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder={isFirstPage ? "Create or add assignment..." : "Create or add project..."}
             />
           </form>
         </div>
@@ -100,14 +130,30 @@ export default function CreateTagModal({ type, onClose }: Props) {
           })}
         </div>
 
-        <div className={styles.actions}>
-          <button className={styles.secondary} onClick={onClose}>
-            Cancel
-          </button>
+        <div className={styles.divider} />
 
-          <button className={styles.primary}>
-            Create
-          </button>
+        <div className={styles.actions}>
+          {isFirstPage ? (
+            <>
+              <button className={styles.secondary} onClick={handleClose} type="button">
+                Cancel
+              </button>
+
+              <button className={styles.primary} onClick={() => setStep(2)} type="button">
+                Next
+              </button>
+            </>
+          ) : (
+            <>
+              <button className={styles.secondary} onClick={() => setStep(1)} type="button">
+                Back
+              </button>
+
+              <button className={styles.primary} type="button">
+                Create Role
+              </button>
+            </>
+          )}
         </div>
       </div>
     </>

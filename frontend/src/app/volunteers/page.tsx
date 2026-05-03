@@ -152,8 +152,10 @@ export default function Page() {
         const lastName = volunteer.lastName.toLowerCase();
         const fullName = `${firstName} ${lastName}`;
         const reverseFullName = `${lastName} ${firstName}`;
+        const email = volunteer.email.toLowerCase();
+        const phoneNumber = volunteer.phoneNumber?.toLowerCase();
 
-        const matches = firstName.includes(q) || lastName.includes(q) || fullName.includes(q) || reverseFullName.includes(q);
+        const matches = firstName.includes(q) || lastName.includes(q) || fullName.includes(q) || reverseFullName.includes(q) || email.includes(q) || phoneNumber?.includes(q);
         if (!matches) return false;
       }
 
@@ -165,9 +167,9 @@ export default function Page() {
     const sorted = [...filteredVolunteers];
     switch (sortOption) {
       case "Newest":
-        return sorted.sort((a, b) => (b.created?.getTime?.() ?? 0) - (a.created?.getTime?.() ?? 0));
+        return sorted.sort((a, b) => a.created.getTime() - b.created.getTime());
       case "Oldest":
-        return sorted.sort((a, b) => (a.created?.getTime?.() ?? 0) - (b.created?.getTime?.() ?? 0));
+        return sorted.sort((a, b) => b.created.getTime() - a.created.getTime());
       case "First Name A-Z":
         return sorted.sort((a, b) => a.firstName.localeCompare(b.firstName));
       case "First Name Z-A":
@@ -207,6 +209,15 @@ export default function Page() {
       <div className={styles.page}>
         <main className={styles.main}>
           {renderCreateTagModal()}
+
+          <div>
+            <button type="button" onClick={() => renderCreateTagModal("assignment")}>Open assignment modal</button>
+            <button type="button" onClick={() => renderCreateTagModal("project")}>Open project modal</button>
+            <button type="button" onClick={() => renderCreateTagModal("shift")}>Open shift modal</button>
+            <button type="button" onClick={() => renderCreateTagModal("program")}>Open program modal</button>
+          </div>
+
+          <p>remove these buttons one user profiles is done</p>
 
           {showImportSuccess && (
             <div className={styles.importSuccessBanner}>

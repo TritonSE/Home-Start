@@ -167,9 +167,9 @@ export default function Page() {
     const sorted = [...filteredVolunteers];
     switch (sortOption) {
       case "Newest":
-        return sorted.sort((a, b) => a.created.getTime() - b.created.getTime());
+        return sorted.sort((a, b) => a._id.localeCompare(b._id));
       case "Oldest":
-        return sorted.sort((a, b) => b.created.getTime() - a.created.getTime());
+        return sorted.sort((a, b) => b._id.localeCompare(a._id));
       case "First Name A-Z":
         return sorted.sort((a, b) => a.firstName.localeCompare(b.firstName));
       case "First Name Z-A":

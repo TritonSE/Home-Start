@@ -204,7 +204,7 @@ export default function RecipientsPage() {
           <div className={styles.searchRow}>
             <div className={styles.searchWrap}>
               <span className={styles.searchIcon} aria-hidden>
-                🔍
+                <img src="/Union.svg" alt="" width={16} height={16} />
               </span>
               <input
                 className={styles.searchInput}

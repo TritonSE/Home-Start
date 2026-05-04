@@ -159,19 +159,6 @@ export default function SearchBar({
           </button>
           {renderDropdown(tags, "volunteerType")}
         </div>
-
-        <div className={styles.clearFiltersContainer}>
-          <button
-            className={styles.clearFilterButton}
-            onClick={() => {
-              setSelectedEvent(new Set());
-              setSelectedStatus(new Set());
-              setSelectedVolunteerType(new Set());
-            }}
-          >
-            Clear All
-          </button>
-        </div>
       </div>
     </div>
   );

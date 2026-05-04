@@ -88,7 +88,8 @@
   gap: 12px;
   align-items: center;
 
-  padding-bottom: 12px;
+  /*padding-bottom: 12px;*/
+  padding: 12px 0;
 }
 
 .searchWrap {
@@ -103,7 +104,10 @@
 }
 
 .searchIcon {
-  opacity: 0.55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .searchInput {

@@ -246,12 +246,14 @@ export const getSelectedVolunteers: RequestHandler = async (req, res, next) => {
 
 export const getVolunteerRows: RequestHandler = async (req, res, next) => {
   try {
-    const volunteers = await VolunteerModel.find();
+    const volunteers = await VolunteerModel.find().populate<{
+      tags: { name: string }[];
+    }>("tags");
     const volunteerRows = volunteers.map((volunteer) => ({
       id: volunteer._id,
       firstName: volunteer.firstName,
       lastName: volunteer.lastName,
-      tags: ["intern", "volunter"],
+      tags: volunteer.tags.map((tag) => tag.name),
     }));
     res.status(200).json(volunteerRows);
   } catch (err) {

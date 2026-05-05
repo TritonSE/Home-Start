@@ -4,13 +4,13 @@ import { isHttpError } from "http-errors";
 
 import "./firebase/admin";
 import { frontend_origin } from "./config";
+import { verifyToken } from "./middleware/auth";
 import messageRoutes from "./routes/messageRoutes";
 import tagRoutes from "./routes/tagRoutes";
 import templateRoutes from "./routes/templateRoutes";
 import volunteerAssignmentRoutes from "./routes/volunteerAssignmentRoutes";
 import volunteerRoutes from "./routes/volunteerRoutes";
 
-import { verifyToken } from "./middleware/auth";
 import type { NextFunction, Request, Response } from "express";
 
 const handleError = (error: unknown, req: Request, res: Response, _next: NextFunction) => {

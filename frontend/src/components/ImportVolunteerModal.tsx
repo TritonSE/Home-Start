@@ -82,7 +82,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
 
       setCSVParsedInfo(data);
       setStatus("success");
-    } catch (error: unknown) {
+    } catch (_error) {
       setStatus("error");
     }
   }

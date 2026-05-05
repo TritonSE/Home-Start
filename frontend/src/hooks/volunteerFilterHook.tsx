@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import type { Volunteer, VolunteerTag } from "@/types/volunteer";
+import type { Volunteer } from "@/types/volunteer";
 
 import { fetchTags } from "@/app/api/tag";
 import { fetchVolunteers } from "@/app/api/volunteer";
@@ -50,7 +50,7 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
   useEffect(() => {
     async function loadData() {
       try {
-        const [volunteerData, tagData] = await Promise.all([fetchVolunteers(), fetchTags()]);
+        const [volunteerData] = await Promise.all([fetchVolunteers(), fetchTags()]);
         setVolunteers(volunteerData);
         const existingRecipientIds = useTextingFlowStore.getState().recipientIds;
         if (!existingRecipientIds || existingRecipientIds.length === 0) {

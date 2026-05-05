@@ -1,29 +1,36 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 import styles from "./page.module.css";
 
-import { createTemplate } from "@/app/api/template";
-import icCaretLeftAsset from "@/assets/icCaretleft.svg";
+import { createTemplate, type CreateTemplateRequest, TemplateType } from "@/app/api/template";
+import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
 import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 import { TemplateCreate } from "@/components/TemplateCreate";
 
 const icCaretLeft = icCaretLeftAsset as string;
 
-export default function CreateTemplatePage() {
+function CreateTemplateContent() {
   const router = useRouter();
-  const [showSuccess, setShowSuccess] = useState(false);
+  const searchParams = useSearchParams();
 
-  const onSave = (title: string, message: string, type: string) => {
-    const createTemplateRequest = {
+  const [showSuccess, setShowSuccess] = useState(false);
+  const templateType =
+    searchParams.get("type") === "email" ? TemplateType.EMAIL : TemplateType.TEXT;
+
+  const onSave = (title: string, message: string, type: TemplateType, subject: string) => {
+    const createTemplateRequest: CreateTemplateRequest = {
       title,
       message,
       type,
     };
+    if (subject) {
+      createTemplateRequest.subject = subject;
+    }
     createTemplate(createTemplateRequest)
       .then((result) => {
         if (result.success) {
@@ -56,8 +63,16 @@ export default function CreateTemplatePage() {
           <h1 className={styles.headerTitle}>Compose Template</h1>
           <span style={{ height: "40px" }}></span>
         </header>
-        <TemplateCreate onSave={onSave} />
+        <TemplateCreate onSave={onSave} title="" message="" type={templateType} />
       </div>
     </Sidebar>
+  );
+}
+
+export default function CreateTemplate() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreateTemplateContent />
+    </Suspense>
   );
 }

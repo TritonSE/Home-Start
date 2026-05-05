@@ -10,7 +10,7 @@ import styles from "./page.module.css";
 
 import { fetchVolunteers } from "@/app/api/volunteer";
 import backIconAsset from "@/assets/back.svg";
-import groupsIconAsset from "@/assets/icVolunteers.svg";
+import groupsIconAsset from "@/assets/ic_volunteers_alt.svg";
 import { getGraphToken, signInWithOutlook } from "@/auth/msal";
 import RecipientsPanel from "@/components/messages/RecipientsPanel";
 import SuccessToast from "@/components/messages/SuccessToast";

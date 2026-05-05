@@ -1,0 +1,92 @@
+.pillWrapper {
+  position: relative;
+  display: inline-block;
+  z-index: 10;
+}
+
+.pillTag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  width: 100px;
+  border-radius: 64px;
+  border: 1px solid #1d3a6b;
+  background: transparent;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.pillTag:hover,
+.pillTagActive {
+  background-color: #10203b;
+  color: #ffffff;
+}
+
+.pillTagText {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-open-sans);
+  font-weight: 400;
+  font-style: regular;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+
+.dropdown {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  z-index: 11;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 240px;
+  max-height: 700px;
+  overflow: hidden;
+  background: #fbffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.12);
+  padding: 12px;
+}
+
+.dropdownItemContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dropdownItem:hover,
+.dropdownItemSelected {
+  background-color: #eef4fb;
+}
+
+.filterLabel {
+  font-family: var(--font-open-sans);
+  font-weight: 400;
+  font-style: regular;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.8px;
+  color: #000000;
+}
+
+.dropdownItemSelected .filterLabel {
+  font-weight: 700;
+}

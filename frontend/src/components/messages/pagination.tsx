@@ -2,10 +2,10 @@ import Image from "next/image";
 
 import styles from "./pagination.module.css";
 
-import doubleLeftArrow from "@/assets/doubleLeftArrow.svg";
-import doubleRightArrow from "@/assets/doubleRightArrow.svg";
-import leftArrow from "@/assets/icCaretleft.svg";
-import rightArrow from "@/assets/icCaretright.svg";
+import doubleLeftArrow from "@/assets/double_left_arrow.svg";
+import doubleRightArrow from "@/assets/double_right_arrow.svg";
+import leftArrow from "@/assets/ic_caretleft_alt.svg";
+import rightArrow from "@/assets/ic_caretright.svg";
 
 type PaginationProps = {
   totalItems: number;

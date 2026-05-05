@@ -10,10 +10,10 @@ import { useTextingFlowStore } from "../app/messages/new/_store/textingFlowStore
 
 import styles from "./Sidebar.module.css";
 
-import communicationIconAsset from "@/assets/icCommunication.svg";
-import dashboardIconAsset from "@/assets/icDashboard.svg";
-import volunteersIconAsset from "@/assets/icVolunteers2.svg";
-import homeStartLogoAsset from "@/assets/Main Vertical USE 1.svg";
+import communicationIconAsset from "@/assets/ic_communication_alt.svg";
+import dashboardIconAsset from "@/assets/ic_dashboard_alt.svg";
+import volunteersIconAsset from "@/assets/ic_volunteers2.svg";
+import homeStartLogoAsset from "@/assets/main_vertical_use_1.svg";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -57,6 +57,7 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
             className={styles.logo}
             width={115}
             height={140}
+            style={{ height: "auto" }}
             priority
           />
         </div>

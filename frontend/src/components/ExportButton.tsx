@@ -9,7 +9,6 @@ const uploadBlue = uploadBlueAsset as string;
 export default function ExportButton() {
   return (
     <button className={styles.exportButton}>
-      <div className={styles.exportText}>Export CSV</div>
       <span className={styles.ic_container}>
         <Image
           src={uploadBlue}
@@ -19,6 +18,7 @@ export default function ExportButton() {
           height={14.167}
         />
       </span>
+      <div className={styles.exportText}>Export CSV</div>
     </button>
   );
 }

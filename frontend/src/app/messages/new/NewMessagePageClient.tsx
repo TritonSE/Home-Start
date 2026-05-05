@@ -9,10 +9,10 @@ import styles from "./page.module.css";
 
 import type { MouseEvent } from "react";
 
-import addPersonIconAsset from "@/assets/addPersonIcon.svg";
-import blueChevronLeftAsset from "@/assets/blueChevronLeft.svg";
-import bluePlusAsset from "@/assets/bluePlus.svg";
-import icCaretLeftAsset from "@/assets/icCaretleft.svg";
+import addPersonIconAsset from "@/assets/add_person_icon.svg";
+import blueChevronLeftAsset from "@/assets/blue_chevron_left.svg";
+import bluePlusAsset from "@/assets/blue_plus_alt.svg";
+import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
 import mdiInformationAsset from "@/assets/mdi_information.svg";
 import { initMsal, signInWithOutlook } from "@/auth/msal";
 import RecipientsPanel from "@/components/messages/RecipientsPanel";

@@ -51,6 +51,46 @@
   font-size: 15px;
 }
 
+/* START: Sticky first 3 columns (remove this block if design does not want anchored columns) */
+
+.volunteerTable th:nth-child(1),
+.volunteerTable td:nth-child(1) {
+  position: sticky;
+  left: 0;
+}
+
+.volunteerTable th:nth-child(2),
+.volunteerTable td:nth-child(2) {
+  position: sticky;
+  left: 40px;
+}
+
+.volunteerTable th:nth-child(3),
+.volunteerTable td:nth-child(3) {
+  position: sticky;
+  left: 200px;
+}
+
+.volunteerTable th:nth-child(-n + 3) {
+  z-index: 6;
+  background-color: #ecf3f3;
+}
+
+.volunteerTable td:nth-child(-n + 3) {
+  z-index: 2;
+  background-color: #ffffff;
+}
+
+.volunteerTable th:nth-child(3),
+.volunteerTable td:nth-child(3) {
+  box-shadow: 2px 0 0 #dcdcdc;
+}
+
+.volunteerTable tbody tr:hover td:nth-child(-n + 3) {
+  background-color: #e8e8e8;
+}
+/*END: Sticky first 3 columns */
+
 .emailCell {
   white-space: nowrap;
 }
@@ -70,6 +110,7 @@
   justify-content: space-between;
   gap: 10px;
   font-size: 16px;
+  font-weight: bold;
   padding-top: 8px;
   padding-bottom: 8px;
 }
@@ -173,17 +214,22 @@
 .checkboxCell {
   width: 44px;
   text-align: center;
-  padding-left: 12px;
-  padding-right: 4px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 .checkbox {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   cursor: pointer;
   accent-color: #1a3a5c;
 }
 
 .selectedRow td {
+  background-color: #eef4fb !important;
+}
+
+/* Sticky first 3 columns support: remove with the sticky block above if needed */
+.selectedRow td:nth-child(-n + 3) {
   background-color: #eef4fb !important;
 }

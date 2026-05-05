@@ -8,9 +8,9 @@ import React, { Suspense, useState } from "react";
 
 import styles from "./page.module.css";
 
-import homeStartLogoAsset from "@/assets/homestartLogo.svg";
-import icHideAsset from "@/assets/icHide.svg";
-import icShowAsset from "@/assets/icShow.svg";
+import homeStartLogoAsset from "@/assets/homestart_logo.svg";
+import icHideAsset from "@/assets/ic_hide.svg";
+import icShowAsset from "@/assets/ic_show.svg";
 import SuccessNotification from "@/components/SuccessNotification";
 import { auth } from "@/firebase/firebase";
 

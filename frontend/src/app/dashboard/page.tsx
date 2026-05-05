@@ -8,8 +8,8 @@ import { type MouseEvent, useState } from "react";
 import styles from "./page.module.css";
 
 import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
-import icCaretRightAsset from "@/assets/chevronBackward.svg";
-import icMessageAsset from "@/assets/icMessage.svg";
+import icCaretRightAsset from "@/assets/chevron_backward.svg";
+import icMessageAsset from "@/assets/ic_message.svg";
 import importExportAsset from "@/assets/ion_document.svg";
 import mailAsset from "@/assets/mail.svg";
 import { initMsal, signInWithOutlook } from "@/auth/msal";

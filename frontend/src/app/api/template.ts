@@ -2,11 +2,16 @@ import { del, get, handleAPIError, post, put } from "./requests";
 
 import type { APIResult } from "./requests";
 
+export enum TemplateType {
+  TEXT = "text",
+  EMAIL = "email",
+}
+
 export type Template = {
   _id: string;
   title: string;
   message: string;
-  type: string;
+  type: TemplateType;
   subject?: string;
 };
 
@@ -42,7 +47,7 @@ function toTemplate(value: TemplateResponse): Template {
     _id: value._id,
     title: value.title,
     message: value.message,
-    type: value.type,
+    type: value.type as TemplateType,
     subject: value.subject,
   };
 }
@@ -65,7 +70,7 @@ async function readErrorMessage(response: Response): Promise<string> {
 
 export const getTemplate = async (templateId: string): Promise<APIResult<Template>> => {
   try {
-    const response = await get(`/template/${templateId}`);
+    const response = await get(`/api/template/${templateId}`);
     if (response.ok) {
       const templateJson: unknown = await response.json();
       if (!isTemplateResponse(templateJson)) {
@@ -83,7 +88,7 @@ export const getTemplate = async (templateId: string): Promise<APIResult<Templat
 
 export const getTemplates = async (): Promise<APIResult<Template[]>> => {
   try {
-    const response = await get(`/template`);
+    const response = await get(`/api/template`);
     if (response.ok) {
       const templatesJson: unknown = await response.json();
       if (!Array.isArray(templatesJson)) {
@@ -101,10 +106,10 @@ export const getTemplates = async (): Promise<APIResult<Template[]>> => {
   }
 };
 
-type CreateTemplateRequest = {
+export type CreateTemplateRequest = {
   title: string;
   message: string;
-  type: string;
+  type: TemplateType;
   subject?: string;
 };
 
@@ -112,7 +117,7 @@ export const createTemplate = async (
   templateObj: CreateTemplateRequest,
 ): Promise<APIResult<Template>> => {
   try {
-    const response = await post(`/template`, templateObj);
+    const response = await post(`/api/template`, templateObj);
     if (response.ok) {
       const data: unknown = await response.json();
       if (!isTemplateResponse(data)) {
@@ -133,7 +138,7 @@ export const updateTemplate = async (
   templateObj: CreateTemplateRequest,
 ): Promise<APIResult<Template>> => {
   try {
-    const response = await put(`/template/${templateId}`, templateObj);
+    const response = await put(`/api/template/${templateId}`, templateObj);
     if (response.ok) {
       const data: unknown = await response.json();
       if (!isTemplateResponse(data)) {
@@ -151,7 +156,7 @@ export const updateTemplate = async (
 
 export const deleteTemplate = async (templateId: string): Promise<APIResult<string>> => {
   try {
-    const response = await del(`/template/${templateId}`);
+    const response = await del(`/api/template/${templateId}`);
     if (response.ok) {
       const data: unknown = await response.json();
       if (!data || typeof data !== "object") {

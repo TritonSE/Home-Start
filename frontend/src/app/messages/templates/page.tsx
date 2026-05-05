@@ -10,13 +10,14 @@ import styles from "./page.module.css";
 
 import type { Template } from "@/app/api/template";
 
-import { deleteTemplate, getTemplates } from "@/app/api/template";
-import icAddAsset from "@/assets/icAdd.svg";
-import icCaretLeftAsset from "@/assets/icCaretleft.svg";
+import { deleteTemplate, getTemplates, TemplateType } from "@/app/api/template";
+import icAddAsset from "@/assets/ic_add.svg";
+import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
 import Sidebar from "@/components/Sidebar";
 import TemplateActionPopup from "@/components/TemplateActionPopup";
 import { TemplateList } from "@/components/TemplateList";
 import { TemplatePreview } from "@/components/TemplatePreview";
+import { TemplateTypeSelect } from "@/components/TemplateTypeSelect";
 
 const icAdd = icAddAsset as string;
 const icCaretLeft = icCaretLeftAsset as string;
@@ -26,15 +27,18 @@ export default function TemplatePage() {
   const pathname = usePathname();
 
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [displayTemplates, setDisplayTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | undefined>(undefined);
   const [openPopup, setOpenPopup] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState(false);
+  const [templateType, setTemplateType] = useState<TemplateType>(TemplateType.TEXT);
 
   const fetchTemplates = () => {
     getTemplates()
       .then((result) => {
         if (result.success) {
           setTemplates(result.data);
+          setDisplayTemplates(result.data.filter((template) => template.type === templateType));
         } else {
           console.error(result.error);
         }
@@ -48,9 +52,13 @@ export default function TemplatePage() {
     fetchTemplates();
   }, []);
 
+  useEffect(() => {
+    setDisplayTemplates(templates.filter((template) => template.type === templateType));
+  }, [templateType]);
+
   const handleAddTemplateClicked = () => {
     const path = join(pathname, "new");
-    void router.push(path);
+    router.push(`${path}?type=${templateType}`);
   };
 
   const handleEditTemplateClicked = () => {
@@ -102,8 +110,19 @@ export default function TemplatePage() {
           <TemplatePreview template={selectedTemplate} />
         ) : (
           <>
+            <div className={styles.templateType}>
+              <TemplateTypeSelect
+                type={templateType}
+                selectText={() => {
+                  setTemplateType(TemplateType.TEXT);
+                }}
+                selectEmail={() => {
+                  setTemplateType(TemplateType.EMAIL);
+                }}
+              />
+            </div>
             <TemplateList
-              templates={templates}
+              templates={displayTemplates}
               onTemplateClick={(template) => {
                 setSelectedTemplate(template);
                 setPreviewTemplate(true);

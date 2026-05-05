@@ -5,10 +5,10 @@ import styles from "./ImportVolunteerModal.module.css";
 import Modal from "./Modal";
 
 import { parseVolunteersCsv, uploadVolunteerBatch } from "@/app/api/volunteer";
-import icErrorAsset from "@/assets/icError.svg";
-import icNewAsset from "@/assets/icNew.svg";
-import icSuccessAsset from "@/assets/icSuccess.svg";
-import icWarningAsset from "@/assets/icWarning.svg";
+import icErrorAsset from "@/assets/ic_error.svg";
+import icNewAsset from "@/assets/ic_new.svg";
+import icSuccessAsset from "@/assets/ic_success.svg";
+import icWarningAsset from "@/assets/ic_warning.svg";
 import uploadIconAsset from "@/assets/upload.svg";
 
 const icError = icErrorAsset as string;

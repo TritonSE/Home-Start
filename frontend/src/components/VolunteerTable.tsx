@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import styles from "./VolunteerTable.module.css";
 
@@ -36,21 +36,42 @@ const getVisibleTags = (tags: VolunteerTag[], type: string, maxVisible: number) 
 
 type VolunteerTableProps = {
   volunteers: Volunteer[];
+  selectableVolunteers?: Volunteer[];
+  onSelectedCountChange?: (count: number) => void;
 };
 
-export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
+export default function VolunteerTable({
+  volunteers,
+  selectableVolunteers,
+  onSelectedCountChange,
+}: VolunteerTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const selectionScope = selectableVolunteers ?? volunteers;
 
-  const allSelected = volunteers.length > 0 && volunteers.every((v) => selectedIds.has(v._id));
-  const someSelected = volunteers.some((v) => selectedIds.has(v._id));
+  const allSelected =
+    selectionScope.length > 0 &&
+    selectionScope.every((volunteer) => selectedIds.has(volunteer._id));
+  const someSelected = selectionScope.some((volunteer) => selectedIds.has(volunteer._id));
 
   function toggleAll() {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(volunteers.map((v) => v._id)));
+      setSelectedIds(new Set(selectionScope.map((volunteer) => volunteer._id)));
     }
   }
+
+  function deselectAll() {
+    setSelectedIds(new Set());
+  }
+
+  useEffect(() => {
+    onSelectedCountChange?.(selectedIds.size);
+  }, [selectedIds, onSelectedCountChange]);
+
+  useEffect(() => {
+    deselectAll();
+  }, [selectionScope]);
 
   function toggleOne(id: string) {
     setSelectedIds((prev) => {
@@ -102,16 +123,6 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
                 <span>First Name</span>
               </div>
             </th>
-            <th className={styles.emailCell}>
-              <div className={styles.headerContent}>
-                <span>Email</span>
-              </div>
-            </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Phone Number</span>
-              </div>
-            </th>
             <th>
               <div className={styles.headerContent}>
                 <span>Status</span>
@@ -130,6 +141,16 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
             <th>
               <div className={styles.headerContent}>
                 <span>Project</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Phone Number</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Email</span>
               </div>
             </th>
           </tr>
@@ -151,9 +172,6 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
               </td>
               <td>{volunteer.lastName}</td>
               <td>{volunteer.firstName}</td>
-              <td className={styles.emailCell}>{volunteer.email}</td>
-              <td>{volunteer.phoneNumber}</td>
-
               <td>
                 <div className={styles.tagsContainer}>
                   <span
@@ -270,6 +288,9 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
                   })()}
                 </div>
               </td>
+
+              <td>{volunteer.phoneNumber}</td>
+              <td>{volunteer.email}</td>
             </tr>
           ))}
         </tbody>

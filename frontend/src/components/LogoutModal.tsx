@@ -1,11 +1,7 @@
 "use client";
-import Image from "next/image";
 
 import styles from "./LogoutModal.module.css";
-
-import icCloseLargeAsset from "@/assets/icCloseLarge.svg";
-
-const icCloseLarge = icCloseLargeAsset as string;
+import Modal from "./Modal";
 
 type Props = {
   onClose: () => void;
@@ -14,26 +10,24 @@ type Props = {
 
 export default function LogoutModal({ onClose, onConfirm }: Props) {
   return (
-    <>
-      <div className={styles.overlay} onClick={onClose} />
-      <div className={styles.modal}>
-        <div className={styles.header}>
-          <p className={styles.title}>Are you sure you want to log out?</p>
-          <button className={styles.close} onClick={onClose} aria-label="Close">
-            <Image src={icCloseLarge} alt="" width={24} height={24} />
-          </button>
-        </div>
+    <Modal
+      onClose={onClose}
+      width="370px"
+      radius="5px"
+      title="Are you sure you want to log out?"
+      titleFontSize="16px"
+      titleLineHeight={24}
+      padding="16px"
+    >
+      <div className={styles.actions}>
+        <button className={styles.secondary} onClick={onClose}>
+          Cancel
+        </button>
 
-        <div className={styles.actions}>
-          <button className={styles.secondary} onClick={onClose}>
-            Cancel
-          </button>
-
-          <button className={styles.primary} onClick={onConfirm}>
-            Logout
-          </button>
-        </div>
+        <button className={styles.primary} onClick={onConfirm}>
+          Logout
+        </button>
       </div>
-    </>
+    </Modal>
   );
 }

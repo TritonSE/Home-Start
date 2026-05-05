@@ -1,7 +1,6 @@
 "use client";
 
-import router from "next/router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Pagination from "./pagination";
 import RecipientRow from "./RecipientRow";
@@ -27,14 +26,8 @@ export default function RecipientsPanel({ mode }: RecipientsPanelProps) {
   const {
     search,
     handleSearchChange,
-    eventTags,
-    volunteerTypeTags,
-    selectedEvent,
-    handleSelectedEventChange,
     selectedStatus,
     handleSelectedStatusChange,
-    selectedVolunteerType,
-    handleSelectedVolunteerTypeChange,
     filteredVolunteers,
     displayedVolunteers,
     currentPage,
@@ -50,31 +43,16 @@ export default function RecipientsPanel({ mode }: RecipientsPanelProps) {
   // Determine if all filtered volunteers are selected
   const allFilteredSelected =
     filteredVolunteers.length > 0 && filteredVolunteers.every((v) => selectedSet.has(v._id));
-  console.log(selectedSet);
-  console.log(selectedRecipientIds);
 
   const numSelectedRecipientIds = useTextingFlowStore((s) => s.getNumSelectedRecipientIds());
-  const numRecipientsIds = useTextingFlowStore((s) => s.getNumRecipientIds());
-  const allSelected = filteredVolunteers.every((v) => selectedRecipientIds.includes(v._id));
-
-  const selectEnabled = numSelectedRecipientIds > 0;
-  const handleSelect = useCallback(() => {
-    if (mode === "page") void router.push("/messages/new");
-  }, [mode, router]);
 
   return (
     <div className={mode === "panel" ? styles.panel : styles.pageBody}>
       <SearchBar
         search={search}
         setSearch={handleSearchChange}
-        eventTags={eventTags}
-        volunteerTypeTags={volunteerTypeTags}
-        selectedEvent={selectedEvent}
-        setSelectedEvent={handleSelectedEventChange}
         selectedStatus={selectedStatus}
         setSelectedStatus={handleSelectedStatusChange}
-        selectedVolunteerType={selectedVolunteerType}
-        setSelectedVolunteerType={handleSelectedVolunteerTypeChange}
       />
 
       <div className={styles.recipientsHeader}>

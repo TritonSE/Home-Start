@@ -5,8 +5,8 @@ import * as TagValidator from "../validators/tagValidator";
 
 const router = express.Router();
 
-router.get("/getEventTags", tag.getEventTags);
 router.get("/", tag.getTags);
+router.get("/project-program-maps", tag.getProjectProgramMaps);
 router.get("/:id", tag.getTag);
 router.delete("/:id", tag.deleteTag);
 

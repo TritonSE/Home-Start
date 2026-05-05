@@ -15,14 +15,11 @@ type Props = {
 
 export default function RecipientRow({
   name,
-  tags,
   selected,
   onToggle,
   checkboxPosition = "right",
   disableSelectedStyle = false,
 }: Props) {
-  const primary = "intern"; // THIS NEEDS TO BE FIXED
-
   return (
     <button
       type="button"
@@ -40,8 +37,6 @@ export default function RecipientRow({
       </div>
 
       <div className={styles.right}>
-        {primary ? <span className={styles.tag}>{primary}</span> : null}
-
         {checkboxPosition === "right" ? (
           <span className={`${styles.checkbox} ${selected ? styles.checkboxOn : ""}`} aria-hidden>
             <span className={styles.checkMark} />

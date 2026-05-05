@@ -7,8 +7,6 @@ import doubleRightArrow from "@/assets/doubleRightArrow.svg";
 import leftArrow from "@/assets/icCaretleft.svg";
 import rightArrow from "@/assets/icCaretright.svg";
 
-const NUMBER_OF_VOLUNTEERS_PER_PAGE = 15;
-
 type PaginationProps = {
   totalItems: number;
   currentPage: number;

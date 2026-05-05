@@ -4,12 +4,13 @@ import { isHttpError } from "http-errors";
 
 import "./firebase/admin";
 import { frontend_origin } from "./config";
-import { type AuthRequest, verifyToken } from "./middleware/auth";
 import messageRoutes from "./routes/messageRoutes";
 import tagRoutes from "./routes/tagRoutes";
 import templateRoutes from "./routes/templateRoutes";
+import volunteerAssignmentRoutes from "./routes/volunteerAssignmentRoutes";
 import volunteerRoutes from "./routes/volunteerRoutes";
 
+import { verifyToken } from "./middleware/auth";
 import type { NextFunction, Request, Response } from "express";
 
 const handleError = (error: unknown, req: Request, res: Response, _next: NextFunction) => {
@@ -42,18 +43,8 @@ app.use(
   }),
 );
 
-// Example routes
-app.get("/api/public", (req, res) => {
-  res.json({ message: "This is a public endpoint" });
-});
-
-// Protected route - requires authentication
-app.get("/api/protected", verifyToken, (req, res) => {
-  const authReq = req as AuthRequest;
-  res.json({ message: "You are authenticated!", user: authReq.user });
-});
-
 app.use("/api/volunteer", verifyToken, volunteerRoutes);
+app.use("/api/volunteerAssignment", verifyToken, volunteerAssignmentRoutes);
 app.use("/api/tag", verifyToken, tagRoutes);
 app.use("/api/messages", verifyToken, messageRoutes);
 app.use("/api/template", verifyToken, templateRoutes);

@@ -6,6 +6,14 @@ export type VolunteerTag = {
   __v?: number;
 };
 
+export type VolunteerAssignment = {
+  _id: string;
+  volunteerId: string;
+  assignmentTagId: string | VolunteerTag;
+  projectTagId: string | VolunteerTag;
+  shiftTagIds: (string | VolunteerTag)[];
+};
+
 export type Volunteer = {
   _id: string;
   firstName: string;

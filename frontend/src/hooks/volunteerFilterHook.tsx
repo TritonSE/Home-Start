@@ -15,13 +15,10 @@ type volunteerFilterHookProps = {
 export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHookProps) {
   // Data state
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
-  const [tags, setTags] = useState<VolunteerTag[]>([]);
 
   // Filter states
   const [search, setSearch] = useState("");
-  const [selectedEvent, setSelectedEvent] = useState<Set<string>>(new Set());
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [selectedVolunteerType, setSelectedVolunteerType] = useState<Set<string>>(new Set());
   const setRecipients = useTextingFlowStore((s) => s.setRecipients);
 
   // Pagination state
@@ -45,20 +42,8 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
     setCurrentPage(1);
   };
 
-  const handleSelectedEventChange = (value: Set<string> | ((prev: Set<string>) => Set<string>)) => {
-    setSelectedEvent(value);
-    setCurrentPage(1);
-  };
-
   const handleSelectedStatusChange = (value: string | null) => {
     setSelectedStatus(value);
-    setCurrentPage(1);
-  };
-
-  const handleSelectedVolunteerTypeChange = (
-    value: Set<string> | ((prev: Set<string>) => Set<string>),
-  ) => {
-    setSelectedVolunteerType(value);
     setCurrentPage(1);
   };
 
@@ -67,7 +52,6 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
       try {
         const [volunteerData, tagData] = await Promise.all([fetchVolunteers(), fetchTags()]);
         setVolunteers(volunteerData);
-        setTags(tagData);
         const existingRecipientIds = useTextingFlowStore.getState().recipientIds;
         if (!existingRecipientIds || existingRecipientIds.length === 0) {
           setRecipients(volunteerData);
@@ -79,27 +63,7 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
     void loadData();
   }, []);
 
-  // Filter tags by type
-  const eventTags = tags.filter((tag) => tag.type === "Event").map((tag) => tag.name);
-  const volunteerTypeTags = tags
-    .filter((tag) => tag.type === "Volunteer Type")
-    .map((tag) => tag.name);
-  // Apply ALL filters here (search + tags)
   const filteredVolunteers = volunteers.filter((volunteer) => {
-    //Event filter
-    if (selectedEvent.size > 0) {
-      const hasMatchingEvent = volunteer.tags?.some((tag) => selectedEvent.has(tag.name));
-      if (!hasMatchingEvent) return false;
-    }
-
-    //Volunteer Type filter
-    if (selectedVolunteerType.size > 0) {
-      const hasMatchingVolunteerType = volunteer.tags?.some((tag) =>
-        selectedVolunteerType.has(tag.name),
-      );
-      if (!hasMatchingVolunteerType) return false;
-    }
-
     // Status filter
     if (selectedStatus && volunteer.status !== selectedStatus) return false;
 
@@ -130,14 +94,8 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
   return {
     search,
     handleSearchChange,
-    eventTags,
-    volunteerTypeTags,
-    selectedEvent,
-    handleSelectedEventChange,
     selectedStatus,
     handleSelectedStatusChange,
-    selectedVolunteerType,
-    handleSelectedVolunteerTypeChange,
     filteredVolunteers,
     loadVolunteers,
     displayedVolunteers,

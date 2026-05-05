@@ -39,16 +39,6 @@ router.put(
   VolunteerValidator.updateVolunteerContactValidator,
   volunteer.updateVolunteerContact,
 );
-router.put(
-  "/tags/assign/:id",
-  VolunteerValidator.assignVolunteerTagsValidator,
-  volunteer.assignTagsToVolunteer,
-);
-router.put(
-  "/tags/remove/:id",
-  VolunteerValidator.removeVolunteerTagsValidator,
-  volunteer.removeTagsFromVolunteer,
-);
 
 router.post("/parse-csv", upload.single("csv"), volunteer.parseVolunteersCsv);
 

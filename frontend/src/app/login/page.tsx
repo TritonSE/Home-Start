@@ -3,7 +3,7 @@
 import { FirebaseError } from "firebase/app";
 import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import React, { Suspense, useState } from "react";
 
 import styles from "./page.module.css";
@@ -21,7 +21,6 @@ const icShow = icShowAsset as string;
 // import "@fontsource/albert-sans";
 
 function LoginFormContent() {
-  const router = useRouter();
   const searchParams = useSearchParams(); // Search for query parameters
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [showSuccess, setShowSuccess] = useState(searchParams.get("success") === "true"); // If user successfully signed up and was redirected
@@ -37,11 +36,6 @@ function LoginFormContent() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       setShowLoggedin(true);
-      if (window.location.pathname === "/") {
-        window.location.reload();
-      } else {
-        void router.push("/dashboard");
-      }
     } catch (caughtError) {
       if (caughtError instanceof FirebaseError) {
         switch (caughtError.code) {

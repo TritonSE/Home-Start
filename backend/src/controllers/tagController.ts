@@ -1,8 +1,9 @@
 import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
 
+import ProjectProgramMapModel from "../models/projectProgramMapModel";
 import TagModel from "../models/tagModel";
-import VolunteerModel from "../models/volunteerModel";
+import VolunteerAssignmentModel from "../models/volunteerAssignmentModel";
 import validationErrorParser from "../util/validationErrorParser";
 
 import type { RequestHandler } from "express";
@@ -31,11 +32,13 @@ export const getTags: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const getEventTags: RequestHandler = async (req, res, next) => {
+export const getProjectProgramMaps: RequestHandler = async (req, res, next) => {
   try {
-    const eventTags = await TagModel.find({ type: "Event" }).select("name -_id");
-    const tagNames = eventTags.map((tag) => tag.name);
-    res.status(200).json(tagNames);
+    const projectProgramMaps = await ProjectProgramMapModel.find()
+      .populate("projectTagId")
+      .populate("programTagId");
+
+    res.status(200).json(projectProgramMaps);
   } catch (err) {
     next(err);
   }
@@ -80,7 +83,16 @@ export const deleteTag: RequestHandler = async (req, res, next) => {
       throw createHttpError(404, "Could not find tag");
     }
 
-    await VolunteerModel.updateMany({ tags: tagId }, { $pull: { tags: tagId } });
+    await VolunteerAssignmentModel.updateMany(
+      { shiftTagIds: tagId },
+      { $pull: { shiftTagIds: tagId } },
+    );
+    await VolunteerAssignmentModel.deleteMany({
+      $or: [{ assignmentTagId: tagId }, { projectTagId: tagId }],
+    });
+    await ProjectProgramMapModel.deleteMany({
+      $or: [{ projectTagId: tagId }, { programTagId: tagId }],
+    });
 
     await TagModel.findByIdAndDelete(tagId);
 

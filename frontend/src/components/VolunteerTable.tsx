@@ -68,15 +68,15 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
         <colgroup>
-          <col style={{ width: "60px" }} />
-          <col style={{ width: "200px" }} />
-          <col style={{ width: "200px" }} />
-          <col style={{ width: "107px" }} />
-          <col style={{ width: "304px" }} />
-          <col style={{ width: "304px" }} />
-          <col style={{ width: "304px" }} />
-          <col style={{ width: "240px" }} />
-          <col style={{ width: "240px" }} />
+          <col style={{ minWidth: "60px" }} />
+          <col style={{ minWidth: "200px" }} />
+          <col style={{ minWidth: "200px" }} />
+          <col style={{ minWidth: "304px" }} />
+          <col style={{ minWidth: "240px" }} />
+          <col style={{ minWidth: "107px" }} />
+          <col style={{ minWidth: "304px" }} />
+          <col style={{ minWidth: "304px" }} />
+          <col style={{ minWidth: "304px" }} />
         </colgroup>
         <thead>
           <tr>
@@ -102,6 +102,16 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
                 <span>First Name</span>
               </div>
             </th>
+            <th className={styles.emailCell}>
+              <div className={styles.headerContent}>
+                <span>Email</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Phone Number</span>
+              </div>
+            </th>
             <th>
               <div className={styles.headerContent}>
                 <span>Status</span>
@@ -120,16 +130,6 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
             <th>
               <div className={styles.headerContent}>
                 <span>Project</span>
-              </div>
-            </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Email</span>
-              </div>
-            </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Phone Number</span>
               </div>
             </th>
           </tr>
@@ -151,6 +151,8 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
               </td>
               <td>{volunteer.lastName}</td>
               <td>{volunteer.firstName}</td>
+              <td className={styles.emailCell}>{volunteer.email}</td>
+              <td>{volunteer.phoneNumber}</td>
 
               <td>
                 <div className={styles.tagsContainer}>
@@ -268,9 +270,6 @@ export default function VolunteerTable({ volunteers }: VolunteerTableProps) {
                   })()}
                 </div>
               </td>
-
-              <td>{volunteer.email}</td>
-              <td>{volunteer.phoneNumber}</td>
             </tr>
           ))}
         </tbody>

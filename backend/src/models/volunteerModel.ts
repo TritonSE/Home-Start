@@ -35,6 +35,7 @@ const volunteerSchema = new Schema({
     type: [{ type: Schema.Types.ObjectId, ref: "Group" }],
     default: [],
   },
+  additionalNotes: { type: String },
   mediaConsent: {
     type: String,
     enum: ["yes", "no"],

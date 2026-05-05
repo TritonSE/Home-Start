@@ -58,7 +58,6 @@ export function MessageHistory() {
       .then((result) => {
         if (result.success) {
           setMessages(result.data);
-          console.info(result.data);
         } else {
           console.error(result.error);
         }

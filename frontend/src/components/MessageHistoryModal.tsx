@@ -7,10 +7,14 @@ import Modal from "./Modal";
 import type { Message } from "@/app/api/messages";
 
 import icCaretdownAsset from "@/assets/ic_caretdown.svg";
+import icCopyAsset from "@/assets/ic_copy.svg";
+import icEditAsset from "@/assets/ic_edit.svg";
 import icVolunteersWhiteAsset from "@/assets/ic_volunteers_white.svg";
 
 const icVolunteersWhite = icVolunteersWhiteAsset as string;
 const icCaretdown = icCaretdownAsset as string;
+const icEdit = icEditAsset as string;
+const icCopy = icCopyAsset as string;
 
 type MessageHistoryModalProps = {
   message: Message;
@@ -53,7 +57,7 @@ export function MessageHistoryModal({
       }}
       width="1050px"
       radius="12px"
-      title="Text Message"
+      title={message.type === "email" ? "Email Message" : "Text Message"}
       subtitle={
         message.status === "pending"
           ? `Scheduled to Send on ${getFormattedTimestamp()}`
@@ -109,13 +113,17 @@ export function MessageHistoryModal({
         <button className={styles.secondary} onClick={onClose}>
           Cancel
         </button>
-
-        <button
-          className={`${styles.primary} ${message.status === "pending" ? styles.editMessage : styles.useMessage}`}
-          onClick={onActionButton}
-        >
-          {message.status === "pending" ? "Edit Message" : "Use Message as Template"}
-        </button>
+        {message.status === "pending" ? (
+          <button className={styles.primary} onClick={onActionButton}>
+            <Image src={icEdit} alt="Edit" width={20} height={20} />
+            <span>Edit Message</span>
+          </button>
+        ) : (
+          <button className={styles.primary} onClick={onActionButton}>
+            <Image src={icCopy} alt="Copy" width={20} height={20} />
+            <span>Use as Template</span>
+          </button>
+        )}
       </div>
     </Modal>
   );

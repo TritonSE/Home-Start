@@ -6,7 +6,7 @@ import validationErrorParser from "../util/validationErrorParser";
 
 import type { RequestHandler } from "express";
 
-const defaultPopulateConfig = [{ path: "recipients" }];
+const defaultPopulateConfig = [{ path: "recipients", select: "firstName lastName" }];
 
 type MessageCreationBody = {
   recipients: string[];

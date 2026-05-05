@@ -5,7 +5,7 @@
   width: 100%;
   margin: 0;
   min-width: 1050px;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .volunteerTable th {
@@ -21,7 +21,7 @@
 
 .volunteerTable th {
   background-color: #ecf3f3;
-  font-weight: 400;
+  font-weight: 600;
   font-style: regular;
   font-size: 16px;
   line-height: 20px;
@@ -51,6 +51,50 @@
   font-size: 15px;
 }
 
+/* START: Sticky first 3 columns (remove this block if design does not want anchored columns) */
+
+.volunteerTable th:nth-child(1),
+.volunteerTable td:nth-child(1) {
+  position: sticky;
+  left: 0;
+}
+
+.volunteerTable th:nth-child(2),
+.volunteerTable td:nth-child(2) {
+  position: sticky;
+  left: 40px;
+}
+
+.volunteerTable th:nth-child(3),
+.volunteerTable td:nth-child(3) {
+  position: sticky;
+  left: 200px;
+}
+
+.volunteerTable th:nth-child(-n + 3) {
+  z-index: 6;
+  background-color: #ecf3f3;
+}
+
+.volunteerTable td:nth-child(-n + 3) {
+  z-index: 2;
+  background-color: #ffffff;
+}
+
+.volunteerTable th:nth-child(3),
+.volunteerTable td:nth-child(3) {
+  box-shadow: 2px 0 0 #dcdcdc;
+}
+
+.volunteerTable tbody tr:hover td:nth-child(-n + 3) {
+  background-color: #e8e8e8;
+}
+/*END: Sticky first 3 columns */
+
+.emailCell {
+  white-space: nowrap;
+}
+
 .volunteerTable tbody tr:hover td {
   background-color: inherit;
 }
@@ -66,6 +110,7 @@
   justify-content: space-between;
   gap: 10px;
   font-size: 16px;
+  font-weight: bold;
   padding-top: 8px;
   padding-bottom: 8px;
 }
@@ -73,29 +118,87 @@
 .pillTag {
   display: inline-flex;
   align-items: center;
-  padding-left: 10px;
-  padding-right: 10px;
+  width: max-content;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  padding-left: 12px;
+  padding-right: 12px;
   border-radius: 100px;
   padding-top: 8px;
   padding-bottom: 8px;
   gap: 8px;
   font-size: 12px;
-  height: 40px;
+  min-height: 32px;
+  line-height: 16px;
 }
 
 .pillTagNew {
-  composes: pillTag;
-  background-color: lightblue;
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 100px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  gap: 8px;
+  font-size: 12px;
+  min-height: 32px;
+  line-height: 16px;
+  background-color: #f9efe6;
+  color: #c46200;
 }
 
 .pillTagReturning {
-  composes: pillTag;
-  background-color: #efb446;
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 100px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  gap: 8px;
+  font-size: 12px;
+  min-height: 32px;
+  line-height: 16px;
+  background-color: #e9ecf1;
+  color: #1d3a6b;
+}
+
+.tagOverflowPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border-radius: 100px;
+  border: 1px solid #1d3a6b;
+  background-color: #ffffff;
+  color: #1d3a6b;
+  font-family: var(--font-open-sans);
+  font-size: 12px;
+  line-height: 16px;
+  min-height: 32px;
+  white-space: nowrap;
 }
 
 .tagsContainer {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tagsContainerNoWrap {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 .tableWrapper {
@@ -111,17 +214,22 @@
 .checkboxCell {
   width: 44px;
   text-align: center;
-  padding-left: 12px;
-  padding-right: 4px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 .checkbox {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   cursor: pointer;
   accent-color: #1a3a5c;
 }
 
 .selectedRow td {
+  background-color: #eef4fb !important;
+}
+
+/* Sticky first 3 columns support: remove with the sticky block above if needed */
+.selectedRow td:nth-child(-n + 3) {
   background-color: #eef4fb !important;
 }

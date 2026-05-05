@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 
 import "./globals.css";
 
+import AuthGate from "@/components/AuthGate";
 import AuthProvider from "@/contexts/AuthProvider";
 
 const geistSans = Geist({
@@ -45,7 +46,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${openSans.variable} ${viga.variable} ${styles.body}`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <AuthGate>{children}</AuthGate>
+        </AuthProvider>
       </body>
     </html>
   );

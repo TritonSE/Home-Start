@@ -4,6 +4,8 @@
   width: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 20;
 }
 
 .searchField {
@@ -69,28 +71,36 @@
   gap: 12px;
 }
 
+.sortContainer {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
 .pillWrapper {
   position: relative;
   display: inline-block;
+  z-index: 21;
 }
 
 .pillTag {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   height: 32px;
   border-radius: 64px;
   border: 1px solid #1d3a6b;
-  padding-top: 8px;
-  padding-right: 12px;
-  padding-bottom: 8px;
-  padding-left: 12px;
-  gap: 16px;
+  padding: 8px 12px;
+  gap: 8px;
   background: transparent;
+  width: fit-content;
+  box-sizing: border-box;
+  white-space: nowrap;
 }
 
 .pillTagEvent {
   composes: pillTag;
-  width: 60px;
 }
 
 .pillTagEvent:hover,
@@ -103,19 +113,34 @@
 }
 .pillTagStatus {
   composes: pillTag;
-  width: 60px;
 }
 .pillTagVolunteerType {
   composes: pillTag;
-  width: 130px;
+}
+
+.pillTagContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.pillTagIconBox {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 16px;
 }
 
 .pillTagText {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
+  width: auto;
+  height: 16px;
   font-family: var(--font-open-sans);
   font-weight: 400;
   font-style: regular;
@@ -124,10 +149,17 @@
   letter-spacing: 0%;
 }
 
+.pillTagIcon {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
 .dropdown {
   display: flex;
   flex-direction: column;
   position: absolute;
+  z-index: 30;
   background: #fbffff;
   border-radius: 12px;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.12);
@@ -192,7 +224,7 @@
 .dropdownItem {
   display: flex;
   flex-direction: row;
-  width: 199px;
+  width: 343px;
   height: 20px;
   gap: 12px;
   padding: 4px;
@@ -227,7 +259,7 @@
 }
 
 .filterLabel {
-  width: 167px;
+  width: 311px;
   height: 20px;
   font-family: var(--font-open-sans);
   font-weight: 400;
@@ -237,6 +269,9 @@
   letter-spacing: 0.8px;
   vertical-align: middle;
   color: #000000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dropdownItemSelected .filterLabel {

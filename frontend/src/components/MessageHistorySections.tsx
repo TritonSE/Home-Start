@@ -34,7 +34,9 @@ function MessageRow({ message, onClick }: { message: Message; onClick: () => voi
       </div>
       <div className={styles.messageInfo}>
         <div className={styles.messageSubjectCol}>
-          <span className={styles.messageSubject}>{message.subject}</span>
+          <span className={styles.messageSubject}>
+            {message.subject || (message.type === "text" ? "[Text Message]" : "(No subject)")}
+          </span>
         </div>
         <div className={styles.messagemessageCol}>
           <span className={styles.messagemessage}>{message.body}</span>

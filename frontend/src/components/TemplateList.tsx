@@ -4,6 +4,10 @@ import styles from "./TemplateList.module.css";
 
 import type { Template } from "@/app/api/template";
 
+import icMoreAsset from "@/assets/ic_more.svg";
+
+const icMore = icMoreAsset as string;
+
 type TemplateListProps = {
   templates: Template[];
   onTemplateClick: (template: Template) => void;
@@ -21,9 +25,10 @@ export function TemplateList({ templates, onTemplateClick, onMoreActions }: Temp
             onTemplateClick(template);
           }}
         >
-          <span>{template.title}</span>
+          <span className={styles.templateTitle}>{template.title}</span>
           <Image
-            src={"/ic_more.svg"}
+            className={styles.more}
+            src={icMore}
             alt=""
             width={24}
             height={24}

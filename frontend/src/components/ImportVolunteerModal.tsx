@@ -31,6 +31,9 @@ type ParsedVolunteerChange = {
   lastName: string;
   email: string;
   phoneNumber: string;
+  assignmentName?: string;
+  projectName?: string;
+  shiftNames?: string[];
   tags?: string[];
 };
 
@@ -69,6 +72,9 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
             lastName: volunteer.lastName,
             email: volunteer.email,
             phoneNumber: volunteer.phoneNumber,
+            assignmentName: volunteer.assignmentName,
+            projectName: volunteer.projectName,
+            shiftNames: volunteer.shiftNames,
             tags: volunteer.tags,
           })),
         ] as ParsedVolunteerChange[],
@@ -122,6 +128,9 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
         lastName: change.lastName,
         email: change.email,
         phoneNumber: change.phoneNumber,
+        assignmentName: change.assignmentName,
+        projectName: change.projectName,
+        shiftNames: change.shiftNames,
         tags: change.tags,
       })),
     );
@@ -287,6 +296,17 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                       </div>
                       <div className={styles.detailMeta}>Email: {change.email}</div>
                       <div className={styles.detailMeta}>Phone: {change.phoneNumber}</div>
+                      {change.assignmentName && (
+                        <div className={styles.detailMeta}>Assignment: {change.assignmentName}</div>
+                      )}
+                      {change.projectName && (
+                        <div className={styles.detailMeta}>Project: {change.projectName}</div>
+                      )}
+                      {change.shiftNames && change.shiftNames.length > 0 && (
+                        <div className={styles.detailMeta}>
+                          Shifts: {change.shiftNames.join(", ")}
+                        </div>
+                      )}
                       {index < (csvParsedInfo?.changes.length || 0) - 1 && (
                         <div className={styles.detailDivider} />
                       )}

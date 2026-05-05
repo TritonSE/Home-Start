@@ -53,6 +53,11 @@ export default function RecipientsPanel({ mode }: RecipientsPanelProps) {
         setSearch={handleSearchChange}
         selectedStatus={selectedStatus}
         setSelectedStatus={handleSelectedStatusChange}
+        projectTags={[]}
+        assignmentTags={[]}
+        programTags={[]}
+        sortType="Newest"
+        onSortOptionChange={() => {}}
       />
 
       <div className={styles.recipientsHeader}>

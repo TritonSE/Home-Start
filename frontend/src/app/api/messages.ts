@@ -14,7 +14,6 @@ export type Recipient = {
   phoneNumber?: string;
   created?: string;
   updated?: string;
-  [k: string]: unknown;
 };
 
 export type Message = {
@@ -77,11 +76,8 @@ export const getMessages = async (): Promise<APIResult<Message[]>> => {
       };
     }
 
-    // parse timestamp strings into Date if needed by callers later
     const { messages } = responseJson;
-    const parsed = messages.map((m) => ({ ...m, timestamp: m.timestamp }));
-
-    return { success: true, data: parsed };
+    return { success: true, data: messages };
   } catch (_error) {
     return { success: false, error: "An unexpected error occurred" };
   }

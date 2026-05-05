@@ -106,7 +106,8 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
     throw new TypeError(`Expected array but got ${typeof data}`);
   }
 
-  data.forEach((volunteer, index) => {
+  data.forEach((item, index) => {
+    const volunteer = item as Record<string, unknown>;
     if (
       !volunteer._id ||
       !volunteer.firstName ||
@@ -116,7 +117,7 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
       !volunteer.updated ||
       !volunteer.created
     ) {
-      console.warn(`Volunteer at index ${index} has missing fields:`, volunteer);
+      console.warn(`Volunteer at index ${index} has missing fields:`, item);
     }
   });
 
@@ -180,7 +181,7 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
       };
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as unknown;
     if (!data || typeof data !== "object") {
       return { ok: false, error: "Unexpected parse-csv response format" };
     }

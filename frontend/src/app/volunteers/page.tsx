@@ -217,7 +217,7 @@ export default function Page() {
       if (!d) return 0;
       try {
         return new Date(d).getTime();
-      } catch (e) {
+      } catch (_e) {
         return 0;
       }
     };

@@ -48,14 +48,6 @@ export default function VolunteerTable({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const selectionScope = selectableVolunteers ?? volunteers;
 
-  useEffect(() => {
-    onSelectedCountChange?.(selectedIds.size);
-  }, [selectedIds, onSelectedCountChange]);
-
-  useEffect(() => {
-    deselectAll();
-  }, [selectionScope]);
-
   const allSelected =
     selectionScope.length > 0 &&
     selectionScope.every((volunteer) => selectedIds.has(volunteer._id));
@@ -72,6 +64,14 @@ export default function VolunteerTable({
   function deselectAll() {
     setSelectedIds(new Set());
   }
+
+  useEffect(() => {
+    onSelectedCountChange?.(selectedIds.size);
+  }, [selectedIds, onSelectedCountChange]);
+
+  useEffect(() => {
+    deselectAll();
+  }, [selectionScope]);
 
   function toggleOne(id: string) {
     setSelectedIds((prev) => {

@@ -23,6 +23,7 @@ type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 // const API_BASE_URL = import.env.VITE_API_BASE_URL;
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
+
 // Gets firebase auth token
 async function waitForAuth(): Promise<string> {
   return new Promise((resolve, reject) => {

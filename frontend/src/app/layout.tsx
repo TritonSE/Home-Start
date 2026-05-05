@@ -1,11 +1,13 @@
 import { Geist, Geist_Mono, Open_Sans, Viga } from "next/font/google";
 
-import AuthProvider from "../contexts/AuthProvider";
-
-import "./globals.css";
 import styles from "./layout.module.css";
 
 import type { Metadata } from "next";
+
+import "./globals.css";
+
+import AuthGate from "@/components/AuthGate";
+import AuthProvider from "@/contexts/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,7 +46,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${openSans.variable} ${viga.variable} ${styles.body}`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <AuthGate>{children}</AuthGate>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -1,10 +1,10 @@
 import { onAuthStateChanged } from "firebase/auth";
 
-import type { Volunteer, VolunteerTag } from "@/types/volunteer";
+import { API_BASE_URL } from "./requests";
+
+import type { Volunteer, VolunteerAssignment } from "@/types/volunteer";
 
 import { auth } from "@/firebase/firebase";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 async function waitForAuth(): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -39,28 +39,11 @@ type VolunteerParseCsvDTO = {
     lastName: string;
     email: string;
     phoneNumber: string;
+    assignmentName?: string;
+    projectName?: string;
+    shiftNames?: string[];
     tags?: string[];
   }[];
-};
-
-const toVolunteerTag = (tag: unknown): VolunteerTag | null => {
-  if (!tag || typeof tag !== "object") {
-    return null;
-  }
-
-  const source = tag as Partial<VolunteerTag>;
-
-  if (typeof source._id !== "string" || typeof source.name !== "string") {
-    return null;
-  }
-
-  return {
-    _id: source._id,
-    name: source.name,
-    color: typeof source.color === "string" ? source.color : "",
-    type: typeof source.type === "string" ? source.type : "",
-    __v: typeof source.__v === "number" ? source.__v : undefined,
-  };
 };
 
 const normalizeVolunteerStatus = (status: unknown): Volunteer["status"] => {
@@ -68,13 +51,7 @@ const normalizeVolunteerStatus = (status: unknown): Volunteer["status"] => {
 };
 
 const normalizeVolunteer = (volunteer: unknown): Volunteer => {
-  const source = (volunteer ?? {}) as Partial<Volunteer> & {
-    tags?: unknown;
-  };
-
-  const tags = Array.isArray(source.tags)
-    ? source.tags.map(toVolunteerTag).filter((tag): tag is VolunteerTag => Boolean(tag))
-    : [];
+  const source = (volunteer ?? {}) as Partial<Volunteer>;
 
   return {
     _id: String(source._id ?? ""),
@@ -82,10 +59,13 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
     lastName: String(source.lastName ?? ""),
     email: String(source.email ?? ""),
     phoneNumber: String(source.phoneNumber ?? ""),
-    updated: source.updated ? new Date(source.updated) : new Date(),
-    created: source.created ? new Date(source.created) : new Date(),
-    tags,
+    tags: [],
     status: normalizeVolunteerStatus(source.status),
+    startDate: source.startDate ?? undefined,
+    endDate: source.endDate ?? undefined,
+    effectiveDate: source.effectiveDate ?? undefined,
+    hours: typeof source.hours === "number" ? source.hours : undefined,
+    wageRate: typeof source.wageRate === "number" ? source.wageRate : undefined,
   };
 };
 
@@ -94,7 +74,7 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
 
   let response: Response;
   try {
-    response = await fetch(`${API_URL}/api/volunteer`, {
+    response = await fetch(`${API_BASE_URL}/api/volunteer`, {
       headers,
     });
   } catch (fetchError) {
@@ -144,6 +124,20 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
   return typedData;
 }
 
+export async function fetchVolunteerAssignments(): Promise<VolunteerAssignment[]> {
+  const headers = await getAuthHeaders();
+
+  const res = await fetch(`${API_BASE_URL}/api/volunteerAssignment`, {
+    headers,
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch volunteer assignments");
+  }
+
+  return (await res.json()) as VolunteerAssignment[];
+}
+
 export type VolunteerCsvParseResult = {
   wouldCreateCount: number;
   wouldUpdateCount: number;
@@ -156,8 +150,9 @@ export type VolunteerCsvParseResult = {
     lastName: string;
     email: string;
     phoneNumber: string;
-    updated: Date;
-    created: Date;
+    assignmentName?: string;
+    projectName?: string;
+    shiftNames?: string[];
     tags?: string[];
   }[];
 };
@@ -172,7 +167,7 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
     const formData = new FormData();
     formData.append("csv", csv);
 
-    const response = await fetch(`${API_URL}/api/volunteer/parse-csv`, {
+    const response = await fetch(`${API_BASE_URL}/api/volunteer/parse-csv`, {
       method: "POST",
       headers,
       body: formData,
@@ -203,32 +198,38 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
 
     const volunteerInfo = Array.isArray(parsed.volunteerInfo) ? parsed.volunteerInfo : [];
     const result: VolunteerCsvParseResult = {
-      wouldCreateCount: data.wouldCreateCount,
-      wouldUpdateCount: data.wouldUpdateCount,
-      wouldCreate: data.wouldCreate,
-      wouldUpdate: data.wouldUpdate,
-      totalCount: data.total,
-      volunteerInfo: Array.isArray(data.volunteerInfo)
-        ? data.volunteerInfo.map(
-            (item: {
-              firstName: string;
-              lastName: string;
-              email: string;
-              phoneNumber: string;
-              updated: Date;
-              created: Date;
-              tags?: string[];
-            }) => ({
-              firstName: item.firstName,
-              lastName: item.lastName,
-              email: item.email,
-              phoneNumber: item.phoneNumber,
-              updated: new Date(item.updated),
-              created: new Date(item.created),
-              tags: item.tags,
-            }),
-          )
-        : [],
+      wouldCreateCount: parsed.wouldCreateCount,
+      wouldUpdateCount: parsed.wouldUpdateCount,
+      wouldCreate: parsed.wouldCreate.filter((value): value is string => typeof value === "string"),
+      wouldUpdate: parsed.wouldUpdate.filter((value): value is string => typeof value === "string"),
+      totalCount: parsed.total,
+      volunteerInfo: volunteerInfo
+        .filter((item): item is VolunteerParseCsvDTO["volunteerInfo"][number] => {
+          if (!item || typeof item !== "object") {
+            return false;
+          }
+          const row = item as Partial<VolunteerParseCsvDTO["volunteerInfo"][number]>;
+          return (
+            typeof row.firstName === "string" &&
+            typeof row.lastName === "string" &&
+            typeof row.email === "string" &&
+            typeof row.phoneNumber === "string"
+          );
+        })
+        .map((item) => ({
+          firstName: item.firstName,
+          lastName: item.lastName,
+          email: item.email,
+          phoneNumber: item.phoneNumber,
+          assignmentName: typeof item.assignmentName === "string" ? item.assignmentName : undefined,
+          projectName: typeof item.projectName === "string" ? item.projectName : undefined,
+          shiftNames: Array.isArray(item.shiftNames)
+            ? item.shiftNames.filter((value): value is string => typeof value === "string")
+            : undefined,
+          tags: Array.isArray(item.tags)
+            ? item.tags.filter((tag): tag is string => typeof tag === "string")
+            : undefined,
+        })),
     };
     return { ok: true, data: result };
   } catch (error) {
@@ -245,6 +246,9 @@ type VolunteerCreationBody = {
   email: string;
   phoneNumber: string;
   tags?: string[];
+  assignmentName?: string;
+  projectName?: string;
+  shiftNames?: string[];
 };
 
 export type UploadVolunteerBatchResponse = { ok: true } | { ok: false; error: string };
@@ -255,7 +259,7 @@ export async function uploadVolunteerBatch(
   try {
     const headers = await getAuthHeaders();
 
-    const response = await fetch(`${API_URL}/api/volunteer/batch`, {
+    const response = await fetch(`${API_BASE_URL}/api/volunteer/batch`, {
       method: "POST",
       headers: { ...headers, "Content-Type": "application/json" },
       body: JSON.stringify({ volunteers: data }),

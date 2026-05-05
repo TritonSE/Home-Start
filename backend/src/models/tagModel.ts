@@ -3,12 +3,11 @@ import { model, Schema } from "mongoose";
 import type { InferSchemaType } from "mongoose";
 
 const tagSchema = new Schema({
-  name: { type: String, required: true },
-  // Color is a hex string
-  color: { type: String, required: true },
+  name: { type: String, required: true, trim: true, unique: true },
+  color: { type: String, required: true, trim: true },
   type: {
     type: String,
-    enum: ["Volunteer Type", "Event"],
+    enum: ["assignment", "project", "shift", "program"],
     required: true,
   },
 });

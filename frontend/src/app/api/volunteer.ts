@@ -296,7 +296,7 @@ export async function getVolunteerRows(): Promise<
   try {
     const headers = await getAuthHeaders();
 
-    const response = await fetch(`${API_URL}/api/volunteer/getVolunteerRows`, {
+    const response = await fetch(`${API_BASE_URL}/api/volunteer/getVolunteerRows`, {
       headers,
     });
 
@@ -343,7 +343,7 @@ export async function getSelectedVolunteers({
   try {
     const headers = await getAuthHeaders();
 
-    const response = await fetch(`${API_URL}/api/volunteer/getSelectedVolunteers`, {
+    const response = await fetch(`${API_BASE_URL}/api/volunteer/getSelectedVolunteers`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

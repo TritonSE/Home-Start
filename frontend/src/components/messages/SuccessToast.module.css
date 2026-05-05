@@ -7,10 +7,6 @@
   display: grid;
   place-items: center;
   padding: 16px;
-
-  background: rgba(29, 29, 29, 0.75);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
 }
 
 .card {
@@ -42,19 +38,23 @@
 }
 
 .title {
-  font-family: "Open Sans", sans-serif;
-  font-size: 26px;
-  font-weight: 600;
   color: #000;
-  line-height: 1.2;
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-lg-font-size, 20px);
+  font-style: normal;
+  font-weight: 700;
+  line-height: var(--paragraph-lg-line-height, 24px);
+  letter-spacing: var(--paragraph-lg-letter-spacing, 0.5px);
 }
 
 .message {
-  font-family: "Open Sans", sans-serif;
-  font-size: 18px; /* ← 28 → 18 */
-  font-weight: 400;
   color: #000;
-  line-height: 1.5;
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-sm-font-size, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-sm-line-height, 20px);
+  letter-spacing: var(--paragraph-sm-letter-spacing, 0.8px);
 }
 
 @keyframes popFade {

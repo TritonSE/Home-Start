@@ -4,11 +4,10 @@ import Image from "next/image";
 import { useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
-import styles from "./SuccessToast.module.css";
-
 import successIconAsset from "@/assets/success.svg";
+import styles from "@/components/messages/SuccessToast.module.css";
 
-const successIcon = successIconAsset as string;
+const successIconSrc = successIconAsset as string;
 
 type Props = {
   open: boolean;
@@ -41,7 +40,7 @@ export default function SuccessToast({
     return (
       <div className={styles.wrap} aria-live="polite" aria-atomic="true">
         <div className={styles.card} style={{ ["--toast-ms" as string]: `${durationMs}ms` }}>
-          <Image src={successIcon} alt="" className={styles.icon} width={24} height={24} />
+          <Image src={successIconSrc} alt="" className={styles.icon} width={24} height={24} />
 
           <div className={styles.textWrap}>
             <div className={styles.title}>{title}</div>

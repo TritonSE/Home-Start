@@ -5,6 +5,8 @@ import * as MessageValidator from "../validators/messageValidator";
 
 const router = express.Router();
 
+router.post("/send-email", message.sendEmails);
+
 router.get("/:id", MessageValidator.getMessageValidator, message.getMessage);
 router.get("/", MessageValidator.getMessagesValidator, message.getMessages);
 

@@ -92,6 +92,7 @@ export function MessageHistory() {
       </div>
       <div className={styles.messageList}>
         {messages
+          .slice(0, 5)
           .filter((m) => (activeTab === "sent" ? m.status === "sent" : m.status === "pending"))
           .map((msg) => (
             <MessageRow key={msg._id} message={msg} onClick={() => setSelectedMessage(msg)} />

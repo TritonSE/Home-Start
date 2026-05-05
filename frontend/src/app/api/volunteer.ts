@@ -106,21 +106,6 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
     throw new TypeError(`Expected array but got ${typeof data}`);
   }
 
-  data.forEach((item, index) => {
-    const volunteer = item as Record<string, unknown>;
-    if (
-      !volunteer._id ||
-      !volunteer.firstName ||
-      !volunteer.lastName ||
-      !volunteer.email ||
-      !volunteer.phoneNumber ||
-      !volunteer.updated ||
-      !volunteer.created
-    ) {
-      console.warn(`Volunteer at index ${index} has missing fields:`, item);
-    }
-  });
-
   const typedData: Volunteer[] = data.map(normalizeVolunteer);
   return typedData;
 }

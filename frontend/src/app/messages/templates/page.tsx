@@ -12,7 +12,7 @@ import type { Template } from "@/app/api/template";
 
 import { deleteTemplate, getTemplates, TemplateType } from "@/app/api/template";
 import icAddAsset from "@/assets/ic_add.svg";
-import icCaretLeftAsset from "@/assets/ic_caretleft.svg";
+import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
 import Sidebar from "@/components/Sidebar";
 import TemplateActionPopup from "@/components/TemplateActionPopup";
 import { TemplateList } from "@/components/TemplateList";
@@ -64,7 +64,7 @@ export default function TemplatePage() {
   const handleEditTemplateClicked = () => {
     if (selectedTemplate) {
       const path = join(pathname, `edit?templateId=${selectedTemplate._id}`);
-      router.push(path);
+      void router.push(path);
     }
   };
 

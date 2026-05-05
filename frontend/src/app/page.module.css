@@ -23,7 +23,7 @@
   width: 100%;
   max-width: 1400px;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: flex-start;
   background-color: #fff !important;
   color: #000 !important;

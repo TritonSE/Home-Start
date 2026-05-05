@@ -1,0 +1,79 @@
+.row {
+  width: 100%;
+  border: 1px solid #e6eaea;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.rowSelected {
+  background: #ffffff;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.name {
+  font-family: "Open Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.tag {
+  font-family: "Open Sans", sans-serif;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #e6f2f3;
+  color: #2b7a93;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid #1f3f78;
+  background: #fff;
+  position: relative;
+  flex: 0 0 auto;
+  margin-right: 14px;
+}
+
+.checkboxOn {
+  background: #1f3f78;
+  border-color: #1f3f78;
+}
+
+.checkboxOn::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -60%) rotate(45deg);
+}

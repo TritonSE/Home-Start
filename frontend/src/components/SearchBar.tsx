@@ -6,9 +6,9 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./SearchBar.module.css";
 import SortSelectionButton from "./SortSelectorButton";
 
-import checkboxIconAsset from "@/assets/Checkbox.svg";
+import checkboxIconAsset from "@/assets/checkbox.svg";
 import caretIconAsset from "@/assets/ic_caretdown.svg";
-import unionIconAsset from "@/assets/Union.svg";
+import unionIconAsset from "@/assets/union.svg";
 
 const checkboxIcon = checkboxIconAsset as string;
 const caretIcon = caretIconAsset as string;
@@ -37,22 +37,22 @@ type SearchBarProps = {
       | "Last Name Z-A",
   ) => void;
 
-  selectedProject: Set<string>;
-  setSelectedProject: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  selectedProject?: Set<string>;
+  setSelectedProject?: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   selectedStatus: string | null;
   setSelectedStatus: (value: string | null) => void;
-  selectedAssignment: Set<string>;
-  setSelectedAssignment: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
-  selectedProgram: Set<string>;
-  setSelectedProgram: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  selectedAssignment?: Set<string>;
+  setSelectedAssignment?: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  selectedProgram?: Set<string>;
+  setSelectedProgram?: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
 };
 
 export default function SearchBar({
   search,
   setSearch,
-  projectTags,
-  assignmentTags,
-  programTags,
+  projectTags = [],
+  assignmentTags = [],
+  programTags = [],
   selectedProject,
   setSelectedProject,
   selectedStatus,
@@ -85,8 +85,9 @@ export default function SearchBar({
 
   function toggleTag(item: string, cat: "project" | "status" | "assignment" | "program") {
     if (cat === "project") {
+      if (!setSelectedProject) return;
       setSelectedProject((prev) => {
-        const updated = new Set(prev);
+        const updated = new Set(prev || new Set());
         if (updated.has(item)) {
           updated.delete(item);
         } else {
@@ -98,8 +99,9 @@ export default function SearchBar({
       const newStatus = selectedStatus === item ? null : item;
       setSelectedStatus(newStatus);
     } else if (cat === "assignment") {
+      if (!setSelectedAssignment) return;
       setSelectedAssignment((prev) => {
-        const updated = new Set(prev);
+        const updated = new Set(prev || new Set());
         if (updated.has(item)) {
           updated.delete(item);
         } else {
@@ -108,8 +110,9 @@ export default function SearchBar({
         return updated;
       });
     } else if (cat === "program") {
+      if (!setSelectedProgram) return;
       setSelectedProgram((prev) => {
-        const updated = new Set(prev);
+        const updated = new Set(prev || new Set());
         if (updated.has(item)) {
           updated.delete(item);
         } else {
@@ -121,10 +124,10 @@ export default function SearchBar({
   }
 
   function getSelectedSet(cat: "project" | "status" | "assignment" | "program") {
-    if (cat === "project") return selectedProject;
+    if (cat === "project") return selectedProject || new Set();
     if (cat === "status") return new Set(selectedStatus ? [selectedStatus] : []);
-    if (cat === "assignment") return selectedAssignment;
-    return selectedProgram;
+    if (cat === "assignment") return selectedAssignment || new Set();
+    return selectedProgram || new Set();
   }
 
   function formatOptionLabel(item: string, cat: "project" | "status" | "assignment" | "program") {
@@ -134,7 +137,7 @@ export default function SearchBar({
 
   function clearCategory(cat: "project" | "status" | "assignment" | "program") {
     if (cat === "project") {
-      setSelectedProject(new Set());
+      if (setSelectedProject) setSelectedProject(new Set());
       return;
     }
 
@@ -144,11 +147,11 @@ export default function SearchBar({
     }
 
     if (cat === "assignment") {
-      setSelectedAssignment(new Set());
+      if (setSelectedAssignment) setSelectedAssignment(new Set());
       return;
     }
 
-    setSelectedProgram(new Set());
+    if (setSelectedProgram) setSelectedProgram(new Set());
   }
 
   function getClearButtonLabel(cat: "project" | "status" | "assignment" | "program") {
@@ -279,80 +282,86 @@ export default function SearchBar({
           {renderDropdown(["returning", "new"], "status", false)}
         </div>
 
-        <div className={styles.pillWrapper}>
-          <button
-            className={`${styles.pillTagVolunteerType} ${selectedAssignment.size > 0 ? styles.pillTagActive : ""}`}
-            aria-expanded={open === "assignment"}
-            onClick={() => toggle("assignment")}
-          >
-            <span className={styles.pillTagContent}>
-              <span className={styles.pillTagText}>Assignment</span>
-              <span className={styles.pillTagIconBox} aria-hidden="true">
-                <Image
-                  src={caretIcon}
-                  alt="Caret down"
-                  className={styles.pillTagIcon}
-                  width={16}
-                  height={16}
-                />
+        {assignmentTags && assignmentTags.length > 0 && (
+          <div className={styles.pillWrapper}>
+            <button
+              className={`${styles.pillTagVolunteerType} ${(selectedAssignment?.size ?? 0) > 0 ? styles.pillTagActive : ""}`}
+              aria-expanded={open === "assignment"}
+              onClick={() => toggle("assignment")}
+            >
+              <span className={styles.pillTagContent}>
+                <span className={styles.pillTagText}>Assignment</span>
+                <span className={styles.pillTagIconBox} aria-hidden="true">
+                  <Image
+                    src={caretIcon}
+                    alt="Caret down"
+                    className={styles.pillTagIcon}
+                    width={16}
+                    height={16}
+                  />
+                </span>
               </span>
-            </span>
-          </button>
-          {renderDropdown(assignmentTags, "assignment")}
-        </div>
+            </button>
+            {renderDropdown(assignmentTags, "assignment")}
+          </div>
+        )}
 
-        <div className={styles.pillWrapper}>
-          <button
-            className={`${styles.pillTagEvent} ${selectedProject.size > 0 ? styles.pillTagActive : ""}`}
-            aria-expanded={open === "project"}
-            onClick={() => toggle("project")}
-          >
-            <span className={styles.pillTagContent}>
-              <span className={styles.pillTagText}>Project</span>
-              <span className={styles.pillTagIconBox} aria-hidden="true">
-                <Image
-                  src={caretIcon}
-                  alt="Caret down"
-                  className={styles.pillTagIcon}
-                  width={16}
-                  height={16}
-                />
+        {projectTags && projectTags.length > 0 && (
+          <div className={styles.pillWrapper}>
+            <button
+              className={`${styles.pillTagEvent} ${(selectedProject?.size ?? 0) > 0 ? styles.pillTagActive : ""}`}
+              aria-expanded={open === "project"}
+              onClick={() => toggle("project")}
+            >
+              <span className={styles.pillTagContent}>
+                <span className={styles.pillTagText}>Project</span>
+                <span className={styles.pillTagIconBox} aria-hidden="true">
+                  <Image
+                    src={caretIcon}
+                    alt="Caret down"
+                    className={styles.pillTagIcon}
+                    width={16}
+                    height={16}
+                  />
+                </span>
               </span>
-            </span>
-          </button>
-          {renderDropdown(projectTags, "project")}
-        </div>
+            </button>
+            {renderDropdown(projectTags, "project")}
+          </div>
+        )}
 
-        <div className={styles.pillWrapper}>
-          <button
-            className={`${styles.pillTagEvent} ${selectedProgram.size > 0 ? styles.pillTagActive : ""}`}
-            aria-expanded={open === "program"}
-            onClick={() => toggle("program")}
-          >
-            <span className={styles.pillTagContent}>
-              <span className={styles.pillTagText}>Program</span>
-              <span className={styles.pillTagIconBox} aria-hidden="true">
-                <Image
-                  src={caretIcon}
-                  alt="Caret down"
-                  className={styles.pillTagIcon}
-                  width={16}
-                  height={16}
-                />
+        {programTags && programTags.length > 0 && (
+          <div className={styles.pillWrapper}>
+            <button
+              className={`${styles.pillTagEvent} ${(selectedProgram?.size ?? 0) > 0 ? styles.pillTagActive : ""}`}
+              aria-expanded={open === "program"}
+              onClick={() => toggle("program")}
+            >
+              <span className={styles.pillTagContent}>
+                <span className={styles.pillTagText}>Program</span>
+                <span className={styles.pillTagIconBox} aria-hidden="true">
+                  <Image
+                    src={caretIcon}
+                    alt="Caret down"
+                    className={styles.pillTagIcon}
+                    width={16}
+                    height={16}
+                  />
+                </span>
               </span>
-            </span>
-          </button>
-          {renderDropdown(programTags, "program")}
-        </div>
+            </button>
+            {renderDropdown(programTags, "program")}
+          </div>
+        )}
 
         <div className={styles.clearFiltersContainer}>
           <button
             className={styles.clearFilterButton}
             onClick={() => {
-              setSelectedProject(new Set());
+              setSelectedProject?.(new Set());
               setSelectedStatus(null);
-              setSelectedAssignment(new Set());
-              setSelectedProgram(new Set());
+              setSelectedAssignment?.(new Set());
+              setSelectedProgram?.(new Set());
             }}
           >
             Clear All

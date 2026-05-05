@@ -28,6 +28,10 @@ type APIErrorBody = {
   error?: string;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null;
+};
+
 type VolunteerParseCsvDTO = {
   wouldCreateCount: number;
   wouldUpdateCount: number;
@@ -160,9 +164,20 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
     });
 
     if (!response.ok) {
+      let backendMessage = "";
+      try {
+        const errorBody: unknown = await response.json();
+        if (errorBody && typeof errorBody === "object") {
+          const body = errorBody as APIErrorBody;
+          backendMessage = typeof body.error === "string" ? body.error : "";
+        }
+      } catch {
+        backendMessage = "";
+      }
+
       return {
         ok: false,
-        error: `Failed to parse volunteers CSV: ${response.status} ${response.statusText}`,
+        error: `Failed to parse volunteers CSV: ${response.status} ${response.statusText}${backendMessage ? ` - ${backendMessage}` : ""}`,
       };
     }
 
@@ -264,5 +279,97 @@ export async function uploadVolunteerBatch(
       ok: false,
       error: error instanceof Error ? error.message : "Unknown error uploading volunteers",
     };
+  }
+}
+
+export async function getVolunteerRows(): Promise<
+  { id: string; firstName: string; lastName: string }[]
+> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_BASE_URL}/api/volunteer/getVolunteerRows`, {
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch volunteer rows: ${response.status} ${response.statusText}`);
+    }
+
+    const data: unknown = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new TypeError(`Expected array but got ${typeof data}`);
+    }
+
+    return data.map((item) => {
+      const row = isRecord(item) ? item : {};
+
+      return {
+        id: String(row.id ?? ""),
+        firstName: String(row.firstName ?? ""),
+        lastName: String(row.lastName ?? ""),
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching volunteer rows: ", error);
+    throw error;
+  }
+}
+
+type Recipient = {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+};
+
+export async function getSelectedVolunteers({
+  events,
+  statuses,
+}: {
+  events: string[];
+  statuses: string[];
+}): Promise<Recipient[]> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_BASE_URL}/api/volunteer/getSelectedVolunteers`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+      body: JSON.stringify({ events, statuses }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch selected volunteers: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data: unknown = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new TypeError(`Expected array but got ${typeof data}`);
+    }
+
+    const recipients: Recipient[] = data.map((item) => {
+      const row = isRecord(item) ? item : {};
+      return {
+        _id: String(row._id ?? ""),
+        firstName: String(row.firstName ?? ""),
+        lastName: String(row.lastName ?? ""),
+        email: String(row.email ?? ""),
+        phoneNumber: String(row.phoneNumber ?? ""),
+      };
+    });
+
+    return recipients;
+  } catch (error) {
+    console.error("Error fetching selected volunteers: ", error);
+    throw error;
   }
 }

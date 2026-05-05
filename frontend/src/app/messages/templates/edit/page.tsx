@@ -9,7 +9,7 @@ import styles from "./page.module.css";
 import type { CreateTemplateRequest, Template } from "@/app/api/template";
 
 import { getTemplate, TemplateType, updateTemplate } from "@/app/api/template";
-import icCaretLeftAsset from "@/assets/ic_caretleft.svg";
+import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
 import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 import { TemplateCreate } from "@/components/TemplateCreate";
@@ -61,7 +61,7 @@ function EditTemplateContent() {
 
   const onToastDone = () => {
     setShowSuccess(false);
-    router.push("/messages/templates");
+    void router.push("/messages/templates");
   };
 
   return (

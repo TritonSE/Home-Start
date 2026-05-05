@@ -3,46 +3,62 @@
 import { Open_Sans } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+
+import layoutStyles from "../app/layout.module.css";
+import { useTextingFlowStore } from "../app/messages/new/_store/textingFlowStore";
 
 import styles from "./Sidebar.module.css";
 
-import layoutStyles from "@/app/layout.module.css";
-import icCommunicationAsset from "@/assets/ic_communication.svg";
-import icDashboardAsset from "@/assets/ic_dashboard.svg";
-import icVolunteersAsset from "@/assets/ic_volunteers.svg";
-import mainVerticalAsset from "@/assets/Main Vertical USE 1.svg";
-
-const icDashboard = icDashboardAsset as string;
-const icCommunication = icCommunicationAsset as string;
-const mainVertical = mainVerticalAsset as string;
-const icVolunteers = icVolunteersAsset as string;
+import communicationIconAsset from "@/assets/ic_communication_alt.svg";
+import dashboardIconAsset from "@/assets/ic_dashboard_alt.svg";
+import volunteersIconAsset from "@/assets/ic_volunteers2.svg";
+import homeStartLogoAsset from "@/assets/main_vertical_use_1.svg";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 });
 
-const NAV = [
-  { label: "Dashboard", href: "/dashboard", icon: icDashboard },
-  { label: "Communication", href: "/communication", icon: icCommunication },
-  { label: "Volunteers", href: "/volunteers", icon: icVolunteers },
-] as const;
+const communicationIcon = communicationIconAsset as string;
+const dashboardIcon = dashboardIconAsset as string;
+const volunteersIcon = volunteersIconAsset as string;
+const homeStartLogo = homeStartLogoAsset as string;
+
+type NavItem = {
+  label: string;
+  href: string;
+  icon: string;
+};
+
+const NAV: NavItem[] = [
+  { label: "Dashboard", href: "/dashboard", icon: dashboardIcon },
+  { label: "Communication", href: "/communication", icon: communicationIcon },
+  { label: "Volunteers", href: "/volunteers", icon: volunteersIcon },
+];
 
 export default function Sidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const setMode = useTextingFlowStore((s) => s.setMode);
+
+  const handleCommunicationClick = () => {
+    setMode("text");
+    void router.push("/communication");
+  };
 
   return (
     <div className={layoutStyles.layout}>
       <aside className={`${styles.sidebar} ${openSans.className}`}>
         <div className={styles.logoWrap}>
           <Image
-            src={mainVertical}
+            src={homeStartLogo}
             alt="Home Start"
             className={styles.logo}
-            width={100}
-            height={100}
-            loading="eager"
+            width={115}
+            height={140}
+            style={{ height: "auto" }}
+            priority
           />
         </div>
 
@@ -54,17 +70,11 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={item.href === "/communication" ? handleCommunicationClick : undefined}
                 className={`${styles.item} ${active ? styles.active : ""}`}
                 aria-current={active ? "page" : undefined}
               >
-                <Image
-                  src={item.icon}
-                  alt=""
-                  className={styles.icon}
-                  aria-hidden="true"
-                  width={24}
-                  height={24}
-                />
+                <Image src={item.icon} alt="" className={styles.icon} aria-hidden="true" />
                 <span className={styles.label}>{item.label}</span>
               </Link>
             );

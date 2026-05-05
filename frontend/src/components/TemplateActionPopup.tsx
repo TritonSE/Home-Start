@@ -33,9 +33,9 @@ export default function TemplateActionPopup({
   }
 
   return (
-    <div className={confirmDelete ? styles.overlayDelete : styles.overlay}>
+    <div className={confirmDelete ? styles.overlayDelete : styles.overlay} onClick={onClose}>
       {!confirmDelete && (
-        <div className={styles.popup}>
+        <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
           <div className={styles.sheetHandle} aria-hidden />
           <div className={styles.content}>
             <div className={styles.popupHeader}>
@@ -59,7 +59,7 @@ export default function TemplateActionPopup({
       )}
 
       {confirmDelete && (
-        <div className={styles.deletePopup}>
+        <div className={styles.deletePopup} onClick={(e) => e.stopPropagation()}>
           <p className={styles.message}>
             Are you sure you want to delete the <br />
             <span>“{templateTitle}”</span> template?

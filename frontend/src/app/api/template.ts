@@ -2,11 +2,16 @@ import { del, get, handleAPIError, post, put } from "./requests";
 
 import type { APIResult } from "./requests";
 
+export enum TemplateType {
+  TEXT = "text",
+  EMAIL = "email",
+}
+
 export type Template = {
   _id: string;
   title: string;
   message: string;
-  type: string;
+  type: TemplateType;
   subject?: string;
 };
 
@@ -42,7 +47,7 @@ function toTemplate(value: TemplateResponse): Template {
     _id: value._id,
     title: value.title,
     message: value.message,
-    type: value.type,
+    type: value.type as TemplateType,
     subject: value.subject,
   };
 }
@@ -101,10 +106,10 @@ export const getTemplates = async (): Promise<APIResult<Template[]>> => {
   }
 };
 
-type CreateTemplateRequest = {
+export type CreateTemplateRequest = {
   title: string;
   message: string;
-  type: string;
+  type: TemplateType;
   subject?: string;
 };
 

@@ -123,16 +123,6 @@ export default function VolunteerTable({
                 <span>First Name</span>
               </div>
             </th>
-            <th className={styles.emailCell}>
-              <div className={styles.headerContent}>
-                <span>Email</span>
-              </div>
-            </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Phone Number</span>
-              </div>
-            </th>
             <th>
               <div className={styles.headerContent}>
                 <span>Status</span>
@@ -182,9 +172,6 @@ export default function VolunteerTable({
               </td>
               <td>{volunteer.lastName}</td>
               <td>{volunteer.firstName}</td>
-              <td className={styles.emailCell}>{volunteer.email}</td>
-              <td>{volunteer.phoneNumber}</td>
-
               <td>
                 <div className={styles.tagsContainer}>
                   <span

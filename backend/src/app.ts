@@ -48,6 +48,7 @@ app.use("/api/volunteerAssignment", verifyToken, volunteerAssignmentRoutes);
 app.use("/api/tag", verifyToken, tagRoutes);
 app.use("/api/messages", verifyToken, messageRoutes);
 app.use("/api/template", verifyToken, templateRoutes);
+app.use("/api/message", verifyToken, messageRoutes);
 
 app.use(handleError);
 

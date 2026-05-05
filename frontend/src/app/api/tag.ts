@@ -68,7 +68,7 @@ export async function fetchTags(): Promise<VolunteerTag[]> {
   try {
     const headers = await getAuthHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/tag`, {
+    const response = await fetch(`${API_BASE_URL}/api/tag`, {
       headers,
     });
 
@@ -103,7 +103,7 @@ export async function fetchProjectProgramMaps(): Promise<ProjectProgramMapDTO[]>
   try {
     const headers = await getAuthHeaders();
 
-    const response = await fetch(`${API_URL}/api/tag/project-program-maps`, {
+    const response = await fetch(`${API_BASE_URL}/api/tag/project-program-maps`, {
       headers,
     });
 

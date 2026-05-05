@@ -134,7 +134,7 @@
   align-items: center;
   padding: 8px 12px;
   height: 48px;
-  width: 100%;
+  /* width: 100%; */
   border: 1px solid #1d3a6b;
   border-radius: 4px;
   background: transparent;
@@ -143,6 +143,7 @@
   line-height: 16px;
   color: #1d3a6b;
   cursor: pointer;
+  min-width: 159px;
 }
 
 .primary {
@@ -162,12 +163,5 @@
   font-style: normal;
   font-weight: 400;
   line-height: var(--paragraph-xsm-line-height, 16px); /* 133.333% */
-}
-
-.editMessage {
   min-width: 159px;
-}
-
-.useMessage {
-  min-width: 205px;
 }

@@ -92,6 +92,7 @@
   padding: 12px 20px;
   background: #fbffff;
   border-bottom: 1px solid #b9b9b9;
+  cursor: pointer;
 }
 
 .messageRow:last-child {

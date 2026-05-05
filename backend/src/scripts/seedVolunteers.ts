@@ -1,9 +1,13 @@
+import dotenv from "dotenv";
+
 import { connectToDatabase } from "../database/connect";
 import GroupModel from "../models/groupModel";
 import ProjectProgramMapModel from "../models/projectProgramMapModel";
 import TagModel from "../models/tagModel";
 import VolunteerAssignmentModel from "../models/volunteerAssignmentModel";
 import VolunteerModel from "../models/volunteerModel";
+
+dotenv.config();
 
 type ProjectProgramPair = {
   projectName: string;

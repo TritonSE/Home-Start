@@ -61,6 +61,11 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
     phoneNumber: String(source.phoneNumber ?? ""),
     tags: [],
     status: normalizeVolunteerStatus(source.status),
+    startDate: source.startDate ?? undefined,
+    endDate: source.endDate ?? undefined,
+    effectiveDate: source.effectiveDate ?? undefined,
+    hours: typeof source.hours === "number" ? source.hours : undefined,
+    wageRate: typeof source.wageRate === "number" ? source.wageRate : undefined,
   };
 };
 
@@ -101,16 +106,18 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
     throw new TypeError(`Expected array but got ${typeof data}`);
   }
 
-  data.forEach((volunteer, index) => {
-    const normalized = normalizeVolunteer(volunteer);
+  data.forEach((item, index) => {
+    const volunteer = item as Record<string, unknown>;
     if (
-      !normalized._id ||
-      !normalized.firstName ||
-      !normalized.lastName ||
-      !normalized.email ||
-      !normalized.phoneNumber
+      !volunteer._id ||
+      !volunteer.firstName ||
+      !volunteer.lastName ||
+      !volunteer.email ||
+      !volunteer.phoneNumber ||
+      !volunteer.updated ||
+      !volunteer.created
     ) {
-      console.warn(`Volunteer at index ${index} has missing fields:`, volunteer);
+      console.warn(`Volunteer at index ${index} has missing fields:`, item);
     }
   });
 
@@ -174,7 +181,7 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
       };
     }
 
-    const data: unknown = await response.json();
+    const data = (await response.json()) as unknown;
     if (!data || typeof data !== "object") {
       return { ok: false, error: "Unexpected parse-csv response format" };
     }

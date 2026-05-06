@@ -5,7 +5,7 @@
   width: 100%;
   margin: 0;
   min-width: 1050px;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .volunteerTable th {
@@ -21,7 +21,7 @@
 
 .volunteerTable th {
   background-color: #ecf3f3;
-  font-weight: 400;
+  font-weight: 600;
   font-style: regular;
   font-size: 16px;
   line-height: 20px;
@@ -90,6 +90,10 @@
   background-color: #e8e8e8;
 }
 /*END: Sticky first 3 columns */
+
+.emailCell {
+  white-space: nowrap;
+}
 
 .volunteerTable tbody tr:hover td {
   background-color: inherit;
@@ -194,7 +198,7 @@
   display: flex;
   gap: 8px;
   flex-wrap: nowrap;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .tableWrapper {

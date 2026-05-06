@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -27,7 +26,10 @@ const SORT_OPTIONS: SortOption[] = [
   "Last Name Z-A",
 ];
 
-export default function SortSelectionButton({ sortType, onSortOptionChange }: SortSelectorButtonProps) {
+export default function SortSelectionButton({
+  sortType,
+  onSortOptionChange,
+}: SortSelectorButtonProps) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 

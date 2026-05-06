@@ -1,10 +1,10 @@
 import { onAuthStateChanged } from "firebase/auth";
 
+import { API_BASE_URL } from "./requests";
+
 import type { Volunteer, VolunteerAssignment } from "@/types/volunteer";
 
 import { auth } from "@/firebase/firebase";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 async function waitForAuth(): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -26,6 +26,10 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
 
 type APIErrorBody = {
   error?: string;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null;
 };
 
 type VolunteerParseCsvDTO = {
@@ -61,6 +65,11 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
     phoneNumber: String(source.phoneNumber ?? ""),
     tags: [],
     status: normalizeVolunteerStatus(source.status),
+    startDate: source.startDate ?? undefined,
+    endDate: source.endDate ?? undefined,
+    effectiveDate: source.effectiveDate ?? undefined,
+    hours: typeof source.hours === "number" ? source.hours : undefined,
+    wageRate: typeof source.wageRate === "number" ? source.wageRate : undefined,
   };
 };
 
@@ -69,7 +78,7 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
 
   let response: Response;
   try {
-    response = await fetch(`${API_URL}/api/volunteer`, {
+    response = await fetch(`${API_BASE_URL}/api/volunteer`, {
       headers,
     });
   } catch (fetchError) {
@@ -101,20 +110,6 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
     throw new TypeError(`Expected array but got ${typeof data}`);
   }
 
-  data.forEach((volunteer, index) => {
-    if (
-      !volunteer._id ||
-      !volunteer.firstName ||
-      !volunteer.lastName ||
-      !volunteer.email ||
-      !volunteer.phoneNumber ||
-      !volunteer.updated ||
-      !volunteer.created
-    ) {
-      console.warn(`Volunteer at index ${index} has missing fields:`, volunteer);
-    }
-  });
-
   const typedData: Volunteer[] = data.map(normalizeVolunteer);
   return typedData;
 }
@@ -122,7 +117,7 @@ export async function fetchVolunteers(): Promise<Volunteer[]> {
 export async function fetchVolunteerAssignments(): Promise<VolunteerAssignment[]> {
   const headers = await getAuthHeaders();
 
-  const res = await fetch(`${API_URL}/api/volunteerAssignment`, {
+  const res = await fetch(`${API_BASE_URL}/api/volunteerAssignment`, {
     headers,
   });
 
@@ -162,20 +157,31 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
     const formData = new FormData();
     formData.append("csv", csv);
 
-    const response = await fetch(`${API_URL}/api/volunteer/parse-csv`, {
+    const response = await fetch(`${API_BASE_URL}/api/volunteer/parse-csv`, {
       method: "POST",
       headers,
       body: formData,
     });
 
     if (!response.ok) {
+      let backendMessage = "";
+      try {
+        const errorBody: unknown = await response.json();
+        if (errorBody && typeof errorBody === "object") {
+          const body = errorBody as APIErrorBody;
+          backendMessage = typeof body.error === "string" ? body.error : "";
+        }
+      } catch {
+        backendMessage = "";
+      }
+
       return {
         ok: false,
-        error: `Failed to parse volunteers CSV: ${response.status} ${response.statusText}`,
+        error: `Failed to parse volunteers CSV: ${response.status} ${response.statusText}${backendMessage ? ` - ${backendMessage}` : ""}`,
       };
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as unknown;
     if (!data || typeof data !== "object") {
       return { ok: false, error: "Unexpected parse-csv response format" };
     }
@@ -248,7 +254,7 @@ export async function uploadVolunteerBatch(
   try {
     const headers = await getAuthHeaders();
 
-    const response = await fetch(`${API_URL}/api/volunteer/batch`, {
+    const response = await fetch(`${API_BASE_URL}/api/volunteer/batch`, {
       method: "POST",
       headers: { ...headers, "Content-Type": "application/json" },
       body: JSON.stringify({ volunteers: data }),
@@ -267,5 +273,97 @@ export async function uploadVolunteerBatch(
       ok: false,
       error: error instanceof Error ? error.message : "Unknown error uploading volunteers",
     };
+  }
+}
+
+export async function getVolunteerRows(): Promise<
+  { id: string; firstName: string; lastName: string }[]
+> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_BASE_URL}/api/volunteer/getVolunteerRows`, {
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch volunteer rows: ${response.status} ${response.statusText}`);
+    }
+
+    const data: unknown = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new TypeError(`Expected array but got ${typeof data}`);
+    }
+
+    return data.map((item) => {
+      const row = isRecord(item) ? item : {};
+
+      return {
+        id: String(row.id ?? ""),
+        firstName: String(row.firstName ?? ""),
+        lastName: String(row.lastName ?? ""),
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching volunteer rows: ", error);
+    throw error;
+  }
+}
+
+type Recipient = {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+};
+
+export async function getSelectedVolunteers({
+  events,
+  statuses,
+}: {
+  events: string[];
+  statuses: string[];
+}): Promise<Recipient[]> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_BASE_URL}/api/volunteer/getSelectedVolunteers`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+      body: JSON.stringify({ events, statuses }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch selected volunteers: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data: unknown = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new TypeError(`Expected array but got ${typeof data}`);
+    }
+
+    const recipients: Recipient[] = data.map((item) => {
+      const row = isRecord(item) ? item : {};
+      return {
+        _id: String(row._id ?? ""),
+        firstName: String(row.firstName ?? ""),
+        lastName: String(row.lastName ?? ""),
+        email: String(row.email ?? ""),
+        phoneNumber: String(row.phoneNumber ?? ""),
+      };
+    });
+
+    return recipients;
+  } catch (error) {
+    console.error("Error fetching selected volunteers: ", error);
+    throw error;
   }
 }

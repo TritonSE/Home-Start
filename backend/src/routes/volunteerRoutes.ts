@@ -27,6 +27,8 @@ const upload: Multer = multer({
 
 const router = express.Router();
 
+router.get("/getVolunteerRows", volunteer.getVolunteerRows);
+router.post("/getSelectedVolunteers", volunteer.getSelectedVolunteers);
 router.get("/:id", volunteer.getVolunteer);
 router.get("/", volunteer.getVolunteers);
 router.delete("/:id", volunteer.deleteVolunteer);

@@ -29,11 +29,10 @@
 }
 
 .caretIcon {
-  width: 12px;
-  height: 7px;
-  top: 6px;
-  left: 8px;
+  width: 20px;
+  height: 20px;
   color: #1c1c1c;
+  filter: brightness(0) saturate(100%) invert(30%);
 }
 
 .caretIconLeft {

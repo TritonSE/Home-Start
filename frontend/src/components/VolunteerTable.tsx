@@ -40,10 +40,6 @@ type VolunteerTableProps = {
   onSelectedCountChange?: (count: number) => void;
 };
 
-const renderVolunteerTags = (tags: VolunteerTag[], type: string) => {
-  return tags.filter((tag) => tag.type === type);
-};
-
 export default function VolunteerTable({
   volunteers,
   selectableVolunteers,
@@ -51,14 +47,6 @@ export default function VolunteerTable({
 }: VolunteerTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const selectionScope = selectableVolunteers ?? volunteers;
-
-  useEffect(() => {
-    onSelectedCountChange?.(selectedIds.size);
-  }, [selectedIds, onSelectedCountChange]);
-
-  useEffect(() => {
-    deselectAll();
-  }, [selectionScope]);
 
   const allSelected =
     selectionScope.length > 0 &&
@@ -77,6 +65,14 @@ export default function VolunteerTable({
     setSelectedIds(new Set());
   }
 
+  useEffect(() => {
+    onSelectedCountChange?.(selectedIds.size);
+  }, [selectedIds, onSelectedCountChange]);
+
+  useEffect(() => {
+    deselectAll();
+  }, [selectionScope]);
+
   function toggleOne(id: string) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -93,15 +89,15 @@ export default function VolunteerTable({
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
         <colgroup>
-          <col style={{ width: "40px" }} />
-          <col style={{ width: "160px" }} />
-          <col style={{ width: "160px" }} />
-          <col style={{ width: "180px" }} />
-          <col style={{ width: "230px" }} />
-          <col style={{ width: "280px" }} />
-          <col style={{ width: "400px" }} />
-          <col style={{ width: "310px" }} />
-          <col style={{ width: "310px" }} />
+          <col style={{ minWidth: "60px" }} />
+          <col style={{ minWidth: "200px" }} />
+          <col style={{ minWidth: "200px" }} />
+          <col style={{ minWidth: "304px" }} />
+          <col style={{ minWidth: "240px" }} />
+          <col style={{ minWidth: "107px" }} />
+          <col style={{ minWidth: "304px" }} />
+          <col style={{ minWidth: "304px" }} />
+          <col style={{ minWidth: "304px" }} />
         </colgroup>
         <thead>
           <tr>
@@ -134,17 +130,17 @@ export default function VolunteerTable({
             </th>
             <th>
               <div className={styles.headerContent}>
+                <span>Program</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
                 <span>Assignment</span>
               </div>
             </th>
             <th>
               <div className={styles.headerContent}>
                 <span>Project</span>
-              </div>
-            </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Program</span>
               </div>
             </th>
             <th>
@@ -176,7 +172,6 @@ export default function VolunteerTable({
               </td>
               <td>{volunteer.lastName}</td>
               <td>{volunteer.firstName}</td>
-
               <td>
                 <div className={styles.tagsContainer}>
                   <span
@@ -190,24 +185,37 @@ export default function VolunteerTable({
               </td>
 
               <td>
-                <div className={styles.tagsContainer}>
-                  {renderVolunteerTags(volunteer.tags ?? [], "assignment")
-                    .filter((tag) => tag.type === "assignment")
-                    .map((tag, index) => {
-                      const tagStyle = getTagPaletteStyle(tag);
-                      return (
-                        <span
-                          key={`col2-${volunteer._id}-${tag.name}-${index}`}
-                          className={styles.pillTag}
-                          style={{
-                            backgroundColor: tagStyle.backgroundColor,
-                            color: tagStyle.color,
-                          }}
-                        >
-                          {tag.name}
-                        </span>
-                      );
-                    })}
+                <div className={styles.tagsContainerNoWrap}>
+                  {(() => {
+                    const { visibleTags, hiddenCount } = getVisibleTags(
+                      volunteer.tags ?? [],
+                      "program",
+                      1,
+                    );
+
+                    return (
+                      <>
+                        {visibleTags.map((tag, index) => {
+                          const tagStyle = getTagPaletteStyle(tag);
+                          return (
+                            <span
+                              key={`col4-${volunteer._id}-${tag.name}-${index}`}
+                              className={styles.pillTag}
+                              style={{
+                                backgroundColor: tagStyle.backgroundColor,
+                                color: tagStyle.color,
+                              }}
+                            >
+                              {tag.name}
+                            </span>
+                          );
+                        })}
+                        {hiddenCount > 0 && (
+                          <span className={styles.tagOverflowPill}>{hiddenCount}+</span>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </td>
 
@@ -216,8 +224,8 @@ export default function VolunteerTable({
                   {(() => {
                     const { visibleTags, hiddenCount } = getVisibleTags(
                       volunteer.tags ?? [],
-                      "project",
-                      1,
+                      "assignment",
+                      2,
                     );
 
                     return (
@@ -251,8 +259,8 @@ export default function VolunteerTable({
                   {(() => {
                     const { visibleTags, hiddenCount } = getVisibleTags(
                       volunteer.tags ?? [],
-                      "program",
-                      2,
+                      "project",
+                      1,
                     );
 
                     return (
@@ -261,7 +269,7 @@ export default function VolunteerTable({
                           const tagStyle = getTagPaletteStyle(tag);
                           return (
                             <span
-                              key={`col4-${volunteer._id}-${tag.name}-${index}`}
+                              key={`col2-${volunteer._id}-${tag.name}-${index}`}
                               className={styles.pillTag}
                               style={{
                                 backgroundColor: tagStyle.backgroundColor,

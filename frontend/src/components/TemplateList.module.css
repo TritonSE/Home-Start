@@ -23,3 +23,14 @@
   line-height: 20px;
   letter-spacing: 0.5px;
 }
+
+.templateTitle {
+  flex-grow: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.more {
+  flex-shrink: 0;
+}

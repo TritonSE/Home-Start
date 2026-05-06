@@ -4,7 +4,7 @@ import styles from "./Modal.module.css";
 
 import type { ReactNode } from "react";
 
-import icCloseLargeAsset from "@/assets/ic_close_large.svg";
+import icCloseLargeAsset from "@/assets/ic_close_large_alt.svg";
 
 const icCloseLarge = icCloseLargeAsset as string;
 

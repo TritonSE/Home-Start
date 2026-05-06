@@ -11,6 +11,7 @@ export function TemplatePreview({ template }: TemplatePreviewType) {
     <div className={styles.content}>
       <div className={styles.text}>
         <div className={styles.title}>{template.title}</div>
+        {template?.subject && <div className={styles.subject}>Subject: {template.subject}</div>}
         <textarea className={styles.message} readOnly={true} value={template.message} />
       </div>
       <div className={styles.useFixed}>

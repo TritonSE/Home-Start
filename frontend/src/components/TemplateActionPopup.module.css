@@ -39,7 +39,7 @@
 .popupHeader {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: top;
   margin-bottom: 8px;
 }
 
@@ -49,6 +49,9 @@
   font-weight: 400;
   line-height: var(--h4-line-height, 24px); /* 125% */
   letter-spacing: var(--h4-letter-spacing, 1.2px);
+  flex-grow: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .editBtn {

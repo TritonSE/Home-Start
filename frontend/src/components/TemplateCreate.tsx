@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import styles from "./TemplateCreate.module.css";
 
-import { getTemplate } from "@/app/api/template";
+import { TemplateType } from "@/app/api/template";
 import bluePlusAsset from "@/assets/blue_plus.svg";
 import infoAsset from "@/assets/mdi_information.svg";
 
@@ -11,41 +11,47 @@ const bluePlus = bluePlusAsset as string;
 const infoIcon = infoAsset as string;
 
 type TemplateCreateProps = {
-  onSave: (title: string, message: string, type: string) => void;
-  templateId?: string;
+  onSave: (title: string, message: string, type: TemplateType, subject: string) => void;
+  title: string;
+  message: string;
+  type: TemplateType;
+  subject?: string;
 };
 
-export function TemplateCreate({ onSave, templateId }: TemplateCreateProps) {
-  const [title, setTitle] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
+const MAX_TITLE_LEN = 50;
+const MAX_SUBJECT_LEN = 50;
+const MAX_MESSAGE_LEN = 1000;
+
+export function TemplateCreate({ onSave, title, message, subject, type }: TemplateCreateProps) {
+  const [currTitle, setCurrTitle] = useState<string>(title);
+  const [currMessage, setCurrMessage] = useState<string>(message);
+  const [currSubject, setCurrSubject] = useState<string>(subject ?? "");
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (!templateId) return;
-
-    getTemplate(templateId)
-      .then((result) => {
-        if (result.success) {
-          const template = result.data;
-          setTitle(template.title);
-          setMessage(template.message);
-        } else {
-          console.error(result.error);
-        }
-      })
-      .catch((reason) => console.error(reason));
-  }, [templateId]);
+    setCurrTitle(title);
+  }, [title]);
+  useEffect(() => {
+    setCurrMessage(message);
+  }, [message]);
+  useEffect(() => {
+    if (type === TemplateType.EMAIL) {
+      setCurrSubject(subject ?? "");
+    } else {
+      setCurrSubject("");
+    }
+  }, [subject, type]);
 
   const insertText = (text: string) => {
     const textarea = inputRef.current;
-    if (!textarea) return;
+    if (!textarea || text.length + currMessage.length > MAX_MESSAGE_LEN) return;
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
 
-    const newValue = message.substring(0, start) + text + message.substring(end);
+    const newValue = currMessage.substring(0, start) + text + currMessage.substring(end);
 
-    setMessage(newValue);
+    setCurrMessage(newValue);
 
     // restore cursor
     setTimeout(() => {
@@ -55,33 +61,64 @@ export function TemplateCreate({ onSave, templateId }: TemplateCreateProps) {
     }, 0);
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onSave(currTitle, currMessage, type, currSubject);
+  };
+
   return (
     <div className={styles.content}>
-      <form className={styles.form}>
+      <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.inputGroup}>
           <p className={styles.label}>Enter Title of Template</p>
           <input
             className={styles.titleTextBox}
             placeholder="Template title"
-            value={title}
+            value={currTitle}
             onChange={(e) => {
-              setTitle(e.target.value);
+              setCurrTitle(e.target.value);
             }}
+            maxLength={MAX_TITLE_LEN}
+            required
           />
-          <p className={styles.characterLimit}>{title.length}/50 Characters</p>
+          <p className={styles.characterLimit}>
+            {currTitle.length}/{MAX_TITLE_LEN} Characters
+          </p>
+          {type === TemplateType.EMAIL && (
+            <>
+              <input
+                className={styles.titleTextBox}
+                placeholder="Subject Line"
+                value={currSubject}
+                onChange={(e) => {
+                  setCurrSubject(e.target.value);
+                }}
+                maxLength={MAX_SUBJECT_LEN}
+                required
+              />
+              <p className={styles.characterLimit}>
+                {currSubject.length}/{MAX_SUBJECT_LEN} Characters
+              </p>
+            </>
+          )}
         </div>
+
         <div className={styles.inputGroup}>
           <p className={styles.label}>Message</p>
           <textarea
             className={styles.messageTextBox}
             ref={inputRef}
             placeholder="Compose your message..."
-            value={message}
+            value={currMessage}
             onChange={(e) => {
-              setMessage(e.target.value);
+              setCurrMessage(e.target.value);
             }}
+            maxLength={MAX_MESSAGE_LEN}
+            required
           />
-          <p className={styles.characterLimit}>{message.length}/1000 Characters</p>
+          <p className={styles.characterLimit}>
+            {currMessage.length}/{MAX_MESSAGE_LEN} Characters
+          </p>
         </div>
         <div className={styles.insertSectionNew}>
           <button
@@ -103,14 +140,7 @@ export function TemplateCreate({ onSave, templateId }: TemplateCreateProps) {
           </div>
         </div>
         <div className={styles.saveFixed}>
-          <button
-            type="button"
-            className={styles.saveBtn}
-            onClick={(e) => {
-              e.preventDefault();
-              onSave(title, message, "text");
-            }}
-          >
+          <button type="submit" className={styles.saveBtn}>
             <span className={styles.saveBtnText}>Save</span>
           </button>
         </div>

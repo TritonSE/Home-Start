@@ -41,7 +41,9 @@ export default function Page() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showImportSuccess, setShowImportSuccess] = useState(false);
   const [selectedCount, setSelectedCount] = useState(0);
-  const [sortOption, setSortOption] = useState<"Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A">("Newest");
+  const [sortOption, setSortOption] = useState<
+    "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A"
+  >("Newest");
   const itemsPerPage = 100;
 
   const loadVolunteers = async () => {
@@ -89,6 +91,18 @@ export default function Page() {
     }
   };
 
+  const handleSortOptionChange = (
+    option:
+      | "Newest"
+      | "Oldest"
+      | "First Name A-Z"
+      | "First Name Z-A"
+      | "Last Name A-Z"
+      | "Last Name Z-A",
+  ) => {
+    setSortOption(option);
+  };
+
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setCurrentPage(1);
@@ -124,37 +138,48 @@ export default function Page() {
   const assignmentTags = tags.filter((t) => t.type === "assignment").map((t) => t.name);
   const programTags = tags.filter((t) => t.type === "program").map((t) => t.name);
 
+  // Apply ALL filters here (search + tags)
   const filteredVolunteers = useMemo(() => {
     return volunteers.filter((volunteer) => {
       const volunteerTags = volunteer.tags ?? [];
 
+      // Project filter
       if (selectedProject.size > 0) {
-        const hasMatchingProject = volunteerTags.some((tag) => selectedProject.has(tag.name) && tag.type === "project");
+        const hasMatchingProject = volunteerTags.some(
+          (tag) => selectedProject.has(tag.name) && tag.type === "project",
+        );
         if (!hasMatchingProject) return false;
       }
 
+      // Assignment filter
       if (selectedAssignment.size > 0) {
-        const hasMatchingAssignment = volunteerTags.some((tag) => selectedAssignment.has(tag.name) && tag.type === "assignment");
+        const hasMatchingAssignment = volunteerTags.some(
+          (tag) => selectedAssignment.has(tag.name) && tag.type === "assignment",
+        );
         if (!hasMatchingAssignment) return false;
       }
 
+      // Program filter
       if (selectedProgram.size > 0) {
-        const hasMatchingProgram = volunteerTags.some((tag) => selectedProgram.has(tag.name) && tag.type === "program");
+        const hasMatchingProgram = volunteerTags.some(
+          (tag) => selectedProgram.has(tag.name) && tag.type === "program",
+        );
         if (!hasMatchingProgram) return false;
       }
 
       if (selectedStatus && volunteer.status !== selectedStatus) return false;
 
+      // Search filter (includes first/last/full name, phone, email)
       if (search.trim()) {
-        const q = search.trim().toLowerCase();
-        const firstName = volunteer.firstName.toLowerCase();
-        const lastName = volunteer.lastName.toLowerCase();
+        const query = search.trim().toLowerCase();
+        const firstName = (volunteer.firstName ?? "").toLowerCase();
+        const lastName = (volunteer.lastName ?? "").toLowerCase();
         const fullName = `${firstName} ${lastName}`;
         const reverseFullName = `${lastName} ${firstName}`;
-        const email = volunteer.email.toLowerCase();
-        const phoneNumber = volunteer.phoneNumber?.toLowerCase();
+        const phoneNumber = (volunteer.phoneNumber ?? "").toLowerCase();
+        const email = (volunteer.email ?? "").toLowerCase();
 
-        const matches = firstName.includes(q) || lastName.includes(q) || fullName.includes(q) || reverseFullName.includes(q) || email.includes(q) || phoneNumber?.includes(q);
+        const matches = firstName.includes(query) || lastName.includes(query) || fullName.includes(query) || reverseFullName.includes(query) || email.includes(query) || phoneNumber?.includes(query);
         if (!matches) return false;
       }
 
@@ -164,11 +189,20 @@ export default function Page() {
 
   const sortedFilteredVolunteers = useMemo(() => {
     const sorted = [...filteredVolunteers];
+    const toTime = (d?: string | Date | null) => {
+      if (!d) return 0;
+      try {
+        return new Date(d).getTime();
+      } catch (_e) {
+        return 0;
+      }
+    };
+
     switch (sortOption) {
       case "Newest":
-        return sorted.sort((a, b) => a._id.localeCompare(b._id));
+        return sorted.sort((a, b) => toTime(b.startDate) - toTime(a.startDate));
       case "Oldest":
-        return sorted.sort((a, b) => b._id.localeCompare(a._id));
+        return sorted.sort((a, b) => toTime(a.startDate) - toTime(b.startDate));
       case "First Name A-Z":
         return sorted.sort((a, b) => a.firstName.localeCompare(b.firstName));
       case "First Name Z-A":
@@ -182,6 +216,7 @@ export default function Page() {
     }
   }, [filteredVolunteers, sortOption]);
 
+  // Calculate pagination slice
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const displayedVolunteers = sortedFilteredVolunteers.slice(startIndex, endIndex);
@@ -215,7 +250,12 @@ export default function Page() {
                 <Image src={'/ic_success.svg'} alt="Success" className={styles.importSuccessIcon} width={24} height={24} />
                 <span className={styles.importSuccessText}>CSV Successfully Uploaded</span>
               </div>
-              <button type="button" className={styles.importSuccessClose} onClick={() => setShowImportSuccess(false)} aria-label="Dismiss success message" />
+              <button
+                type="button"
+                className={styles.importSuccessClose}
+                onClick={() => setShowImportSuccess(false)}
+                aria-label="Dismiss success message"
+              ></button>
             </div>
           )}
 
@@ -228,7 +268,6 @@ export default function Page() {
             assignmentTags={assignmentTags}
             programTags={programTags}
             sortType={sortOption}
-            onSortOptionChange={setSortOption}
             selectedProject={selectedProject}
             setSelectedProject={handleSelectedProjectChange}
             selectedStatus={selectedStatus}
@@ -237,6 +276,7 @@ export default function Page() {
             setSelectedAssignment={handleSelectedAssignmentChange}
             selectedProgram={selectedProgram}
             setSelectedProgram={handleSelectedProgramChange}
+            onSortOptionChange={handleSortOptionChange}
           />
 
           <div className={styles.tableSection}>

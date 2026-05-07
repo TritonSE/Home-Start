@@ -9,6 +9,7 @@ import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
 import styles from "@/app/page.module.css";
 import CreateRoleModal from "@/components/CreateRoleModal";
+import CreateShiftModal from "@/components/CreateShiftModal";
 import PageBar from "@/components/PageBar";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
@@ -31,6 +32,7 @@ export default function Page() {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
   const [showCreateTagModal, setShowCreateTagModal] = useState(false);
+  const [showCreateShiftModal, setShowCreateShiftModal] = useState(false);
 
   const [search, setSearch] = useState("");
   const [selectedProject, setSelectedProject] = useState<Set<string>>(new Set());
@@ -267,19 +269,32 @@ export default function Page() {
     );
   };
 
+  const renderCreateShiftModal = () => {
+    if (!showCreateShiftModal) return null;
+    return <CreateShiftModal onClose={() => setShowCreateShiftModal(false)} />;
+  };
+
   return (
     <Sidebar>
       <div className={styles.page}>
         <main className={styles.main}>
           {renderCreateTagModal()}
+          {renderCreateShiftModal()}
 
-          <div>
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="button"
               onClick={() => setShowCreateTagModal(true)}
               disabled={filteredVolunteers.length === 0}
             >
               Create VolunteerAssignment Modal
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowCreateShiftModal(true)}
+            >
+              Create Shift Tag Modal
             </button>
           </div>
 

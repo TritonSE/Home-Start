@@ -10,6 +10,7 @@ import { createTag, fetchTags } from "@/app/api/tag";
 import { createVolunteerAssignment } from "@/app/api/volunteer";
 import icCloseLargeAsset from "@/assets/ic_close_large.svg";
 import rightArrowAsset from "@/assets/rightarrow.svg";
+import { COLOR_OPTIONS } from "./colorOptions";
 
 const icCloseLarge = icCloseLargeAsset as string;
 const rightArrow = rightArrowAsset as string;
@@ -31,22 +32,6 @@ function CheckIcon({ color }: CheckIconProps) {
     </svg>
   );
 }
-
-type ColorOption = {
-  name: string;
-  backgroundColor: string;
-  textColor: string;
-};
-
-const COLOR_OPTIONS: ColorOption[] = [
-  { name: "Red", backgroundColor: "#F6E6E9", textColor: "#A40026" },
-  { name: "Orange", backgroundColor: "#F9EFE6", textColor: "#C46200" },
-  { name: "Yellow", backgroundColor: "#F9F5EF", textColor: "#886F42" },
-  { name: "Green", backgroundColor: "#E6F2EC", textColor: "#007F3F" },
-  { name: "Blue", backgroundColor: "#E6F2F3", textColor: "#007A8A" },
-  { name: "Indigo", backgroundColor: "#E9ECF1", textColor: "#1D3A6B" },
-  { name: "Purple", backgroundColor: "#EFEBF3", textColor: "#452861" },
-];
 
 type Props = {
   onClose: () => void;
@@ -196,7 +181,7 @@ export default function CreateRoleModal({ onClose, volunteer }: Props) {
       <div className={styles.modal}>
         <div className={styles.header}>
           <p className={styles.title}>
-            {volunteer ? `${volunteer.firstName} ${volunteer.lastName}` : "Create Role"}
+            {"Create Role"}
           </p>
           <button className={styles.close} onClick={handleClose} aria-label="Close">
             <Image src={icCloseLarge} alt="" width={24} height={24} />

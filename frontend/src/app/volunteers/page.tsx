@@ -7,13 +7,13 @@ import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 
 import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
-import CreateTagModal from "@/components/CreateTagModal";
+import styles from "@/app/page.module.css";
+import CreateRoleModal from "@/components/CreateRoleModal";
 import PageBar from "@/components/PageBar";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
 import VolunteerTable from "@/components/VolunteerTable";
-import styles from "@/app/page.module.css";
 
 type PopulatedAssignment = {
   volunteerId: string;
@@ -55,13 +55,25 @@ export default function Page() {
         fetchProjectProgramMaps(),
       ]);
 
+      const tagById = new Map<string, VolunteerTag>();
+      for (const t of tagData) tagById.set(t._id, t);
+
       const programByProjectId = new Map<string, VolunteerTag>();
-      for (const map of projectProgramMapData as ProjectProgramMap[]) {
-        programByProjectId.set(map.projectTagId._id, map.programTagId);
+      for (const map of projectProgramMapData) {
+        const projectId =
+          typeof map.projectTagId === "string" ? map.projectTagId : map.projectTagId._id;
+        const programTag =
+          typeof map.programTagId === "string" ? tagById.get(map.programTagId) : map.programTagId;
+        if (projectId && programTag) programByProjectId.set(projectId, programTag);
       }
 
-      const volunteersWithTags = (volunteerData as Volunteer[]).map((volunteer) => {
-        const volunteerAssignments = (assignmentData as PopulatedAssignment[]).filter(
+      const resolveTag = (t?: string | VolunteerTag | null) => {
+        if (!t) return undefined;
+        return typeof t === "string" ? tagById.get(t) : t;
+      };
+
+      const volunteersWithTags = volunteerData.map((volunteer) => {
+        const volunteerAssignments = assignmentData.filter(
           (assignment) => assignment.volunteerId === volunteer._id,
         );
         const seenTagIds = new Set<string>();
@@ -74,18 +86,20 @@ export default function Page() {
         };
 
         for (const assignment of volunteerAssignments) {
-          pushTag(assignment.assignmentTagId);
-          pushTag(assignment.projectTagId);
-          pushTag(programByProjectId.get(assignment.projectTagId._id));
+          pushTag(resolveTag(assignment.assignmentTagId));
+          pushTag(resolveTag(assignment.projectTagId));
 
-          for (const shiftTag of assignment.shiftTagIds ?? []) pushTag(shiftTag);
+          const projTag = resolveTag(assignment.projectTagId);
+          pushTag(projTag ? programByProjectId.get(projTag._id) : undefined);
+
+          for (const shiftTag of assignment.shiftTagIds ?? []) pushTag(resolveTag(shiftTag));
         }
 
-        return { ...volunteer, tags: volunteerTags } as Volunteer;
+        return { ...volunteer, tags: volunteerTags };
       });
 
       setVolunteers(volunteersWithTags);
-      setTags(tagData as VolunteerTag[]);
+      setTags(tagData);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -108,7 +122,9 @@ export default function Page() {
     setCurrentPage(1);
   };
 
-  const handleSelectedProjectChange = (value: Set<string> | ((prev: Set<string>) => Set<string>)) => {
+  const handleSelectedProjectChange = (
+    value: Set<string> | ((prev: Set<string>) => Set<string>),
+  ) => {
     setSelectedProject(value);
     setCurrentPage(1);
   };
@@ -118,12 +134,16 @@ export default function Page() {
     setCurrentPage(1);
   };
 
-  const handleSelectedAssignmentChange = (value: Set<string> | ((prev: Set<string>) => Set<string>)) => {
+  const handleSelectedAssignmentChange = (
+    value: Set<string> | ((prev: Set<string>) => Set<string>),
+  ) => {
     setSelectedAssignment(value);
     setCurrentPage(1);
   };
 
-  const handleSelectedProgramChange = (value: Set<string> | ((prev: Set<string>) => Set<string>)) => {
+  const handleSelectedProgramChange = (
+    value: Set<string> | ((prev: Set<string>) => Set<string>),
+  ) => {
     setSelectedProgram(value);
     setCurrentPage(1);
   };
@@ -133,7 +153,12 @@ export default function Page() {
   }, []);
 
   const projectTags = [
-    ...new Set(volunteers.flatMap((v) => v.tags ?? []).filter((t) => t.type === "project").map((t) => t.name)),
+    ...new Set(
+      volunteers
+        .flatMap((v) => v.tags ?? [])
+        .filter((t) => t.type === "project")
+        .map((t) => t.name),
+    ),
   ];
   const assignmentTags = tags.filter((t) => t.type === "assignment").map((t) => t.name);
   const programTags = tags.filter((t) => t.type === "program").map((t) => t.name);
@@ -179,7 +204,13 @@ export default function Page() {
         const phoneNumber = (volunteer.phoneNumber ?? "").toLowerCase();
         const email = (volunteer.email ?? "").toLowerCase();
 
-        const matches = firstName.includes(query) || lastName.includes(query) || fullName.includes(query) || reverseFullName.includes(query) || email.includes(query) || phoneNumber?.includes(query);
+        const matches =
+          firstName.includes(query) ||
+          lastName.includes(query) ||
+          fullName.includes(query) ||
+          reverseFullName.includes(query) ||
+          email.includes(query) ||
+          phoneNumber?.includes(query);
         if (!matches) return false;
       }
 
@@ -229,7 +260,11 @@ export default function Page() {
   const renderCreateTagModal = () => {
     if (!showCreateTagModal) return null;
 
-    return <CreateTagModal onClose={() => setShowCreateTagModal(false)} />;
+    // For testing, the renderCreateTagModal will pass the first volunteer on the currently displayed page.
+    const volunteerToPass = displayedVolunteers.length > 0 ? displayedVolunteers[0] : undefined;
+    return (
+      <CreateRoleModal onClose={() => setShowCreateTagModal(false)} volunteer={volunteerToPass} />
+    );
   };
 
   return (
@@ -239,15 +274,30 @@ export default function Page() {
           {renderCreateTagModal()}
 
           <div>
-            <button type="button" onClick={() => setShowCreateTagModal(true)}>Open create role modal</button>
+            <button
+              type="button"
+              onClick={() => setShowCreateTagModal(true)}
+              disabled={filteredVolunteers.length === 0}
+            >
+              Create VolunteerAssignment Modal
+            </button>
           </div>
 
-          <p>remove this buttons one user profiles is done</p>
+          <p>
+            Above testing button creates the VolunteerAssignment modal for the first volunteer in
+            the list.
+          </p>
 
           {showImportSuccess && (
             <div className={styles.importSuccessBanner}>
               <div className={styles.importSuccessContent}>
-                <Image src={'/ic_success.svg'} alt="Success" className={styles.importSuccessIcon} width={24} height={24} />
+                <Image
+                  src={"/ic_success.svg"}
+                  alt="Success"
+                  className={styles.importSuccessIcon}
+                  width={24}
+                  height={24}
+                />
                 <span className={styles.importSuccessText}>CSV Successfully Uploaded</span>
               </div>
               <button
@@ -280,14 +330,27 @@ export default function Page() {
           />
 
           <div className={styles.tableSection}>
-            <VolunteerTable volunteers={displayedVolunteers} selectableVolunteers={filteredVolunteers} onSelectedCountChange={setSelectedCount} />
+            <VolunteerTable
+              volunteers={displayedVolunteers}
+              selectableVolunteers={filteredVolunteers}
+              onSelectedCountChange={setSelectedCount}
+            />
             <div className={styles.tableSummaryRow}>
-              <span className={styles.tableSummaryLeft}>{selectedCount > 0 ? `${selectedCount} selected` : ''}</span>
-              <span className={styles.tableSummaryRight}>Total volunteers: {filteredVolunteers.length}</span>
+              <span className={styles.tableSummaryLeft}>
+                {selectedCount > 0 ? `${selectedCount} selected` : ""}
+              </span>
+              <span className={styles.tableSummaryRight}>
+                Total volunteers: {filteredVolunteers.length}
+              </span>
             </div>
           </div>
 
-          <PageBar totalItems={filteredVolunteers.length} currentPage={currentPage} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
+          <PageBar
+            totalItems={filteredVolunteers.length}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </main>
       </div>
     </Sidebar>

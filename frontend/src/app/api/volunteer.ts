@@ -128,6 +128,35 @@ export async function fetchVolunteerAssignments(): Promise<VolunteerAssignment[]
   return (await res.json()) as VolunteerAssignment[];
 }
 
+export async function createVolunteerAssignment(body: {
+  volunteerId: string;
+  assignmentTagId: string;
+  projectTagId: string;
+  shiftTagIds?: string[];
+}): Promise<VolunteerAssignment> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_BASE_URL}/api/volunteerAssignment`, {
+      method: "POST",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to create volunteer assignment: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data: unknown = await response.json();
+    return data as VolunteerAssignment;
+  } catch (error) {
+    console.error("Error creating volunteer assignment:", error);
+    throw error instanceof Error ? error : new Error("Unknown error creating volunteer assignment");
+  }
+}
+
 export type VolunteerCsvParseResult = {
   wouldCreateCount: number;
   wouldUpdateCount: number;
@@ -222,8 +251,12 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
           phoneNumber: item.phoneNumber,
           assignmentName: typeof item.assignmentName === "string" ? item.assignmentName : undefined,
           projectName: typeof item.projectName === "string" ? item.projectName : undefined,
-          shiftNames: Array.isArray(item.shiftNames) ? item.shiftNames.filter((v): v is string => typeof v === "string") : undefined,
-          tags: Array.isArray(item.tags) ? item.tags.filter((t): t is string => typeof t === "string") : undefined,
+          shiftNames: Array.isArray(item.shiftNames)
+            ? item.shiftNames.filter((v): v is string => typeof v === "string")
+            : undefined,
+          tags: Array.isArray(item.tags)
+            ? item.tags.filter((t): t is string => typeof t === "string")
+            : undefined,
         })),
     };
     return { ok: true, data: result };

@@ -126,3 +126,40 @@ export async function fetchProjectProgramMaps(): Promise<ProjectProgramMapDTO[]>
       : new Error("An unknown error occurred while fetching project-program maps");
   }
 }
+
+export async function createTag(body: {
+  name: string;
+  color: string;
+  type: string;
+}): Promise<VolunteerTag> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_BASE_URL}/api/tag`, {
+      method: "POST",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create tag: ${response.status} ${response.statusText}`);
+    }
+
+    const data: unknown = await response.json();
+    if (!isTagDTO(data)) {
+      throw new TypeError("Unexpected response format: expected a tag object");
+    }
+
+    return {
+      _id: data._id,
+      name: data.name,
+      color: data.color,
+      type: data.type,
+    };
+  } catch (error) {
+    console.error("Error creating tag:", error);
+    throw error instanceof Error
+      ? error
+      : new Error("An unknown error occurred while creating a tag");
+  }
+}

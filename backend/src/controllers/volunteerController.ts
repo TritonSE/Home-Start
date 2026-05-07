@@ -503,58 +503,6 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
-  try {
-    if (req.file === undefined) {
-      throw createError(400, "No CSV file attached");
-    }
-
-    const volunteerCreationBodies = await parseVolunteersHelper(req.file.buffer);
-
-    const bulkOps = volunteerCreationBodies.map((body) => ({
-      updateOne: {
-        filter: {
-          $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
-        },
-        update: {
-          $set: normalizeVolunteerForBulkWrite(body),
-          // Mongo operator to set a field to the current date
-          $currentDate: { updated: true as const },
-        },
-        upsert: true,
-      },
-    }));
-    // Continue writing others even if one fails
-    const createdVolunteers = await VolunteerModel.bulkWrite(bulkOps, { ordered: false });
-
-    res.status(200).json({
-      message: "Volunteers created successfully",
-      created: createdVolunteers.upsertedCount,
-      updated: createdVolunteers.modifiedCount,
-    });
-  } catch (err) {
-    if ((err as MongoBulkWriteError)?.name === "MongoBulkWriteError") {
-      const typedErr = err as MongoBulkWriteError;
-      const failedBodies = [];
-      const writeErrors: WriteError[] = Array.isArray(typedErr.writeErrors)
-        ? (typedErr.writeErrors as WriteError[])
-        : [typedErr.writeErrors as WriteError];
-      for (const writeError of writeErrors) {
-        const body = (writeError.err?.op as UpdateVolunteerOp)?.u?.$set;
-        failedBodies.push(body);
-      }
-      res.status(500).json({
-        message: "Error creating volunteers",
-        created: typedErr.result.upsertedCount,
-        updated: typedErr.result.modifiedCount,
-        failed: failedBodies,
-      });
-      return;
-    }
-    next(err);
-  }
-};
-
 export const getSelectedVolunteers: RequestHandler = async (req, res, next) => {
   const { events, statuses } = req.body as { events: string[]; statuses: string[] };
   try {

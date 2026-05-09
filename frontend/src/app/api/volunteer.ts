@@ -157,6 +157,35 @@ export async function createVolunteerAssignment(body: {
   }
 }
 
+export async function updateVolunteerAssignment(
+  id: string,
+  body: {
+    shiftTagIds?: string[];
+  },
+): Promise<VolunteerAssignment> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_BASE_URL}/api/volunteerAssignment/${id}`, {
+      method: "PUT",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to update volunteer assignment: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data: unknown = await response.json();
+    return data as VolunteerAssignment;
+  } catch (error) {
+    console.error("Error updating volunteer assignment:", error);
+    throw error instanceof Error ? error : new Error("Unknown error updating volunteer assignment");
+  }
+}
+
 export type VolunteerCsvParseResult = {
   wouldCreateCount: number;
   wouldUpdateCount: number;

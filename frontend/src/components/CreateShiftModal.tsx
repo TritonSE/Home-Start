@@ -1,17 +1,20 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import styles from "./CreateShiftModal.module.css";
 import { COLOR_OPTIONS } from "./colorOptions";
+import { VolunteerAssignment, VolunteerTag } from "@/types/volunteer";
 
+import { fetchTags, createTag } from "@/app/api/tag";
+import { fetchVolunteerAssignments, updateVolunteerAssignment } from "@/app/api/volunteer";
 import icCloseLargeAsset from "@/assets/ic_close_large.svg";
 
 const icCloseLarge = icCloseLargeAsset as string;
 
 type Props = {
   onClose: () => void;
-  onAdd?: (name: string, color: string) => Promise<void> | void;
+  assignment: VolunteerAssignment | null;
 };
 
 function CheckIcon({ color }: { color: string }) {
@@ -27,21 +30,88 @@ function CheckIcon({ color }: { color: string }) {
   );
 }
 
-export default function CreateShiftModal({ onClose, onAdd }: Props) {
+export default function CreateShiftModal({ onClose, assignment }: Props) {
   const [tagName, setTagName] = useState("");
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
+  const [shiftTags, setShiftTags] = useState<VolunteerTag[]>([]);
   const isTagNameEmpty = tagName.trim().length === 0;
 
-  const handleAdd = async () => {
-    const name = tagName.trim();
-    if (!name) return;
-    const color = COLOR_OPTIONS[selectedColorIndex]?.backgroundColor ?? "#FFFFFF";
+  const fetchAllShiftTags = async () => {
     try {
-      if (onAdd) await onAdd(name, color);
+      const allTags = await fetchTags();
+      const filtered = allTags.filter((tag) => tag.type === "shift");
+      setShiftTags(filtered);
     } catch (err) {
-      console.error("CreateShiftModal onAdd failed:", err);
+      console.error("Failed to fetch shift tags in CreateShiftModal:", err);
     }
-    onClose();
+  };
+
+  useEffect(() => {
+    void fetchAllShiftTags();
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!assignment) {
+      console.warn("No assignment provided for CreateShiftModal.handleSubmit");
+      return;
+    }
+
+    try {
+      const shiftTag = await getShiftTag();
+      if (!shiftTag) {
+        console.error("Failed to get or create shift tag");
+        return;
+      }
+
+      const tagId = shiftTag._id;
+      const currentShiftTagIds = assignment.shiftTagIds.map((tag) =>
+        typeof tag === "string" ? tag : tag._id,
+      );
+
+      if (!currentShiftTagIds.includes(tagId)) {
+        currentShiftTagIds.push(tagId);
+      }
+
+      await updateVolunteerAssignment(assignment._id, {
+        shiftTagIds: currentShiftTagIds,
+      });
+
+      onClose();
+    } catch (err) {
+      console.error("Failed to add shift tag to assignment:", err);
+    }
+  };
+
+  const getShiftTag = async (): Promise<VolunteerTag | undefined> => {
+    const query = tagName.trim();
+    if (!query) return undefined;
+
+    // Search for existing shift tag matching the name (case-insensitive)
+    const existing = shiftTags.find(
+      (t) => t.name.trim().toLowerCase() === query.toLowerCase(),
+    );
+    if (existing) return existing;
+
+    // Create a new shift tag with the selected color
+    try {
+      const color = COLOR_OPTIONS[selectedColorIndex]?.backgroundColor ?? "#FFFFFF";
+      const newTag = await createTag({ name: query, color, type: "shift" });
+      setShiftTags((prev) => [...prev, newTag]);
+      return newTag;
+    } catch (err) {
+      // On conflict, re-fetch and try to find the tag again
+      const latest = await fetchTags().catch(() => [] as VolunteerTag[]);
+      if (latest.length > 0) {
+        const shifted = latest.filter((tag) => tag.type === "shift");
+        setShiftTags(shifted);
+        const existingAfterRefresh = shifted.find(
+          (t) => t.name.trim().toLowerCase() === query.toLowerCase(),
+        );
+        if (existingAfterRefresh) return existingAfterRefresh;
+      }
+      console.error("Failed to create shift tag:", err);
+      return undefined;
+    }
   };
 
   return (
@@ -92,7 +162,7 @@ export default function CreateShiftModal({ onClose, onAdd }: Props) {
           <button className={styles.secondary} onClick={onClose} type="button">
             Cancel
           </button>
-          <button className={styles.primary} onClick={handleAdd} type="button" disabled={isTagNameEmpty}>
+          <button className={styles.primary} onClick={handleSubmit} type="button" disabled={isTagNameEmpty}>
             Add Tag
           </button>
         </div>

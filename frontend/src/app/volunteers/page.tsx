@@ -271,7 +271,7 @@ export default function Page() {
 
   const renderCreateShiftModal = () => {
     if (!showCreateShiftModal) return null;
-    return <CreateShiftModal onClose={() => setShowCreateShiftModal(false)} />;
+    //return <CreateShiftModal onClose={() => setShowCreateShiftModal(false)} />;
   };
 
   return (

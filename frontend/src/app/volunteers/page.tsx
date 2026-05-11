@@ -8,7 +8,7 @@ import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
 import styles from "@/app/page.module.css";
-import PageBar from "@/components/PageBar";
+import Pagination from "@/components/messages/pagination";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
@@ -307,12 +307,12 @@ export default function Page() {
               </span>
             </div>
           </div>
-          <PageBar
+          <Pagination
             totalItems={filteredVolunteers.length}
             currentPage={currentPage}
             itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-          />
+            setPageIndex={setCurrentPage}
+          ></Pagination>
         </main>
       </div>
     </Sidebar>

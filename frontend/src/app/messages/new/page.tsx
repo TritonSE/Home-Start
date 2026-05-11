@@ -326,6 +326,7 @@ export default function NewMessagePage() {
   const router = useRouter();
 
   const mode = useTextingFlowStore((s) => s.mode);
+  console.log(mode);
   const setMode = useTextingFlowStore((s) => s.setMode);
 
   const subject = useTextingFlowStore((s) => s.subject);

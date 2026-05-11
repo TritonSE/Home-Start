@@ -42,7 +42,7 @@ type TextingFlowState = {
 export const useTextingFlowStore = create<TextingFlowState>()(
   persist(
     (set, get) => ({
-      mode: "email",
+      mode: "text",
 
       subject: "",
       message: "",
@@ -55,7 +55,9 @@ export const useTextingFlowStore = create<TextingFlowState>()(
 
       pageIndex: 0,
 
-      setMode: (mode) => set({ mode }),
+      setMode: (mode) => {
+        set({ mode });
+      },
       setSubject: (subject) => set({ subject }),
       setMessage: (msg) => set({ message: msg }),
 
@@ -157,7 +159,6 @@ export const useTextingFlowStore = create<TextingFlowState>()(
 
       resetDraft: () =>
         set({
-          mode: "email",
           subject: "",
           message: "",
           selectedRecipientIds: [],

@@ -162,7 +162,13 @@ export default function ReviewAndSendPage() {
           <button
             type="button"
             className={styles.editLink}
-            onClick={() => void router.push("/messages/new/recipients")}
+            onClick={() => {
+              if (isDesktop) {
+                router.push("/communication");
+              } else {
+                router.push("/messages/new/recipients");
+              }
+            }}
           >
             Edit
           </button>

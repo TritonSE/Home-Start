@@ -112,6 +112,14 @@
   color: #ffffff;
   cursor: pointer;
 }
+
+.pillTagStatus:hover .pillTagIcon,
+.pillTagEvent:hover .pillTagIcon,
+.pillTagVolunteerType:hover .pillTagIcon,
+.pillTagActive .pillTagIcon {
+  filter: brightness(0) invert(1);
+}
+
 .pillTagStatus {
   composes: pillTag;
 }
@@ -192,6 +200,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-top: 20px;
   padding-bottom: 12px;
   gap: 12px;

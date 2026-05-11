@@ -75,6 +75,7 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
                 aria-current={active ? "page" : undefined}
               >
                 <Image src={item.icon} alt="" className={styles.icon} aria-hidden="true" />
+                {}
                 <span className={styles.label}>{item.label}</span>
               </Link>
             );

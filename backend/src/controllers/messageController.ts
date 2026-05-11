@@ -115,7 +115,9 @@ export const sendEmails = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-const defaultPopulateConfig = [{ path: "recipients", select: "firstName lastName" }];
+const defaultPopulateConfig = [
+  { path: "recipients", select: "firstName lastName email phoneNumber" },
+];
 
 export const getMessages: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);

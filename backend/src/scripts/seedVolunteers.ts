@@ -1,98 +1,633 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 
 import { connectToDatabase } from "../database/connect";
-import Tag from "../models/tagModel";
-import Volunteer from "../models/volunteerModel";
+import GroupModel from "../models/groupModel";
+import ProjectProgramMapModel from "../models/projectProgramMapModel";
+import TagModel from "../models/tagModel";
+import VolunteerAssignmentModel from "../models/volunteerAssignmentModel";
+import VolunteerModel from "../models/volunteerModel";
 
-async function seedVolunteers() {
+dotenv.config();
+
+type ProjectProgramPair = {
+  projectName: string;
+  programName: string;
+};
+
+const rawProjectProgramPairs: ProjectProgramPair[] = [
+  { projectName: "Administrative Internship", programName: "Administrative" },
+  { projectName: "Administrative Volunteer", programName: "Administrative" },
+  { projectName: "Adopt a Family 2017", programName: "Philanthropy" },
+  { projectName: "BackPack Drive 2022", programName: "Communities in Action" },
+  { projectName: "BackPack Drive 2024", programName: "Communities in Action" },
+  { projectName: "BHS Internship", programName: "Behavioral Health Services" },
+  { projectName: "BHS Volunteer", programName: "Behavioral Health Services" },
+  { projectName: "Blue Ribbon Broadcast 2021", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2017", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2018", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2019", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2022", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2023", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2024", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2025", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala Past", programName: "Philanthropy" },
+  { projectName: "Board of Directors", programName: "Executive" },
+  { projectName: "Bright Futures Candle", programName: "Finances" },
+  { projectName: "CalFresh Program", programName: "Communities in Action" },
+  { projectName: "CINA Internship", programName: "Communities in Action" },
+  { projectName: "CINA Volunteer", programName: "Communities in Action" },
+  { projectName: "Clinical Supervision", programName: "Behavioral Health Services" },
+  { projectName: "Committee", programName: "Philanthropy" },
+  { projectName: "CSF Internship", programName: "Community Services for Families" },
+  { projectName: "CSF Volunteer", programName: "Community Services for Families" },
+  { projectName: "DV Internship", programName: "Maternity Housing Program" },
+  { projectName: "DV Volunteer", programName: "Maternity Housing Program" },
+  { projectName: "East Youth Walk 2022", programName: "Maternity Housing Program" },
+  { projectName: "East Youth Walk 2024", programName: "Maternity Housing Program" },
+  { projectName: "EITC Volunteer", programName: "Communities in Action" },
+  { projectName: "Event Committee", programName: "Philanthropy" },
+  { projectName: "Executive Internship", programName: "Executive" },
+  { projectName: "Executive Strategy", programName: "Executive" },
+  { projectName: "F5FS Internship", programName: "First 5 First Steps" },
+  { projectName: "F5FS Volunteer", programName: "First 5 First Steps" },
+  { projectName: "Finances Committee", programName: "Finances" },
+  { projectName: "Fiscal Internship", programName: "Finances" },
+  { projectName: "Fiscal Volunteer", programName: "Finances" },
+  { projectName: "Food Distribution", programName: "Family Self-Sufficiency Program" },
+  { projectName: "FSS", programName: "Family Self-Sufficiency Program" },
+  { projectName: "Hallo-Wine 2016", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2017", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2018", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2019", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2020", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2021", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2022", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2023", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2024", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2025", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine Past", programName: "Philanthropy" },
+  { projectName: "Holiday Dropoff 2019", programName: "Philanthropy" },
+  { projectName: "Housing Outreach Intern", programName: "Maternity Housing Program" },
+  { projectName: "Housing Outreach Volunteer", programName: "Maternity Housing Program" },
+  { projectName: "HR Internship", programName: "Human Resources" },
+  { projectName: "HR Volunteer", programName: "Human Resources" },
+  { projectName: "MHP Health Clinics", programName: "Maternity Housing Program" },
+  { projectName: "MHP Internship", programName: "Maternity Housing Program" },
+  { projectName: "MHP Volunteer", programName: "Maternity Housing Program" },
+  { projectName: "Personnel Committee", programName: "Human Resources" },
+  { projectName: "Philanthropy Internship", programName: "Philanthropy" },
+  { projectName: "Philanthropy Resources Committee", programName: "Philanthropy" },
+  { projectName: "Philanthropy Volunteer", programName: "Philanthropy" },
+  { projectName: "PR Marketing", programName: "Philanthropy" },
+  { projectName: "Rapid Rehousing Intern", programName: "Maternity Housing Program" },
+  { projectName: "Rapid ReHousing Volunteer", programName: "Maternity Housing Program" },
+  { projectName: "Storage Facility", programName: "Administrative" },
+  { projectName: "Targeted Home Visiting", programName: "Maternity Housing Program" },
+  { projectName: "Thrift Boutique", programName: "Finances" },
+  { projectName: "Thrift Boutique Committee", programName: "Finances" },
+  { projectName: "Toy Distribution 2016", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2017", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2018", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2019", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2020", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2021", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2022", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2023", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2024", programName: "Philanthropy" },
+  { projectName: "VITA", programName: "Communities in Action" },
+  { projectName: "VP Internship", programName: "Human Resources" },
+  { projectName: "VP Volunteer", programName: "Human Resources" },
+];
+
+const normalizeProjectName = (projectName: string) => {
+  const parts = projectName.trim().split(/\s+/);
+
+  while (parts.length > 1) {
+    const lastPart = parts[parts.length - 1];
+    const looksLikeAbbreviation = /[a-z]/i.test(lastPart) && lastPart.length <= 5;
+
+    if (!looksLikeAbbreviation) {
+      break;
+    }
+
+    parts.pop();
+  }
+
+  return parts.join(" ");
+};
+
+const projectProgramPairs = rawProjectProgramPairs.map(({ projectName, programName }) => ({
+  projectName: normalizeProjectName(projectName),
+  programName,
+}));
+
+const makeColorFromName = (name: string) => {
+  let hash = 0;
+  for (const character of name) {
+    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  }
+
+  const color = (hash & 16_777_215).toString(16).toUpperCase().padStart(6, "0");
+  return `#${color}`;
+};
+
+async function seed() {
   await connectToDatabase();
 
-  await Volunteer.deleteMany({});
-  await Tag.deleteMany({});
-
-  const seededTags = await Tag.insertMany([
-    { name: "Intern", color: "#3B82F6", type: "Volunteer Type" },
-    { name: "Outside Volunteer", color: "#F59E0B", type: "Volunteer Type" },
-    { name: "2+ More", color: "#10B981", type: "Event" },
+  await Promise.all([
+    VolunteerAssignmentModel.deleteMany({}),
+    ProjectProgramMapModel.deleteMany({}),
+    VolunteerModel.deleteMany({}),
+    GroupModel.deleteMany({}),
+    TagModel.deleteMany({}),
   ]);
 
-  const tagIds = seededTags.map((tag) => tag._id);
+  const [groupNorth, groupWest] = await GroupModel.create([
+    { name: "Northside Retail" },
+    { name: "West End Partners" },
+  ]);
 
-  await Volunteer.insertMany([
+  const [assignmentTag, shiftTag] = await TagModel.create([
+    { name: "Front Desk", color: "#4F46E5", type: "assignment" },
+    { name: "Morning Shift", color: "#D97706", type: "shift" },
+  ]);
+
+  const projectNames = [...new Set(projectProgramPairs.map((pair) => pair.projectName))];
+  const programNames = [...new Set(projectProgramPairs.map((pair) => pair.programName))];
+
+  const projectTags = await TagModel.create(
+    projectNames.map((name) => ({
+      name,
+      color: makeColorFromName(name),
+      type: "project" as const,
+    })),
+  );
+
+  const programTags = await TagModel.create(
+    programNames.map((name) => ({
+      name,
+      color: makeColorFromName(name),
+      type: "program" as const,
+    })),
+  );
+
+  const projectTagByName = new Map(projectTags.map((tag) => [tag.name, tag]));
+  const programTagByName = new Map(programTags.map((tag) => [tag.name, tag]));
+
+  await ProjectProgramMapModel.create(
+    projectProgramPairs.map((pair) => ({
+      projectTagId: projectTagByName.get(pair.projectName)?._id,
+      programTagId: programTagByName.get(pair.programName)?._id,
+    })),
+  );
+
+  const administrativeProjectTag = projectTagByName.get("Administrative Volunteer");
+  const administrativeProgramTag = programTagByName.get("Administrative");
+  const philanthropyProjectTag = projectTagByName.get("Philanthropy Volunteer");
+  const philanthropyProgramTag = programTagByName.get("Philanthropy");
+
+  if (
+    !administrativeProjectTag ||
+    !administrativeProgramTag ||
+    !philanthropyProjectTag ||
+    !philanthropyProgramTag
+  ) {
+    throw new Error("Required project or program tags were not created during seeding.");
+  }
+
+  const volunteerOne = await VolunteerModel.create({
+    firstName: "Mia",
+    lastName: "Fernandez",
+    email: "mia.fernandez@example.org",
+    phoneNumber: "5551234567",
+    status: "new",
+    address: {
+      line1: "14 Maple Street",
+      line2: "Apt 2",
+      city: "Bristol",
+      state: "VA",
+      zip: "24201",
+    },
+    birthday: new Date("1991-06-11"),
+    preferredPronouns: "she/her",
+    startDate: new Date("2026-01-08"),
+    effectiveDate: new Date("2026-01-10"),
+    hours: 14.5,
+    wageRate: 16.25,
+    groupIds: [groupNorth._id],
+    mediaConsent: "yes",
+    faceConsent: "no",
+    nameConsent: "full",
+  });
+
+  const volunteerTwo = await VolunteerModel.create({
+    firstName: "Jordan",
+    lastName: "Lee",
+    email: "jordan.lee@example.org",
+    phoneNumber: "5559876543",
+    status: "returning",
+    address: {
+      line1: "88 River Road",
+      city: "Kingsport",
+      state: "TN",
+      zip: "37660",
+    },
+    birthday: new Date("1987-02-19"),
+    preferredPronouns: "they/them",
+    startDate: new Date("2025-09-14"),
+    endDate: new Date("2026-04-30"),
+    effectiveDate: new Date("2025-09-15"),
+    hours: 22,
+    wageRate: 18,
+    groupIds: [groupWest._id],
+    mediaConsent: "no",
+    faceConsent: "no",
+    nameConsent: "first",
+  });
+
+  const [
+    volunteerThree,
+    volunteerFour,
+    volunteerFive,
+    volunteerSix,
+    volunteerSeven,
+    volunteerEight,
+    volunteerNine,
+    volunteerTen,
+    volunteerEleven,
+    volunteerTwelve,
+  ] = await VolunteerModel.create([
     {
-      firstName: "Jane",
-      lastName: "Doe",
-      email: "jane@example.com",
-      phoneNumber: "555-123-4567",
-      tags: tagIds,
+      firstName: "Sophia",
+      lastName: "Patel",
+      email: "sophia.patel@example.org",
+      phoneNumber: "5551000001",
+      status: "new",
+      address: {
+        line1: "21 Cedar Street",
+        city: "Roanoke",
+        state: "VA",
+        zip: "24011",
+      },
+      birthday: new Date("1994-03-03"),
+      preferredPronouns: "she/her",
+      startDate: new Date("2026-02-01"),
+      effectiveDate: new Date("2026-02-03"),
+      hours: 9,
+      wageRate: 15.5,
+      groupIds: [groupNorth._id],
+      mediaConsent: "yes",
+      faceConsent: "no",
+      nameConsent: "full",
     },
     {
-      firstName: "John",
-      lastName: "Smith",
-      email: "john@example.com",
-      phoneNumber: "555-987-6543",
-      tags: tagIds,
+      firstName: "Ethan",
+      lastName: "Walker",
+      email: "ethan.walker@example.org",
+      phoneNumber: "5551000002",
+      status: "returning",
+      address: {
+        line1: "404 Pine Avenue",
+        city: "Kingsport",
+        state: "TN",
+        zip: "37660",
+      },
+      birthday: new Date("1989-07-18"),
+      preferredPronouns: "he/him",
+      startDate: new Date("2025-11-18"),
+      endDate: new Date("2026-04-30"),
+      effectiveDate: new Date("2025-11-20"),
+      hours: 12,
+      wageRate: 17.25,
+      groupIds: [groupWest._id],
+      mediaConsent: "no",
+      faceConsent: "yes",
+      nameConsent: "first",
     },
     {
-      firstName: "Alice",
-      lastName: "Johnson",
-      email: "alice@example.com",
-      phoneNumber: "555-222-3344",
-      tags: tagIds,
+      firstName: "Isabella",
+      lastName: "Torres",
+      email: "isabella.torres@example.org",
+      phoneNumber: "5551000003",
+      status: "new",
+      address: {
+        line1: "87 Birch Lane",
+        city: "Bristol",
+        state: "VA",
+        zip: "24201",
+      },
+      birthday: new Date("1998-11-09"),
+      preferredPronouns: "she/her",
+      startDate: new Date("2026-02-10"),
+      effectiveDate: new Date("2026-02-12"),
+      hours: 7,
+      wageRate: 15,
+      groupIds: [groupNorth._id],
+      mediaConsent: "yes",
+      faceConsent: "no",
+      nameConsent: "full",
     },
     {
-      firstName: "Michael",
-      lastName: "Brown",
-      email: "michael@example.com",
-      phoneNumber: "555-333-7788",
-      tags: tagIds,
-    },
-    {
-      firstName: "Sarah",
-      lastName: "Lee",
-      email: "sarah@example.com",
-      phoneNumber: "555-444-9911",
-      tags: tagIds,
-    },
-    {
-      firstName: "David",
+      firstName: "Lucas",
       lastName: "Kim",
-      email: "david@example.com",
-      phoneNumber: "555-555-1212",
-      tags: tagIds,
+      email: "lucas.kim@example.org",
+      phoneNumber: "5551000004",
+      status: "returning",
+      address: {
+        line1: "19 Willow Drive",
+        city: "Johnson City",
+        state: "TN",
+        zip: "37604",
+      },
+      birthday: new Date("1992-05-27"),
+      preferredPronouns: "they/them",
+      startDate: new Date("2025-10-06"),
+      endDate: new Date("2026-04-30"),
+      effectiveDate: new Date("2025-10-08"),
+      hours: 16,
+      wageRate: 18.5,
+      groupIds: [groupWest._id],
+      mediaConsent: "no",
+      faceConsent: "no",
+      nameConsent: "first",
     },
     {
-      firstName: "Emily",
-      lastName: "Martinez",
-      email: "emily@example.com",
-      phoneNumber: "555-666-3434",
-      tags: tagIds,
+      firstName: "Amelia",
+      lastName: "Reed",
+      email: "amelia.reed@example.org",
+      phoneNumber: "5551000005",
+      status: "new",
+      address: {
+        line1: "302 Spruce Street",
+        city: "Bristol",
+        state: "VA",
+        zip: "24201",
+      },
+      birthday: new Date("1996-01-14"),
+      preferredPronouns: "she/her",
+      startDate: new Date("2026-03-01"),
+      effectiveDate: new Date("2026-03-03"),
+      hours: 10,
+      wageRate: 15.75,
+      groupIds: [groupNorth._id],
+      mediaConsent: "yes",
+      faceConsent: "yes",
+      nameConsent: "full",
     },
     {
-      firstName: "Chris",
-      lastName: "Wilson",
-      email: "chris@example.com",
-      phoneNumber: "555-777-5656",
-      tags: tagIds,
+      firstName: "Noah",
+      lastName: "Bennett",
+      email: "noah.bennett@example.org",
+      phoneNumber: "5551000006",
+      status: "returning",
+      address: {
+        line1: "11 Hillcrest Road",
+        city: "Kingsport",
+        state: "TN",
+        zip: "37660",
+      },
+      birthday: new Date("1984-08-23"),
+      preferredPronouns: "he/him",
+      startDate: new Date("2025-08-19"),
+      endDate: new Date("2026-04-30"),
+      effectiveDate: new Date("2025-08-21"),
+      hours: 20,
+      wageRate: 18,
+      groupIds: [groupWest._id],
+      mediaConsent: "no",
+      faceConsent: "no",
+      nameConsent: "first",
     },
     {
-      firstName: "Olivia",
+      firstName: "Harper",
+      lastName: "Clark",
+      email: "harper.clark@example.org",
+      phoneNumber: "5551000007",
+      status: "new",
+      address: {
+        line1: "56 Magnolia Court",
+        city: "Bristol",
+        state: "VA",
+        zip: "24201",
+      },
+      birthday: new Date("1999-09-30"),
+      preferredPronouns: "they/them",
+      startDate: new Date("2026-03-10"),
+      effectiveDate: new Date("2026-03-12"),
+      hours: 8,
+      wageRate: 15,
+      groupIds: [groupNorth._id],
+      mediaConsent: "yes",
+      faceConsent: "no",
+      nameConsent: "full",
+    },
+    {
+      firstName: "Elijah",
+      lastName: "Ross",
+      email: "elijah.ross@example.org",
+      phoneNumber: "5551000008",
+      status: "returning",
+      address: {
+        line1: "72 Maple Ridge",
+        city: "Abingdon",
+        state: "VA",
+        zip: "24210",
+      },
+      birthday: new Date("1988-12-04"),
+      preferredPronouns: "he/him",
+      startDate: new Date("2025-12-02"),
+      endDate: new Date("2026-04-30"),
+      effectiveDate: new Date("2025-12-04"),
+      hours: 13,
+      wageRate: 16.5,
+      groupIds: [groupWest._id],
+      mediaConsent: "no",
+      faceConsent: "yes",
+      nameConsent: "first",
+    },
+    {
+      firstName: "Layla",
+      lastName: "Morgan",
+      email: "layla.morgan@example.org",
+      phoneNumber: "5551000009",
+      status: "new",
+      address: {
+        line1: "8 Oak Terrace",
+        city: "Bristol",
+        state: "VA",
+        zip: "24201",
+      },
+      birthday: new Date("1997-04-16"),
+      preferredPronouns: "she/her",
+      startDate: new Date("2026-03-18"),
+      effectiveDate: new Date("2026-03-20"),
+      hours: 11,
+      wageRate: 15.25,
+      groupIds: [groupNorth._id],
+      mediaConsent: "yes",
+      faceConsent: "no",
+      nameConsent: "full",
+    },
+    {
+      firstName: "Mateo",
       lastName: "Nguyen",
-      email: "olivia@example.com",
-      phoneNumber: "555-888-7878",
-      tags: tagIds,
-    },
-    {
-      firstName: "Daniel",
-      lastName: "Anderson",
-      email: "daniel@example.com",
-      phoneNumber: "555-999-9090",
-      tags: tagIds,
+      email: "mateo.nguyen@example.org",
+      phoneNumber: "5551000010",
+      status: "returning",
+      address: {
+        line1: "199 Cedar Hill",
+        city: "Johnson City",
+        state: "TN",
+        zip: "37604",
+      },
+      birthday: new Date("1990-10-21"),
+      preferredPronouns: "he/him",
+      startDate: new Date("2025-09-22"),
+      endDate: new Date("2026-04-30"),
+      effectiveDate: new Date("2025-09-24"),
+      hours: 18,
+      wageRate: 17,
+      groupIds: [groupWest._id],
+      mediaConsent: "no",
+      faceConsent: "no",
+      nameConsent: "first",
     },
   ]);
 
-  console.info("Volunteers seeded");
-  process.exit(0);
+  await VolunteerAssignmentModel.create([
+    {
+      volunteerId: volunteerOne._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: administrativeProjectTag._id,
+      shiftTagIds: [shiftTag._id],
+    },
+    {
+      volunteerId: volunteerTwo._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: administrativeProjectTag._id,
+      shiftTagIds: [shiftTag._id],
+    },
+    {
+      volunteerId: volunteerTwo._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: philanthropyProjectTag._id,
+      shiftTagIds: [],
+    },
+    {
+      volunteerId: volunteerThree._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: administrativeProjectTag._id,
+      shiftTagIds: [shiftTag._id],
+    },
+    {
+      volunteerId: volunteerThree._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("HR Volunteer")?._id,
+      shiftTagIds: [],
+    },
+    {
+      volunteerId: volunteerFour._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("BHS Volunteer")?._id,
+      shiftTagIds: [shiftTag._id],
+    },
+    {
+      volunteerId: volunteerFour._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("MHP Volunteer")?._id,
+      shiftTagIds: [],
+    },
+    {
+      volunteerId: volunteerFive._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("CSF Volunteer")?._id,
+      shiftTagIds: [shiftTag._id],
+    },
+    {
+      volunteerId: volunteerFive._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("F5FS Volunteer")?._id,
+      shiftTagIds: [],
+    },
+    {
+      volunteerId: volunteerSix._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("DV Volunteer")?._id,
+      shiftTagIds: [shiftTag._id],
+    },
+    {
+      volunteerId: volunteerSix._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("Housing Outreach Volunteer")?._id,
+      shiftTagIds: [],
+    },
+    {
+      volunteerId: volunteerSeven._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("EITC Volunteer")?._id,
+      shiftTagIds: [shiftTag._id],
+    },
+    {
+      volunteerId: volunteerSeven._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("Fiscal Volunteer")?._id,
+      shiftTagIds: [],
+    },
+    {
+      volunteerId: volunteerEight._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: philanthropyProjectTag._id,
+      shiftTagIds: [shiftTag._id],
+    },
+    {
+      volunteerId: volunteerEight._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("PR Marketing")?._id,
+      shiftTagIds: [],
+    },
+    {
+      volunteerId: volunteerNine._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("Rapid ReHousing Volunteer")?._id,
+      shiftTagIds: [shiftTag._id],
+    },
+    {
+      volunteerId: volunteerNine._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("Targeted Home Visiting")?._id,
+      shiftTagIds: [],
+    },
+    {
+      volunteerId: volunteerTen._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("VP Volunteer")?._id,
+      shiftTagIds: [shiftTag._id],
+    },
+    {
+      volunteerId: volunteerTen._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("Storage Facility")?._id,
+      shiftTagIds: [],
+    },
+    {
+      volunteerId: volunteerEleven._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("VITA")?._id,
+      shiftTagIds: [shiftTag._id],
+    },
+    {
+      volunteerId: volunteerTwelve._id,
+      assignmentTagId: assignmentTag._id,
+      projectTagId: projectTagByName.get("Food Distribution")?._id,
+      shiftTagIds: [],
+    },
+  ]);
+
+  // eslint-disable-next-line no-console
+  console.log("Seeded volunteers, tags, groups, assignments, and project-program mappings.");
 }
 
-seedVolunteers().catch(console.error);
+void seed().catch((error: unknown) => {
+  console.error(error);
+  process.exit(1);
+});

@@ -1,7 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Viga&display=swap");
 
 .backdrop {
-  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 1000;
 }
 
 .modal {
@@ -9,7 +12,7 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 40px 0 34px;
-  position: absolute;
+  position: fixed;
   width: 460px;
   right: 0;
   top: 0;
@@ -17,7 +20,7 @@
   background: #ffffff;
   box-shadow: -50px 0px 100px rgba(118, 135, 165, 0.4);
   border-radius: 16px 0 0 16px;
-  z-index: 2;
+  z-index: 1001;
 }
 
 .heading {
@@ -347,10 +350,6 @@
 @media (max-width: 768px) {
   .backdrop {
     display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.35);
-    z-index: 1;
   }
 
   .modal {

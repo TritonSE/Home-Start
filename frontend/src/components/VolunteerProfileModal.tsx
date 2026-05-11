@@ -1,25 +1,21 @@
 "use client";
-import { Volunteer } from "../types/volunteer";
-import styles from "./VolunteerProfileModal.module.css";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
-interface VolunteerProfileModalProps {
+import icCloseAsset from "@/assets/ic_close.svg";
+
+import type { Volunteer } from "../types/volunteer";
+
+import styles from "./VolunteerProfileModal.module.css";
+
+type VolunteerProfileModalProps = {
   volunteer: Volunteer | null;
   isOpen: boolean;
   onClose: () => void;
   onVolunteerUpdated?: (volunteer: Volunteer) => void;
-}
-
-const VOLUNTEER_TYPE_TAGS = ["Intern", "Outside Volunteer"];
-const RETURNING_STATUS_LABELS = new Set(["returner", "returning", "expert"]);
-
-const getTagColorClass = (tag: string, styles: Record<string, string>) => {
-  if (tag === "Outside Volunteer") return styles.tagOrange;
-  if (tag.includes("More")) return styles.tagGreen;
-  return styles.tagTeal;
 };
 
-const getVolunteerTagNames = (volunteer: Volunteer) => volunteer.tags.map((tag) => tag.name);
+const RETURNING_STATUS_LABELS = new Set(["returner", "returning", "expert"]);
 
 const deriveStatus = (volunteer: Volunteer): "new" | "returning" => {
   if (volunteer.status === "new" || volunteer.status === "returning") {
@@ -35,6 +31,45 @@ const deriveStatus = (volunteer: Volunteer): "new" | "returning" => {
 const formatStatus = (status: "new" | "returning") =>
   status === "returning" ? "Returning" : "New";
 
+function ViewContent({ volunteer }: { volunteer: Volunteer }) {
+  const status = deriveStatus(volunteer);
+
+  return (
+    <>
+      <div className={styles.infoSection}>
+        <div className={styles.infoField}>
+          <span className={styles.fieldLabel}>First Name</span>
+          <span className={styles.fieldValue}>{volunteer.firstName}</span>
+        </div>
+        <div className={styles.infoField}>
+          <span className={styles.fieldLabel}>Last Name</span>
+          <span className={styles.fieldValue}>{volunteer.lastName}</span>
+        </div>
+        <div className={styles.infoField}>
+          <span className={styles.fieldLabel}>Email</span>
+          <span className={styles.fieldValue}>{volunteer.email}</span>
+        </div>
+        <div className={styles.infoField}>
+          <span className={styles.fieldLabel}>Phone</span>
+          <span className={styles.fieldValue}>{volunteer.phoneNumber}</span>
+        </div>
+      </div>
+
+      <div className={styles.tagsSection}>
+        <span className={styles.sectionTitle}>Status</span>
+        <div className={styles.tagsRow}>
+          <span className={`${styles.tag} ${styles.tagTeal}`}>{formatStatus(status)}</span>
+        </div>
+      </div>
+
+      <div className={styles.infoField}>
+        <span className={styles.fieldLabel}>Additional Notes</span>
+        <span className={styles.fieldValue}>{volunteer.additionalNotes ?? ""}</span>
+      </div>
+    </>
+  );
+}
+
 export default function VolunteerProfileModal({
   volunteer,
   isOpen,
@@ -47,10 +82,6 @@ export default function VolunteerProfileModal({
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [status, setStatus] = useState<"new" | "returning">("new");
-  const [typeTags, setTypeTags] = useState<string[]>([]);
-  const [eventTags, setEventTags] = useState<string[]>([]);
-  const [typeInput, setTypeInput] = useState("");
-  const [eventInput, setEventInput] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -62,38 +93,10 @@ export default function VolunteerProfileModal({
     setEmail(volunteer.email);
     setPhoneNumber(volunteer.phoneNumber);
 
-    const volunteerTagNames = getVolunteerTagNames(volunteer);
-    const fallbackTypeTags = volunteerTagNames.filter((tag) => VOLUNTEER_TYPE_TAGS.includes(tag));
     setStatus(deriveStatus(volunteer));
-    setTypeTags(volunteer.volunteerTypeTags ?? fallbackTypeTags);
-    setEventTags(volunteer.events ?? []);
     setAdditionalNotes(volunteer.additionalNotes ?? "");
-    setTypeInput("");
-    setEventInput("");
     setSaveError("");
   }, [volunteer]);
-
-  const handleAddTypeTag = () => {
-    const value = typeInput.trim();
-    if (!value || typeTags.includes(value)) return;
-    setTypeTags((prev) => [...prev, value]);
-    setTypeInput("");
-  };
-
-  const handleAddEventTag = () => {
-    const value = eventInput.trim();
-    if (!value || eventTags.includes(value)) return;
-    setEventTags((prev) => [...prev, value]);
-    setEventInput("");
-  };
-
-  const handleRemoveTypeTag = (tag: string) => {
-    setTypeTags((prev) => prev.filter((value) => value !== tag));
-  };
-
-  const handleRemoveEventTag = (tag: string) => {
-    setEventTags((prev) => prev.filter((value) => value !== tag));
-  };
 
   const handleSave = async () => {
     if (!volunteer) return;
@@ -111,8 +114,6 @@ export default function VolunteerProfileModal({
           email,
           phoneNumber,
           status,
-          volunteerTypeTags: typeTags,
-          events: eventTags,
           additionalNotes,
         }),
       });
@@ -142,7 +143,7 @@ export default function VolunteerProfileModal({
           <div className={styles.headerRow}>
             <h5 className={styles.modalHeader}>View Volunteer</h5>
             <button className={styles.closeButton} onClick={onClose} aria-label="Close">
-              <img src="/ic_close.svg" alt="" />
+              <Image src={icCloseAsset as string} alt="" width={24} height={24} />
             </button>
           </div>
         </div>
@@ -224,104 +225,6 @@ export default function VolunteerProfileModal({
                 />
               </div>
 
-              <div className={styles.tagsSection}>
-                <div className={styles.sectionHeaderWithHint}>
-                  <span className={styles.sectionTitle}>Volunteer Type</span>
-                  <span className={styles.sectionHint}>Tap x to Remove</span>
-                </div>
-                <div className={styles.tagsRow}>
-                  {typeTags.map((tag) => (
-                    <span
-                      key={`type-${tag}`}
-                      className={`${styles.tag} ${getTagColorClass(tag, styles)}`}
-                    >
-                      {tag}
-                      <button
-                        type="button"
-                        className={styles.tagRemove}
-                        onClick={() => handleRemoveTypeTag(tag)}
-                        aria-label={`Remove ${tag}`}
-                      >
-                        <img src="/redx.svg" alt="" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-                <div className={styles.searchAddRow}>
-                  <div className={styles.searchAddField}>
-                    <input
-                      className={styles.searchAddInput}
-                      placeholder="Add Text"
-                      value={typeInput}
-                      onChange={(event) => setTypeInput(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                          handleAddTypeTag();
-                        }
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className={styles.addButton}
-                    onClick={handleAddTypeTag}
-                    aria-label="Add volunteer type tag"
-                  >
-                    <img src="/plus.svg" alt="" />
-                  </button>
-                </div>
-              </div>
-
-              <div className={styles.tagsSection}>
-                <div className={styles.sectionHeaderWithHint}>
-                  <span className={styles.sectionTitle}>Event</span>
-                  <span className={styles.sectionHint}>Tap x to Remove</span>
-                </div>
-                <div className={styles.tagsRow}>
-                  {eventTags.map((tag) => (
-                    <span
-                      key={`event-${tag}`}
-                      className={`${styles.tag} ${getTagColorClass(tag, styles)}`}
-                    >
-                      {tag}
-                      <button
-                        type="button"
-                        className={styles.tagRemove}
-                        onClick={() => handleRemoveEventTag(tag)}
-                        aria-label={`Remove ${tag}`}
-                      >
-                        <img src="/redx.svg" alt="" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-                <div className={styles.searchAddRow}>
-                  <div className={styles.searchAddField}>
-                    <input
-                      className={styles.searchAddInput}
-                      placeholder="Add Event"
-                      value={eventInput}
-                      onChange={(event) => setEventInput(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                          handleAddEventTag();
-                        }
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className={styles.addButton}
-                    onClick={handleAddEventTag}
-                    aria-label="Add event tag"
-                  >
-                    <img src="/plus.svg" alt="" />
-                  </button>
-                </div>
-              </div>
-
               <div className={styles.editField}>
                 <label className={styles.editLabel} htmlFor="edit-notes">
                   Additional Notes
@@ -338,7 +241,9 @@ export default function VolunteerProfileModal({
               <button
                 type="button"
                 className={styles.saveButton}
-                onClick={handleSave}
+                onClick={() => {
+                  void handleSave();
+                }}
                 disabled={isSaving}
               >
                 {isSaving ? "Saving..." : "Save Changes"}
@@ -346,77 +251,6 @@ export default function VolunteerProfileModal({
             </div>
           )}
         </div>
-      </div>
-    </>
-  );
-}
-
-function ViewContent({ volunteer }: { volunteer: Volunteer }) {
-  const volunteerTagNames = getVolunteerTagNames(volunteer);
-  const fallbackTypeTags = volunteerTagNames.filter((tag) => VOLUNTEER_TYPE_TAGS.includes(tag));
-  const status = deriveStatus(volunteer);
-  const volunteerTypeTags = volunteer.volunteerTypeTags ?? fallbackTypeTags;
-  const events = volunteer.events ?? [];
-
-  return (
-    <>
-      <div className={styles.infoSection}>
-        <div className={styles.infoField}>
-          <span className={styles.fieldLabel}>First Name</span>
-          <span className={styles.fieldValue}>{volunteer.firstName}</span>
-        </div>
-        <div className={styles.infoField}>
-          <span className={styles.fieldLabel}>Last Name</span>
-          <span className={styles.fieldValue}>{volunteer.lastName}</span>
-        </div>
-        <div className={styles.infoField}>
-          <span className={styles.fieldLabel}>Email</span>
-          <span className={styles.fieldValue}>{volunteer.email}</span>
-        </div>
-        <div className={styles.infoField}>
-          <span className={styles.fieldLabel}>Phone</span>
-          <span className={styles.fieldValue}>{volunteer.phoneNumber}</span>
-        </div>
-      </div>
-
-      <div className={styles.tagsSection}>
-        <span className={styles.sectionTitle}>Status</span>
-        <div className={styles.tagsRow}>
-          <span className={`${styles.tag} ${styles.tagTeal}`}>{formatStatus(status)}</span>
-        </div>
-      </div>
-
-      <div className={styles.tagsSection}>
-        <span className={styles.sectionTitle}>Volunteer Type</span>
-        <div className={styles.tagsRow}>
-          {volunteerTypeTags.map((tag, index) => (
-            <span
-              key={`${volunteer._id}-type-${tag}-${index}`}
-              className={`${styles.tag} ${getTagColorClass(tag, styles)}`}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className={styles.tagsSection}>
-        <span className={styles.sectionTitle}>Event</span>
-        <div className={styles.tagsRow}>
-          {events.map((tag, index) => (
-            <span
-              key={`${volunteer._id}-event-${tag}-${index}`}
-              className={`${styles.tag} ${getTagColorClass(tag, styles)}`}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className={styles.infoField}>
-        <span className={styles.fieldLabel}>Additional Notes</span>
-        <span className={styles.fieldValue}>{volunteer.additionalNotes ?? ""}</span>
       </div>
     </>
   );

@@ -1,13 +1,19 @@
 "use client";
 
+import Image from "next/image";
+
 import styles from "./PageBar.module.css";
 
-interface PageBarProps {
+import caretIconAsset from "@/assets/caret.svg";
+
+const caretIcon = caretIconAsset as string;
+
+type PageBarProps = {
   totalItems: number;
   currentPage: number;
   itemsPerPage: number;
   onPageChange: (page: number) => void;
-}
+};
 
 export default function PageBar({
   totalItems,
@@ -48,7 +54,13 @@ export default function PageBar({
       <div className={styles.pagination}>
         <div className={styles.previous} onClick={() => onPageChange(Math.max(1, currentPage - 1))}>
           <div className={styles.ic_container}>
-            <img src="/caret.svg" alt="Upload logo" className={styles.caretIconLeft} />
+            <Image
+              src={caretIcon}
+              alt="Caret Left"
+              className={styles.caretIconLeft}
+              width={24}
+              height={24}
+            />
           </div>
         </div>
 
@@ -69,7 +81,13 @@ export default function PageBar({
           onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
         >
           <div className={styles.ic_container}>
-            <img src="/caret.svg" alt="Upload logo" className={styles.caretIconRight} />
+            <Image
+              src={caretIcon}
+              alt="Caret Right"
+              className={styles.caretIconRight}
+              width={24}
+              height={24}
+            />
           </div>
         </div>
       </div>

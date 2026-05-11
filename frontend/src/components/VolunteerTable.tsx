@@ -1,26 +1,79 @@
 "use client";
-import { useState } from "react";
-import { Volunteer } from "../types/volunteer";
+import { useEffect, useState } from "react";
+
 import styles from "./VolunteerTable.module.css";
 
-interface VolunteerTableProps {
+import type { Volunteer, VolunteerTag } from "@/types/volunteer";
+
+const TAG_COLOR_PALETTE = [
+  { backgroundColor: "#F6E6E9", color: "#A40026" },
+  { backgroundColor: "#F9EFE6", color: "#C46200" },
+  { backgroundColor: "#F9F5EF", color: "#886F42" },
+  { backgroundColor: "#E6F2EC", color: "#007F3F" },
+  { backgroundColor: "#E6F2F3", color: "#007A8A" },
+  { backgroundColor: "#E9ECF1", color: "#1D3A6B" },
+  { backgroundColor: "#EFEBF3", color: "#452861" },
+] as const;
+
+const getTagPaletteStyle = (tag: VolunteerTag) => {
+  let hash = 0;
+
+  for (const character of tag._id || tag.name) {
+    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  }
+
+  return TAG_COLOR_PALETTE[hash % TAG_COLOR_PALETTE.length];
+};
+
+const getVisibleTags = (tags: VolunteerTag[], type: string, maxVisible: number) => {
+  const filteredTags = tags.filter((tag) => tag.type === type);
+
+  return {
+    visibleTags: filteredTags.slice(0, maxVisible),
+    hiddenCount: Math.max(filteredTags.length - maxVisible, 0),
+  };
+};
+
+type VolunteerTableProps = {
   volunteers: Volunteer[];
+  selectableVolunteers?: Volunteer[];
+  onSelectedCountChange?: (count: number) => void;
   onVolunteerSelect?: (volunteer: Volunteer) => void;
-}
+};
 
-export default function VolunteerTable({ volunteers, onVolunteerSelect }: VolunteerTableProps) {
+export default function VolunteerTable({
+  volunteers,
+  selectableVolunteers,
+  onSelectedCountChange,
+  onVolunteerSelect,
+}: VolunteerTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const selectionScope = selectableVolunteers ?? volunteers;
 
-  const allSelected = volunteers.length > 0 && volunteers.every((v) => selectedIds.has(v._id));
-  const someSelected = volunteers.some((v) => selectedIds.has(v._id));
+  const allSelected =
+    selectionScope.length > 0 &&
+    selectionScope.every((volunteer) => selectedIds.has(volunteer._id));
+  const someSelected = selectionScope.some((volunteer) => selectedIds.has(volunteer._id));
 
   function toggleAll() {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(volunteers.map((v) => v._id)));
+      setSelectedIds(new Set(selectionScope.map((volunteer) => volunteer._id)));
     }
   }
+
+  function deselectAll() {
+    setSelectedIds(new Set());
+  }
+
+  useEffect(() => {
+    onSelectedCountChange?.(selectedIds.size);
+  }, [selectedIds, onSelectedCountChange]);
+
+  useEffect(() => {
+    deselectAll();
+  }, [selectionScope]);
 
   function toggleOne(id: string) {
     setSelectedIds((prev) => {
@@ -38,11 +91,15 @@ export default function VolunteerTable({ volunteers, onVolunteerSelect }: Volunt
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
         <colgroup>
-          <col style={{ width: "44px" }} />
-          <col style={{ width: "197px" }} />
-          <col style={{ width: "251px" }} />
-          <col style={{ width: "251px" }} />
-          <col style={{ width: "302px" }} />
+          <col style={{ minWidth: "60px" }} />
+          <col style={{ minWidth: "200px" }} />
+          <col style={{ minWidth: "200px" }} />
+          <col style={{ minWidth: "304px" }} />
+          <col style={{ minWidth: "240px" }} />
+          <col style={{ minWidth: "107px" }} />
+          <col style={{ minWidth: "304px" }} />
+          <col style={{ minWidth: "304px" }} />
+          <col style={{ minWidth: "304px" }} />
         </colgroup>
         <thead>
           <tr>
@@ -60,7 +117,32 @@ export default function VolunteerTable({ volunteers, onVolunteerSelect }: Volunt
             </th>
             <th>
               <div className={styles.headerContent}>
-                <span>Volunteer</span>
+                <span>Last Name</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>First Name</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Status</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Program</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Assignment</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Project</span>
               </div>
             </th>
             <th>
@@ -71,11 +153,6 @@ export default function VolunteerTable({ volunteers, onVolunteerSelect }: Volunt
             <th>
               <div className={styles.headerContent}>
                 <span>Email</span>
-              </div>
-            </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Tags</span>
               </div>
             </th>
           </tr>
@@ -98,34 +175,127 @@ export default function VolunteerTable({ volunteers, onVolunteerSelect }: Volunt
                   aria-label={`Select ${volunteer.firstName} ${volunteer.lastName}`}
                 />
               </td>
-              <td>
-                {volunteer.firstName}, {volunteer.lastName}
-              </td>
-              <td>{volunteer.phoneNumber}</td>
-              <td>{volunteer.email}</td>
+              <td>{volunteer.lastName}</td>
+              <td>{volunteer.firstName}</td>
               <td>
                 <div className={styles.tagsContainer}>
-                  {volunteer.tags.map((tag, index) => {
-                    let colorClass = styles.greenPillTag;
-
-                    if (tag.name === "Intern") {
-                      colorClass = styles.bluePillTag;
+                  <span
+                    className={
+                      volunteer.status === "new" ? styles.pillTagNew : styles.pillTagReturning
                     }
-
-                    if (tag.name === "Outside Volunteer") {
-                      colorClass = styles.orangePillTag;
-                    }
-                    return (
-                      <span
-                        key={`col1-${volunteer._id}-${tag._id}-${index}`}
-                        className={`${styles.pillTag} ${colorClass}`}
-                      >
-                        {tag.name}
-                      </span>
-                    );
-                  })}
+                  >
+                    {volunteer.status.charAt(0).toUpperCase() + volunteer.status.slice(1)}
+                  </span>
                 </div>
               </td>
+
+              <td>
+                <div className={styles.tagsContainerNoWrap}>
+                  {(() => {
+                    const { visibleTags, hiddenCount } = getVisibleTags(
+                      volunteer.tags ?? [],
+                      "program",
+                      1,
+                    );
+
+                    return (
+                      <>
+                        {visibleTags.map((tag, index) => {
+                          const tagStyle = getTagPaletteStyle(tag);
+                          return (
+                            <span
+                              key={`col4-${volunteer._id}-${tag.name}-${index}`}
+                              className={styles.pillTag}
+                              style={{
+                                backgroundColor: tagStyle.backgroundColor,
+                                color: tagStyle.color,
+                              }}
+                            >
+                              {tag.name}
+                            </span>
+                          );
+                        })}
+                        {hiddenCount > 0 && (
+                          <span className={styles.tagOverflowPill}>{hiddenCount}+</span>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              </td>
+
+              <td>
+                <div className={styles.tagsContainerNoWrap}>
+                  {(() => {
+                    const { visibleTags, hiddenCount } = getVisibleTags(
+                      volunteer.tags ?? [],
+                      "assignment",
+                      2,
+                    );
+
+                    return (
+                      <>
+                        {visibleTags.map((tag, index) => {
+                          const tagStyle = getTagPaletteStyle(tag);
+                          return (
+                            <span
+                              key={`col2-${volunteer._id}-${tag.name}-${index}`}
+                              className={styles.pillTag}
+                              style={{
+                                backgroundColor: tagStyle.backgroundColor,
+                                color: tagStyle.color,
+                              }}
+                            >
+                              {tag.name}
+                            </span>
+                          );
+                        })}
+                        {hiddenCount > 0 && (
+                          <span className={styles.tagOverflowPill}>{hiddenCount}+</span>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              </td>
+
+              <td>
+                <div className={styles.tagsContainerNoWrap}>
+                  {(() => {
+                    const { visibleTags, hiddenCount } = getVisibleTags(
+                      volunteer.tags ?? [],
+                      "project",
+                      1,
+                    );
+
+                    return (
+                      <>
+                        {visibleTags.map((tag, index) => {
+                          const tagStyle = getTagPaletteStyle(tag);
+                          return (
+                            <span
+                              key={`col2-${volunteer._id}-${tag.name}-${index}`}
+                              className={styles.pillTag}
+                              style={{
+                                backgroundColor: tagStyle.backgroundColor,
+                                color: tagStyle.color,
+                              }}
+                            >
+                              {tag.name}
+                            </span>
+                          );
+                        })}
+                        {hiddenCount > 0 && (
+                          <span className={styles.tagOverflowPill}>{hiddenCount}+</span>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              </td>
+
+              <td>{volunteer.phoneNumber}</td>
+              <td>{volunteer.email}</td>
             </tr>
           ))}
         </tbody>

@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Montserrat, Viga, Open_Sans } from "next/font/google";
-import "./globals.css";
+import { Geist, Geist_Mono, Open_Sans, Viga } from "next/font/google";
+
 import styles from "./layout.module.css";
 
-const montserrat = Montserrat({
-  variable: "--font-title-bold",
-  subsets: ["latin"],
-  weight: ["800", "900"],
-});
+import type { Metadata } from "next";
+
+import "./globals.css";
+
+import AuthGate from "@/components/AuthGate";
+import AuthProvider from "@/contexts/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,13 +36,19 @@ export const metadata: Metadata = {
   description: "Home Start dashboard",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${openSans.variable} ${viga.variable} ${styles.body}`}
       >
-        {children}
+        <AuthProvider>
+          <AuthGate>{children}</AuthGate>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -53,6 +53,17 @@ const makePhoneValidator = (path = "phoneNumber") =>
       return true;
     })
     .customSanitizer((value: string) => value.replace(/\D/g, ""));
+/*
+ * makeStatusValidator is not currently used, but we may want to add a route in the future
+const makeStatusValidator = (path = "status") =>
+  body(path)
+    .optional()
+    .isString()
+    .withMessage("status must be a string")
+    .bail()
+    .isIn(["returning", "new"])
+    .withMessage("status must be either 'returning' or 'new'");
+*/
 
 const tagsValidator = () => body("tags").optional().isArray();
 const statusValidator = () => body("status").optional().isIn(["new", "returning"]);

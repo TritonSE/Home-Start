@@ -2,19 +2,25 @@
 
 import { FirebaseError } from "firebase/app";
 import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
-import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import React, { Suspense, useState } from "react";
 
-import { auth } from "@/firebase/firebase";
-import SuccessNotification from "../components/SuccessNotification";
-
 import styles from "./page.module.css";
+
+import homeStartLogoAsset from "@/assets/homestart_logo.svg";
+import icHideAsset from "@/assets/ic_hide.svg";
+import icShowAsset from "@/assets/ic_show.svg";
+import SuccessNotification from "@/components/SuccessNotification";
+import { auth } from "@/firebase/firebase";
+
+const homeStartLogo = homeStartLogoAsset as string;
+const icHide = icHideAsset as string;
+const icShow = icShowAsset as string;
 
 // import "@fontsource/albert-sans";
 
 function LoginFormContent() {
-  const router = useRouter();
   const searchParams = useSearchParams(); // Search for query parameters
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [showSuccess, setShowSuccess] = useState(searchParams.get("success") === "true"); // If user successfully signed up and was redirected
@@ -30,19 +36,6 @@ function LoginFormContent() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       setShowLoggedin(true);
-
-      // Add cookie to confirm the user is logged in
-      const user = auth.currentUser;
-      if (user) {
-        const token = await user.getIdToken();
-        document.cookie = `firebaseAuthToken=${token}; path=/`;
-      }
-
-      if (window.location.pathname === "/") {
-        window.location.reload();
-      } else {
-        router.push("/dashboard");
-      }
     } catch (caughtError) {
       if (caughtError instanceof FirebaseError) {
         switch (caughtError.code) {
@@ -93,13 +86,7 @@ function LoginFormContent() {
     <main className={styles.page}>
       <div className={styles.form}>
         <div className={styles.logoContainer}>
-          <Image
-            src="/homestart_logo.svg"
-            alt="Home Start Logo"
-            width={120}
-            height={120}
-            priority
-          />
+          <Image src={homeStartLogo} alt="Home Start Logo" width={120} height={120} priority />
         </div>
         <div className={styles.subtitle}>
           {showResetPassword ? (
@@ -148,9 +135,9 @@ function LoginFormContent() {
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    <Image src="/ic_show.svg" alt="to hide password" width={20} height={20} />
+                    <Image src={icShow} alt="to hide password" width={20} height={20} />
                   ) : (
-                    <Image src="/ic_hide.svg" alt="to show password" width={20} height={20} />
+                    <Image src={icHide} alt="to show password" width={20} height={20} />
                   )}
                 </button>
               </div>

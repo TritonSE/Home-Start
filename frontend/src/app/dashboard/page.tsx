@@ -1,36 +1,66 @@
 "use client";
-import styles from "./page.module.css";
-import icMessage from "../../../public/ic_message.svg";
-import mail from "../../../public/mail.svg";
-import importExport from "../../../public/ion_document.svg";
-import icCaretRight from "../../../public/chevron_backward.svg";
-import Link from "next/link";
-import Image from "next/image";
-import LogoutButton from "../components/LogoutButton";
-import { useState } from "react";
-import LogoutModal from "../components/LogoutModal";
 import { signOut } from "firebase/auth";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { type MouseEvent, useState } from "react";
+
+import styles from "./page.module.css";
+
+import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
+import icCaretRightAsset from "@/assets/chevron_backward.svg";
+import icMessageAsset from "@/assets/ic_message.svg";
+import importExportAsset from "@/assets/ion_document.svg";
+import mailAsset from "@/assets/mail.svg";
+import { initMsal, signInWithOutlook } from "@/auth/msal";
+import LogoutButton from "@/components/LogoutButton";
+import LogoutModal from "@/components/LogoutModal";
+import Sidebar from "@/components/Sidebar";
 import { auth } from "@/firebase/firebase";
-import Sidebar from "../components/sidebar";
+
+const icCaretRight = icCaretRightAsset as string;
+const icMessage = icMessageAsset as string;
+const importExport = importExportAsset as string;
+const mail = mailAsset as string;
 
 export default function Dashboard() {
+  const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const setMode = useTextingFlowStore((s) => s.setMode);
+
+  const sendEmails = async () => {
+    setMode("email");
+    if (await initMsal()) {
+      void router.push("/communication");
+      return;
+    }
+
+    await signInWithOutlook();
+  };
+
+  const handleSendEmailCardClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    void sendEmails();
+  };
 
   const CARDS = [
     {
-      href: "some-route",
+      href: "/communication",
+      onClick: () => setMode("text"),
       majorText: "Send Text",
       minorText: "Reach volunteers instantly via SMS",
       icon: icMessage,
     },
     {
-      href: "some-route2",
+      href: "/communication",
+      onClick: handleSendEmailCardClick,
       majorText: "Send Email",
       minorText: "Send detailed announcements",
       icon: mail,
     },
     {
       href: "some-route3",
+      onClick: () => {},
       majorText: "Import/Export data",
       minorText: "Manage volunteer information",
       icon: importExport,
@@ -39,10 +69,6 @@ export default function Dashboard() {
 
   const handleLogout = async () => {
     await signOut(auth);
-
-    // delete the login cookie created in LoginForm
-    document.cookie = "firebaseAuthToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-    window.location.href = "/login";
   };
 
   return (
@@ -63,8 +89,9 @@ export default function Dashboard() {
             {CARDS.map((card) => {
               return (
                 <Link
-                  key={card.href}
+                  key={card.majorText}
                   href={card.href}
+                  onClick={card.onClick}
                   className={styles.card}
                   aria-current={undefined}
                 >
@@ -91,9 +118,9 @@ export default function Dashboard() {
         {showLogoutModal && (
           <LogoutModal
             onClose={() => setShowLogoutModal(false)}
-            onConfirm={async () => {
+            onConfirm={() => {
               setShowLogoutModal(false);
-              await handleLogout();
+              void handleLogout();
             }}
           />
         )}

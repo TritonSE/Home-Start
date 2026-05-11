@@ -1,33 +1,71 @@
 "use client";
 
-import styles from "./SearchBar.module.css";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-interface SearchBarProps {
+import styles from "./SearchBar.module.css";
+import SortSelectionButton from "./SortSelectorButton";
+
+import checkboxIconAsset from "@/assets/checkbox.svg";
+import caretIconAsset from "@/assets/ic_caretdown.svg";
+import unionIconAsset from "@/assets/union.svg";
+
+const checkboxIcon = checkboxIconAsset as string;
+const caretIcon = caretIconAsset as string;
+const unionIcon = unionIconAsset as string;
+
+type SearchBarProps = {
   search: string;
   setSearch: (value: string) => void;
-  tags: string[];
-  selectedEvent: Set<string>;
-  setSelectedEvent: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
-  selectedStatus: Set<string>;
-  setSelectedStatus: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
-  selectedVolunteerType: Set<string>;
-  setSelectedVolunteerType: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
-}
+  projectTags: string[];
+  assignmentTags: string[];
+  programTags: string[];
+  sortType:
+    | "Newest"
+    | "Oldest"
+    | "First Name A-Z"
+    | "First Name Z-A"
+    | "Last Name A-Z"
+    | "Last Name Z-A";
+  onSortOptionChange: (
+    option:
+      | "Newest"
+      | "Oldest"
+      | "First Name A-Z"
+      | "First Name Z-A"
+      | "Last Name A-Z"
+      | "Last Name Z-A",
+  ) => void;
+
+  selectedProject?: Set<string>;
+  setSelectedProject?: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  selectedStatus: string | null;
+  setSelectedStatus: (value: string | null) => void;
+  selectedAssignment?: Set<string>;
+  setSelectedAssignment?: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  selectedProgram?: Set<string>;
+  setSelectedProgram?: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+};
 
 export default function SearchBar({
   search,
   setSearch,
-  tags,
-  selectedEvent,
-  setSelectedEvent,
+  projectTags = [],
+  assignmentTags = [],
+  programTags = [],
+  selectedProject,
+  setSelectedProject,
   selectedStatus,
   setSelectedStatus,
-  selectedVolunteerType,
-  setSelectedVolunteerType,
+  selectedAssignment,
+  setSelectedAssignment,
+  selectedProgram,
+  setSelectedProgram,
+  sortType,
+  onSortOptionChange,
 }: SearchBarProps) {
-  const [tagSearch, setTagSearch] = useState<string | undefined>();
-  const [open, setOpen] = useState<"event" | "status" | "volunteerType" | null>(null);
+  const [tagSearch, setTagSearch] = useState("");
+  const [open, setOpen] = useState<"project" | "status" | "assignment" | "program" | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -41,14 +79,15 @@ export default function SearchBar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  function toggle(cat: "event" | "status" | "volunteerType") {
+  function toggle(cat: "project" | "status" | "assignment" | "program") {
     setOpen((prev) => (prev === cat ? null : cat));
   }
 
-  function toggleTag(item: string, cat: "event" | "status" | "volunteerType") {
-    if (cat === "event") {
-      setSelectedEvent((prev) => {
-        const updated = new Set(prev);
+  function toggleTag(item: string, cat: "project" | "status" | "assignment" | "program") {
+    if (cat === "project") {
+      if (!setSelectedProject) return;
+      setSelectedProject((prev) => {
+        const updated = new Set(prev || new Set());
         if (updated.has(item)) {
           updated.delete(item);
         } else {
@@ -57,8 +96,12 @@ export default function SearchBar({
         return updated;
       });
     } else if (cat === "status") {
-      setSelectedStatus((prev) => {
-        const updated = new Set(prev);
+      const newStatus = selectedStatus === item ? null : item;
+      setSelectedStatus(newStatus);
+    } else if (cat === "assignment") {
+      if (!setSelectedAssignment) return;
+      setSelectedAssignment((prev) => {
+        const updated = new Set(prev || new Set());
         if (updated.has(item)) {
           updated.delete(item);
         } else {
@@ -66,9 +109,10 @@ export default function SearchBar({
         }
         return updated;
       });
-    } else if (cat === "volunteerType") {
-      setSelectedVolunteerType((prev) => {
-        const updated = new Set(prev);
+    } else if (cat === "program") {
+      if (!setSelectedProgram) return;
+      setSelectedProgram((prev) => {
+        const updated = new Set(prev || new Set());
         if (updated.has(item)) {
           updated.delete(item);
         } else {
@@ -79,34 +123,78 @@ export default function SearchBar({
     }
   }
 
-  function getSelectedSet(cat: "event" | "status" | "volunteerType") {
-    if (cat === "event") return selectedEvent;
-    if (cat === "status") return selectedStatus;
-    return selectedVolunteerType;
+  function getSelectedSet(cat: "project" | "status" | "assignment" | "program") {
+    if (cat === "project") return selectedProject || new Set();
+    if (cat === "status") return new Set(selectedStatus ? [selectedStatus] : []);
+    if (cat === "assignment") return selectedAssignment || new Set();
+    return selectedProgram || new Set();
   }
 
-  function renderDropdown(items: string[], cat: "event" | "status" | "volunteerType") {
+  function formatOptionLabel(item: string, cat: "project" | "status" | "assignment" | "program") {
+    if (cat !== "status") return item;
+    return item.charAt(0).toUpperCase() + item.slice(1);
+  }
+
+  function clearCategory(cat: "project" | "status" | "assignment" | "program") {
+    if (cat === "project") {
+      if (setSelectedProject) setSelectedProject(new Set());
+      return;
+    }
+
+    if (cat === "status") {
+      setSelectedStatus(null);
+      return;
+    }
+
+    if (cat === "assignment") {
+      if (setSelectedAssignment) setSelectedAssignment(new Set());
+      return;
+    }
+
+    if (setSelectedProgram) setSelectedProgram(new Set());
+  }
+
+  function getClearButtonLabel(cat: "project" | "status" | "assignment" | "program") {
+    if (cat === "status") return "Clear";
+    return "Clear All";
+  }
+
+  function renderDropdown(
+    items: string[],
+    cat: "project" | "status" | "assignment" | "program",
+    hasSearch: boolean = true,
+  ) {
     if (open !== cat) return null;
     const selected = getSelectedSet(cat);
+    const hasSelections = selected.size > 0;
+
     return (
-      <div className={styles.dropdown} role="menu">
-        <div className={styles.inputField}>
-          <span className={styles.ic_search}>
-            <img src="/Union.svg" alt="Union logo" className={styles.union} />
-          </span>
-          <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
-            <input
-              type="text"
-              value={tagSearch}
-              onChange={(e) => setTagSearch(e.target.value)}
-              placeholder="Search"
-            />
-          </form>
-        </div>
+      <div className={`${styles.dropdown} ${!hasSearch ? styles.dropdownSmall : ""}`} role="menu">
+        {hasSearch && (
+          <div className={styles.inputField}>
+            <span className={styles.ic_search}>
+              <Image
+                src={unionIcon}
+                alt="Union logo"
+                className={styles.union}
+                width={24}
+                height={24}
+              />
+            </span>
+            <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
+              <input
+                type="text"
+                value={tagSearch}
+                onChange={(e) => setTagSearch(e.target.value)}
+                placeholder="Search"
+              />
+            </form>
+          </div>
+        )}
 
         <div className={styles.dropdownItemContainer}>
           {items
-            .filter((item) => item.toLowerCase().includes(tagSearch?.toLowerCase() || ""))
+            .filter((item) => item.toLowerCase().includes(tagSearch.toLowerCase()))
             .map((item) => (
               <div
                 key={item}
@@ -119,12 +207,29 @@ export default function SearchBar({
                   type="button"
                 >
                   {selected.has(item) && (
-                    <img src="/Checkbox.svg" alt="checked" className={styles.checkIcon} />
+                    <Image
+                      src={checkboxIcon}
+                      alt="checked"
+                      className={styles.checkIcon}
+                      width={16}
+                      height={16}
+                    />
                   )}
                 </button>
-                <div className={styles.filterLabel}>{item}</div>
+                <div className={styles.filterLabel}>{formatOptionLabel(item, cat)}</div>
               </div>
             ))}
+        </div>
+
+        <div className={styles.dropdownFooter}>
+          <button
+            type="button"
+            className={styles.dropdownClearButton}
+            onClick={() => clearCategory(cat)}
+            disabled={!hasSelections}
+          >
+            {getClearButtonLabel(cat)}
+          </button>
         </div>
       </div>
     );
@@ -135,7 +240,13 @@ export default function SearchBar({
       <div className={styles.searchField}>
         <div className={styles.inputField}>
           <span className={styles.ic_search}>
-            <img src="/Union.svg" alt="Union logo" className={styles.union} />
+            <Image
+              src={unionIcon}
+              alt="Union logo"
+              className={styles.union}
+              width={24}
+              height={24}
+            />
           </span>
           <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
             <input
@@ -151,26 +262,114 @@ export default function SearchBar({
       <div className={styles.tagsContainer} ref={wrapperRef}>
         <div className={styles.pillWrapper}>
           <button
-            className={styles.pillTagVolunteerType}
-            aria-expanded={open === "volunteerType"}
-            onClick={() => toggle("volunteerType")}
+            className={`${styles.pillTagStatus} ${selectedStatus !== null ? styles.pillTagActive : ""}`}
+            aria-expanded={open === "status"}
+            onClick={() => toggle("status")}
           >
-            <span className={styles.pillTagText}>Volunteer Type</span>
+            <span className={styles.pillTagContent}>
+              <span className={styles.pillTagText}>Status</span>
+              <span className={styles.pillTagIconBox} aria-hidden="true">
+                <Image
+                  src={caretIcon}
+                  alt="Caret down"
+                  className={styles.pillTagIcon}
+                  width={16}
+                  height={16}
+                />
+              </span>
+            </span>
           </button>
-          {renderDropdown(tags, "volunteerType")}
+          {renderDropdown(["returning", "new"], "status", false)}
         </div>
+
+        {assignmentTags && assignmentTags.length > 0 && (
+          <div className={styles.pillWrapper}>
+            <button
+              className={`${styles.pillTagVolunteerType} ${(selectedAssignment?.size ?? 0) > 0 ? styles.pillTagActive : ""}`}
+              aria-expanded={open === "assignment"}
+              onClick={() => toggle("assignment")}
+            >
+              <span className={styles.pillTagContent}>
+                <span className={styles.pillTagText}>Assignment</span>
+                <span className={styles.pillTagIconBox} aria-hidden="true">
+                  <Image
+                    src={caretIcon}
+                    alt="Caret down"
+                    className={styles.pillTagIcon}
+                    width={16}
+                    height={16}
+                  />
+                </span>
+              </span>
+            </button>
+            {renderDropdown(assignmentTags, "assignment")}
+          </div>
+        )}
+
+        {projectTags && projectTags.length > 0 && (
+          <div className={styles.pillWrapper}>
+            <button
+              className={`${styles.pillTagEvent} ${(selectedProject?.size ?? 0) > 0 ? styles.pillTagActive : ""}`}
+              aria-expanded={open === "project"}
+              onClick={() => toggle("project")}
+            >
+              <span className={styles.pillTagContent}>
+                <span className={styles.pillTagText}>Project</span>
+                <span className={styles.pillTagIconBox} aria-hidden="true">
+                  <Image
+                    src={caretIcon}
+                    alt="Caret down"
+                    className={styles.pillTagIcon}
+                    width={16}
+                    height={16}
+                  />
+                </span>
+              </span>
+            </button>
+            {renderDropdown(projectTags, "project")}
+          </div>
+        )}
+
+        {programTags && programTags.length > 0 && (
+          <div className={styles.pillWrapper}>
+            <button
+              className={`${styles.pillTagEvent} ${(selectedProgram?.size ?? 0) > 0 ? styles.pillTagActive : ""}`}
+              aria-expanded={open === "program"}
+              onClick={() => toggle("program")}
+            >
+              <span className={styles.pillTagContent}>
+                <span className={styles.pillTagText}>Program</span>
+                <span className={styles.pillTagIconBox} aria-hidden="true">
+                  <Image
+                    src={caretIcon}
+                    alt="Caret down"
+                    className={styles.pillTagIcon}
+                    width={16}
+                    height={16}
+                  />
+                </span>
+              </span>
+            </button>
+            {renderDropdown(programTags, "program")}
+          </div>
+        )}
 
         <div className={styles.clearFiltersContainer}>
           <button
             className={styles.clearFilterButton}
             onClick={() => {
-              setSelectedEvent(new Set());
-              setSelectedStatus(new Set());
-              setSelectedVolunteerType(new Set());
+              setSelectedProject?.(new Set());
+              setSelectedStatus(null);
+              setSelectedAssignment?.(new Set());
+              setSelectedProgram?.(new Set());
             }}
           >
             Clear All
           </button>
+        </div>
+
+        <div className={styles.sortContainer}>
+          <SortSelectionButton sortType={sortType} onSortOptionChange={onSortOptionChange} />
         </div>
       </div>
     </div>

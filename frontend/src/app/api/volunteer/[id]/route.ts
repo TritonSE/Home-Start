@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -16,7 +17,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
   const { id } = await context.params;
 
   try {
-    const requestBody = await request.json();
+    const requestBody: unknown = await request.json();
     const response = await fetch(`${API_URL}/api/volunteer/${id}`, {
       method: "PUT",
       headers: {
@@ -28,7 +29,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     });
 
     const contentType = response.headers.get("content-type") ?? "";
-    const payload = contentType.includes("application/json")
+    const payload: unknown = contentType.includes("application/json")
       ? await response.json()
       : { error: await response.text() };
 

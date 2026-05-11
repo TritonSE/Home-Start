@@ -23,15 +23,16 @@
 }
 
 .ic_container {
-  height: 24px;
-  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  width: 20px;
+  flex-shrink: 0;
 }
 
-.iconUpload {
-  height: 17;
-  width: 16;
-  top: 3px;
-  left: 4px;
+.uploadIcon {
+  display: block;
 }
 
 .buttonText {

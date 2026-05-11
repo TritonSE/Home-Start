@@ -2,11 +2,11 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import icCloseAsset from "@/assets/ic_close.svg";
+import styles from "./VolunteerProfileModal.module.css";
 
 import type { Volunteer } from "../types/volunteer";
 
-import styles from "./VolunteerProfileModal.module.css";
+import icCloseAsset from "@/assets/ic_close.svg";
 
 type VolunteerProfileModalProps = {
   volunteer: Volunteer | null;

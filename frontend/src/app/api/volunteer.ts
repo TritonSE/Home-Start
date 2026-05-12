@@ -32,6 +32,14 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null;
 };
 
+type VolunteerAddressInfo = {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+};
+
 type VolunteerParseCsvDTO = {
   wouldCreateCount: number;
   wouldUpdateCount: number;
@@ -43,6 +51,15 @@ type VolunteerParseCsvDTO = {
     lastName: string;
     email: string;
     phoneNumber: string;
+    status?: string;
+    address?: VolunteerAddressInfo;
+    birthday?: string;
+    startDate?: string;
+    endDate?: string;
+    effectiveDate?: string;
+    mediaConsent?: string;
+    faceConsent?: string;
+    nameConsent?: string;
     assignmentName?: string;
     projectName?: string;
     shiftNames?: string[];
@@ -140,6 +157,15 @@ export type VolunteerCsvParseResult = {
     lastName: string;
     email: string;
     phoneNumber: string;
+    status?: string;
+    address?: VolunteerAddressInfo;
+    birthday?: string;
+    startDate?: string;
+    endDate?: string;
+    effectiveDate?: string;
+    mediaConsent?: string;
+    faceConsent?: string;
+    nameConsent?: string;
     assignmentName?: string;
     projectName?: string;
     shiftNames?: string[];
@@ -222,6 +248,15 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
           lastName: item.lastName,
           email: item.email,
           phoneNumber: item.phoneNumber,
+          status: typeof item.status === "string" ? item.status : undefined,
+          address: item.address ?? undefined,
+          birthday: typeof item.birthday === "string" ? item.birthday : undefined,
+          startDate: typeof item.startDate === "string" ? item.startDate : undefined,
+          endDate: typeof item.endDate === "string" ? item.endDate : undefined,
+          effectiveDate: typeof item.effectiveDate === "string" ? item.effectiveDate : undefined,
+          mediaConsent: typeof item.mediaConsent === "string" ? item.mediaConsent : undefined,
+          faceConsent: typeof item.faceConsent === "string" ? item.faceConsent : undefined,
+          nameConsent: typeof item.nameConsent === "string" ? item.nameConsent : undefined,
           assignmentName: typeof item.assignmentName === "string" ? item.assignmentName : undefined,
           projectName: typeof item.projectName === "string" ? item.projectName : undefined,
           shiftNames: Array.isArray(item.shiftNames)
@@ -246,6 +281,15 @@ type VolunteerCreationBody = {
   lastName: string;
   email: string;
   phoneNumber: string;
+  status?: "returning" | "new";
+  address?: VolunteerAddressInfo;
+  birthday?: string;
+  startDate?: string;
+  endDate?: string;
+  effectiveDate?: string;
+  mediaConsent?: string;
+  faceConsent?: string;
+  nameConsent?: string;
   tags?: string[];
   assignmentName?: string;
   projectName?: string;
@@ -254,22 +298,42 @@ type VolunteerCreationBody = {
 
 export type UploadVolunteerBatchResponse = { ok: true } | { ok: false; error: string };
 
+const BATCH_CHUNK_SIZE = 200;
+
 export async function uploadVolunteerBatch(
   data: VolunteerCreationBody[],
 ): Promise<UploadVolunteerBatchResponse> {
   try {
     const headers = await getAuthHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/api/volunteer/batch`, {
-      method: "POST",
-      headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify({ volunteers: data }),
-    });
+    const chunks: VolunteerCreationBody[][] = [];
+    for (let i = 0; i < data.length; i += BATCH_CHUNK_SIZE) {
+      chunks.push(data.slice(i, i + BATCH_CHUNK_SIZE));
+    }
 
-    if (!response.ok) {
+    const responses = await Promise.all(
+      chunks.map(async (chunk) =>
+        fetch(`${API_BASE_URL}/api/volunteer/batch`, {
+          method: "POST",
+          headers: { ...headers, "Content-Type": "application/json" },
+          body: JSON.stringify({ volunteers: chunk }),
+        }),
+      ),
+    );
+
+    const failed = responses.find((r) => !r.ok);
+    if (failed) {
+      let detail = "";
+      try {
+        const body: unknown = await failed.json();
+        detail = JSON.stringify(body);
+      } catch {
+        // ignore
+      }
+      console.error("Batch upload error body:", detail);
       return {
         ok: false,
-        error: `Failed to upload volunteer batch: ${response.status} ${response.statusText}`,
+        error: `Failed to upload volunteer batch: ${failed.status} ${failed.statusText}${detail ? ` - ${detail}` : ""}`,
       };
     }
 

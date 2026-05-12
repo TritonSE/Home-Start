@@ -348,3 +348,21 @@
   letter-spacing: 0.8px;
   text-align: center;
 }
+
+.loadMore {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  background: none;
+  border: none;
+  border-top: 1px solid #e5e5e5;
+  color: #1d3a6b;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.loadMore:hover {
+  background: #f5f7fa;
+}

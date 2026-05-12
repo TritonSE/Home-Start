@@ -117,7 +117,8 @@ type RawVolunteerCSVFormat = {
   Cell: string;
   Email: string;
   "NEW Pronouns": string;
-  "NEW Media Concent": string;
+  "NEW Media Consent": string;
+  "NEW Name Consent": string;
   "NEW Face": string;
   "Start Date": string;
   "End Date": string;
@@ -137,7 +138,7 @@ type NormalizedVolunteerCSVFormat = {
   lastName: string;
   email: string;
   phoneNumber: string;
-  status: string;
+  status: "returning" | "new" | undefined;
 
   address: VolunteerAddressInfo;
 
@@ -319,6 +320,7 @@ export const uploadVolunteerBatch: RequestHandler<
   { volunteers: CreateVolunteerBody[] }
 > = async (req, res, next) => {
   const errors = validationResult(req);
+
   try {
     validationErrorParser(errors);
 
@@ -408,7 +410,7 @@ export const uploadVolunteerBatch: RequestHandler<
         });
       }
 
-      const assignmentOps = [...groupedAssignments.values()].map((entry) => {
+      const assignmentOps = [...groupedAssignments.values()].flatMap((entry) => {
         const volunteer =
           volunteerByKey.get(entry.volunteer.email) ??
           volunteerByKey.get(entry.volunteer.phoneNumber);
@@ -421,11 +423,13 @@ export const uploadVolunteerBatch: RequestHandler<
         const projectTag = tagByName.get(entry.projectTag);
 
         if (!assignmentTag || assignmentTag.type !== "assignment") {
-          throw createError(400, `Unknown assignment tag: ${entry.assignmentTag}`);
+          console.warn(`Skipping unknown assignment tag: ${entry.assignmentTag}`);
+          return [];
         }
 
         if (!projectTag || projectTag.type !== "project") {
-          throw createError(400, `Unknown project tag: ${entry.projectTag}`);
+          console.warn(`Skipping unknown project tag: ${entry.projectTag}`);
+          return [];
         }
 
         const shiftTagIds = [...entry.shiftNames]
@@ -434,22 +438,26 @@ export const uploadVolunteerBatch: RequestHandler<
           .filter((tag) => tag.type === "shift")
           .map((tag) => tag._id);
 
-        return {
-          updateOne: {
-            filter: {
-              volunteerId: volunteer._id,
-              assignmentTagId: assignmentTag._id,
-              projectTagId: projectTag._id,
+        return [
+          {
+            updateOne: {
+              filter: {
+                volunteerId: volunteer._id,
+                assignmentTagId: assignmentTag._id,
+                projectTagId: projectTag._id,
+              },
+              update: {
+                $addToSet: { shiftTagIds: { $each: shiftTagIds } },
+              },
+              upsert: true,
             },
-            update: {
-              $addToSet: { shiftTagIds: { $each: shiftTagIds } },
-            },
-            upsert: true,
           },
-        };
+        ];
       });
 
-      await VolunteerAssignmentModel.bulkWrite(assignmentOps, { ordered: false });
+      if (assignmentOps.length > 0) {
+        await VolunteerAssignmentModel.bulkWrite(assignmentOps, { ordered: false });
+      }
     }
 
     res.status(200).json({
@@ -494,15 +502,11 @@ const validateVolunteer = (volunteer: unknown) => {
   return true;
 };
 
-const statusKeyToEnum = (key: string): string => {
-  key = key.trim().toUpperCase();
-  if (key === "R") {
-    return "returning";
-  } else if (key === "N") {
-    return "new";
-  } else {
-    return key;
-  }
+const statusKeyToEnum = (key: string): "returning" | "new" | undefined => {
+  const normalized = key.trim().toLowerCase();
+  if (normalized === "r" || normalized === "return" || normalized === "returning") return "returning";
+  if (normalized === "n" || normalized === "new") return "new";
+  return undefined;
 };
 
 const normalizeCSVData = (data: RawVolunteerCSVFormat): NormalizedVolunteerCSVFormat => {
@@ -527,9 +531,9 @@ const normalizeCSVData = (data: RawVolunteerCSVFormat): NormalizedVolunteerCSVFo
     endDate: normalizeCsvText(data["End Date"]),
     effectiveDate: normalizeCsvText(data["Effective Date (date record was updated)"]),
 
-    mediaConsent: normalizeCsvText(data["NEW Media Concent"]),
+    mediaConsent: normalizeCsvText(data["NEW Media Consent"]),
     faceConsent: normalizeCsvText(data["NEW Face"]),
-    nameConsent: normalizeCsvText(data["NEW Media Concent"]),
+    nameConsent: normalizeCsvText(data["NEW Name Consent"]),
     assignmentName: normalizeCsvText(data.assignment),
     projectName: normalizeCsvText(data.project),
   } as NormalizedVolunteerCSVFormat;
@@ -563,7 +567,7 @@ const parseCreationBody = (data: NormalizedVolunteerCSVFormat): VolunteerCreatio
     lastName: data.lastName,
     email: data.email,
     phoneNumber: normalizePhoneNumber(data.phoneNumber),
-    status: data.status as "returning" | "new" | undefined,
+    status: data.status,
     address: data.address,
     birthday: data.birthday || undefined,
     preferredPronouns: data.preferredPronouns || undefined,
@@ -583,23 +587,16 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
   const bufferStream = new PassThrough();
   bufferStream.end(fileBuffer);
 
-  console.info("Starting CSV parsing");
-
   await new Promise<void>((resolve, reject) => {
     bufferStream
       .pipe(csvParser())
       .on("data", (data: Record<string, string>) => {
-        console.log("processing:", data);
         if (data.Count === "0") {
           return;
         }
-        console.log("datacount passed");
         const normalized = normalizeCSVData(data as unknown as RawVolunteerCSVFormat);
-        console.log("normalized passed");
         const creationBody = parseCreationBody(normalized);
-        console.log("creation body parsed");
         const valid = validateVolunteer(creationBody);
-        console.log("creation body validated");
 
         if (!valid) {
           console.info("Invalid volunteer data:", data);
@@ -614,7 +611,6 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
       .on("error", reject);
   });
 
-  console.log("all volunteers parsed");
   return parsedVolunteers;
 };
 
@@ -630,9 +626,16 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
     await Promise.all(batchCreateVolunteerValidator.map(async (v) => v.run(mockReq)));
 
     const errors = validationResult(mockReq);
-    console.log("errors ", errors);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
+    }
+
+    const seenEmails = new Set<string>();
+    for (const v of parsedVolunteers) {
+      if (seenEmails.has(v.email)) {
+        throw createError(400, `Duplicate email in CSV: ${v.email}`);
+      }
+      seenEmails.add(v.email);
     }
 
     const emails = parsedVolunteers.map((v) => v.email);

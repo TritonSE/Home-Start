@@ -1,10 +1,12 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import styles from "./ImportVolunteerModal.module.css";
 import Modal from "./Modal";
 
 import { parseVolunteersCsv, uploadVolunteerBatch } from "@/app/api/volunteer";
+import type { VolunteerCsvParseResult } from "@/app/api/volunteer";
+
 import icErrorAsset from "@/assets/ic_error.svg";
 import icNewAsset from "@/assets/ic_new.svg";
 import icSuccessAsset from "@/assets/ic_success.svg";
@@ -34,7 +36,6 @@ type ParsedVolunteerChange = {
   assignmentName?: string;
   projectName?: string;
   shiftNames?: string[];
-  tags?: string[];
 };
 
 type ParsedCSVResult = {
@@ -50,6 +51,13 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
   const [isDragging, setIsDragging] = useState(false);
 
   const [csvParsedInfo, setCSVParsedInfo] = useState<ParsedCSVResult | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [pendingBatch, setPendingBatch] = useState<VolunteerCsvParseResult["volunteerInfo"]>([]);
+  const [visibleCount, setVisibleCount] = useState(100);
+
+  const loadMore = useCallback(() => {
+    setVisibleCount((n) => n + 100);
+  }, []);
 
   async function processUploadedFile(file: File): Promise<void> {
     setFileName(file.name);
@@ -59,31 +67,33 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
       setStatus("processing");
       const result = await parseVolunteersCsv(file);
       if (!result.ok) {
+        setErrorMessage(result.error);
         setStatus("error");
         return;
       }
 
+      const wouldCreateSet = new Set(result.data.wouldCreate);
       const data = {
         newCount: result.data.wouldCreateCount,
         updatedCount: result.data.wouldUpdateCount,
-        changes: [
-          ...result.data.volunteerInfo.map((volunteer) => ({
-            status: result.data.wouldCreate.includes(volunteer.email) ? "New" : "Updated",
-            firstName: volunteer.firstName,
-            lastName: volunteer.lastName,
-            email: volunteer.email,
-            phoneNumber: volunteer.phoneNumber,
-            assignmentName: volunteer.assignmentName,
-            projectName: volunteer.projectName,
-            shiftNames: volunteer.shiftNames,
-            tags: volunteer.tags,
-          })),
-        ] as ParsedVolunteerChange[],
+        changes: result.data.volunteerInfo.map((volunteer) => ({
+          status: wouldCreateSet.has(volunteer.email) ? "New" : "Updated",
+          firstName: volunteer.firstName,
+          lastName: volunteer.lastName,
+          email: volunteer.email,
+          phoneNumber: volunteer.phoneNumber,
+          assignmentName: volunteer.assignmentName,
+          projectName: volunteer.projectName,
+          shiftNames: volunteer.shiftNames,
+        })) as ParsedVolunteerChange[],
       };
 
+      setVisibleCount(100);
+      setPendingBatch(result.data.volunteerInfo);
       setCSVParsedInfo(data);
       setStatus("success");
     } catch (_error) {
+      setErrorMessage(_error instanceof Error ? _error.message : "An unexpected error occurred");
       setStatus("error");
     }
   }
@@ -124,15 +134,24 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
 
     if (!csvParsedInfo) return;
     await uploadVolunteerBatch(
-      csvParsedInfo.changes.map((change) => ({
-        firstName: change.firstName,
-        lastName: change.lastName,
-        email: change.email,
-        phoneNumber: change.phoneNumber,
-        assignmentName: change.assignmentName,
-        projectName: change.projectName,
-        shiftNames: change.shiftNames,
-        tags: change.tags,
+      pendingBatch.map((v) => ({
+        firstName: v.firstName,
+        lastName: v.lastName,
+        email: v.email,
+        phoneNumber: v.phoneNumber,
+        status: v.status as "returning" | "new" | undefined,
+        address: v.address,
+        birthday: v.birthday,
+        startDate: v.startDate,
+        endDate: v.endDate,
+        effectiveDate: v.effectiveDate,
+        mediaConsent: v.mediaConsent,
+        faceConsent: v.faceConsent,
+        nameConsent: v.nameConsent,
+        assignmentName: v.assignmentName,
+        projectName: v.projectName,
+        shiftNames: v.shiftNames,
+        tags: v.tags,
       })),
     );
 
@@ -226,10 +245,8 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                     width={24}
                     height={24}
                   />
-                  <div className={styles.errorText}>Unsupported file uploaded</div>
-                  <div className={styles.uploadSubtext}>
-                    Make sure the headers for the CSV are correct!
-                  </div>
+                  <div className={styles.errorText}>Upload failed</div>
+                  <div className={styles.uploadSubtext}>{errorMessage}</div>
                 </div>
               </div>
             )}
@@ -288,8 +305,8 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
               </div>
               <div className={styles.detailCard}>
                 <div className={styles.detailList}>
-                  {csvParsedInfo?.changes?.map((change, index) => (
-                    <div key={`${change.email}-${index}`} className={styles.detailItem}>
+                  {csvParsedInfo?.changes?.slice(0, visibleCount).map((change, index) => (
+                    <div key={change.email} className={styles.detailItem}>
                       <div className={styles.detailHeader}>
                         <span
                           className={`${styles.detailBadge} ${
@@ -317,12 +334,18 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                           Shifts: {change.shiftNames.join(", ")}
                         </div>
                       )}
-                      {index < (csvParsedInfo?.changes.length || 0) - 1 && (
-                        <div className={styles.detailDivider} />
-                      )}
+                      {index < visibleCount - 1 &&
+                        index < (csvParsedInfo?.changes.length || 0) - 1 && (
+                          <div className={styles.detailDivider} />
+                        )}
                     </div>
                   ))}
                 </div>
+                {csvParsedInfo && visibleCount < csvParsedInfo.changes.length && (
+                  <button className={styles.loadMore} onClick={loadMore}>
+                    Load more ({csvParsedInfo.changes.length - visibleCount} remaining)
+                  </button>
+                )}
               </div>
             </div>
           </>

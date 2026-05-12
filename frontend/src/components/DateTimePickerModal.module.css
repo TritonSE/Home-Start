@@ -23,7 +23,8 @@
   align-self: stretch;
   gap: 16px;
 
-  color: var(--Text-headings, #141414);
+  /* color: var(--Text-headings, #141414); */
+  color: rgb(20, 20, 20, 0.8);
   text-align: center;
 
   /* Body/md */
@@ -54,6 +55,7 @@
 .dropDown {
   position: absolute;
   top: 100%;
+  left: 0;
   width: calc(100%);
 
   display: flex;
@@ -81,6 +83,15 @@
 
 .dropdownItem {
   padding: 8px 16px;
+  color: var(--Text-action, #1d3a6b);
+
+  /* Body/sm */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-sm-font-size, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-sm-line-height, 20px); /* 142.857% */
+  letter-spacing: var(--paragraph-sm-letter-spacing, 0.8px);
 }
 
 .month {
@@ -93,6 +104,9 @@
 
   cursor: pointer;
   position: relative;
+
+  border-radius: 8px;
+  background: #ecf3f3;
 }
 
 .year {
@@ -106,6 +120,9 @@
 
   cursor: pointer;
   position: relative;
+
+  border-radius: 8px;
+  background: #ecf3f3;
 }
 
 .week {
@@ -187,7 +204,6 @@
   align-self: stretch;
   justify-content: space-between;
   align-items: center;
-  padding: 0px 11px;
 }
 
 .timeLabel {
@@ -203,9 +219,9 @@
 }
 
 .selectedTimeOutside {
-  position: relative;
-  cursor: pointer;
-  flex: 1 1 0;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
 
   color: var(--Text-action, #1d3a6b);
 
@@ -220,23 +236,31 @@
 
 .selectedTime {
   display: flex;
-  padding: 8px 24px 8px 16px;
+  /* padding: 8px 24px 8px 16px; */
+  padding: 8px 12px;
   align-items: center;
   align-self: stretch;
-  justify-content: space-between;
+  max-width: 63px;
   width: 100%;
 
   border-radius: 8px;
   background: var(--foundation-off-white, #ecf3f3);
 }
 
-.selectedTimeDropClose {
-  color: var(--Text-body, #1c1c1c);
+.timeInput {
+  all: unset;
+  /* max-width: 39px; */
+}
+
+.periodDropdownWrap {
+  position: relative;
+  cursor: pointer;
 }
 
 .dropdownItemTime {
-  padding: 8px 16px;
-  text-align: left;
+  align-items: center;
+
+  padding: 8px 12px;
 }
 
 .buttons {

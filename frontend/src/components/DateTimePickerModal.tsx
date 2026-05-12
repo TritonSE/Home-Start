@@ -2,17 +2,16 @@
 
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
+import { IMask, IMaskInput } from "react-imask";
 
 import styles from "./DateTimePickerModal.module.css";
 import Modal from "./Modal";
 
 import chevronLeftAsset from "@/assets/chevron_left.svg";
 import chevronRightAsset from "@/assets/chevron_right.svg";
-import icCaretUpAsset from "@/assets/ic_caretup.svg";
 
 const chevronLeft = chevronLeftAsset as string;
 const chevronRight = chevronRightAsset as string;
-const icCaretUp = icCaretUpAsset as string;
 
 type DateTimePickerProps = {
   date: Date | null;
@@ -25,27 +24,36 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
   const [selectedDate, setSelectedDate] = useState(date ?? new Date());
   const [monthDropDown, setMonthDropDown] = useState<boolean>(false);
   const [yearDropDown, setYearDropDown] = useState<boolean>(false);
-  const [timeDropDown, setTimeDropDown] = useState<boolean>(false);
+  const [timePeriodDropDown, setTimePeriodDropDown] = useState<boolean>(false);
+  // const initialFormattedSelectedTime = selectedDate.toLocaleTimeString("en-US", {
+  //   hour: "numeric",
+  //   minute: "2-digit",
+  //   hour12: true,
+  // });
+  // const [initialFormattedTime, initialFormattedTimePeriod] = initialFormattedSelectedTime.split(" ");
+  const [timeNum, setTimeNum] = useState("");
+  const [timePeriod, setTimePeriod] = useState("");
   const currYear = currentDate.getFullYear();
   const currMonth = currentDate.getMonth();
 
   useEffect(() => {
-    const now = date ? new Date(date) : new Date();
-    now.setHours(now.getHours() + 1, 0, 0, 0);
-    setSelectedDate(now);
-  }, [date]);
+    const formattedSelectedTime = selectedDate.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+    const [formattedTime, formattedTimePeriod] = formattedSelectedTime.split(" ");
+    setTimeNum(formattedTime);
+    setTimePeriod(formattedTimePeriod);
+  }, [selectedDate]);
 
   const monthList = Array.from({ length: 12 }, (_, i) =>
     new Date(2000, i, 1).toLocaleString("default", { month: "long" }),
   );
 
-  const yearList = Array.from({ length: 9 }, (_, i) => new Date().getFullYear() - 4 + i);
+  const yearList = Array.from({ length: 2 }, (_, i) => new Date().getFullYear() + i);
 
-  const hourList = Array.from({ length: 24 }, (_, i) => {
-    const hour = i % 12 === 0 ? 12 : i % 12;
-    const ampm = i < 12 ? "AM" : "PM";
-    return `${hour}:00 ${ampm}`;
-  });
+  const timePeriodList = ["AM", "PM"];
 
   const isSameDate = (d1: Date, d2: Date) =>
     d1.getDate() === d2.getDate() &&
@@ -95,18 +103,27 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
     setSelectedDate(newSelectedDate);
   };
 
-  const handleSelectTime = (hour: number) => {
+  const handleSelectTime = (time: string, period: string) => {
+    const [hour, min] = time.split(":");
+    let adjustedHour = Number(hour) % 12;
+    adjustedHour = period === "AM" ? adjustedHour : adjustedHour + 12;
     const newSelectedDate = new Date(
       selectedDate.getFullYear(),
       selectedDate.getMonth(),
       selectedDate.getDate(),
-      hour,
-      0,
+      adjustedHour,
+      Number(min),
       0,
       0,
     );
     setSelectedDate(newSelectedDate);
-    setTimeDropDown(false);
+    setTimePeriodDropDown(false);
+  };
+
+  const closeDropDowns = () => {
+    setMonthDropDown(false);
+    setYearDropDown(false);
+    setTimePeriodDropDown(false);
   };
 
   const daysInMonth = getDaysInMonth(currYear, currMonth);
@@ -139,9 +156,17 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
     dates.push(<div key={`emptyDateCell-${i.toString()}`} className={styles.dateCell} />);
   }
 
+  // const formattedSelectedTime = selectedDate.toLocaleTimeString("en-US", {
+  //   hour: "numeric",
+  //   minute: "2-digit",
+  //   hour12: true,
+  // });
+  // const [formattedTime, formattedTimePeriod] = formattedSelectedTime.split(" ");
+
   return (
     <Modal
       onClose={onClose}
+      onClick={closeDropDowns}
       width="370px"
       radius="8px"
       title="Select Date"
@@ -162,9 +187,14 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
                 style={{ cursor: "pointer" }}
               />
             </div>
-            <div className={styles.month} onClick={() => setMonthDropDown(!monthDropDown)}>
+            <div
+              className={styles.month}
+              onClick={(e) => {
+                e.stopPropagation();
+                setMonthDropDown(!monthDropDown);
+              }}
+            >
               <div>{currentDate.toLocaleString("default", { month: "long" })}</div>
-              <Image src={icCaretUp} alt="More Months" width={20} height={20} />
               {monthDropDown && (
                 <div className={styles.dropDown}>
                   <div className={styles.dropdownScroll}>
@@ -183,9 +213,14 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
                 </div>
               )}
             </div>
-            <div className={styles.year} onClick={() => setYearDropDown(!yearDropDown)}>
+            <div
+              className={styles.year}
+              onClick={(e) => {
+                e.stopPropagation();
+                setYearDropDown(!yearDropDown);
+              }}
+            >
               <div>{currentDate.getFullYear()}</div>
-              <Image src={icCaretUp} alt="More Years" width={20} height={20} />
               {yearDropDown && (
                 <div className={styles.dropDown}>
                   <div className={styles.dropdownScroll}>
@@ -229,38 +264,73 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
         <div className={styles.time}>
           <span className={styles.timeLabel}>Time</span>
           <div className={styles.selectedTimeOutside}>
+            <div className={styles.selectedTime}>
+              <IMaskInput
+                className={styles.timeInput}
+                mask="HH:mm"
+                blocks={{
+                  HH: {
+                    mask: IMask.MaskedRange,
+                    from: 1,
+                    to: 12,
+                  },
+                  mm: {
+                    mask: IMask.MaskedRange,
+                    from: 0,
+                    to: 59,
+                  },
+                }}
+                placeholder="HH:MM"
+                lazy={false}
+                value={timeNum}
+                inputMode="numeric"
+                onAccept={(value) => {
+                  setTimeNum(value);
+                }}
+                onComplete={(value) => {
+                  handleSelectTime(value, timePeriod);
+                }}
+                onBlur={() => {
+                  if (timeNum.includes("_")) {
+                    setTimeNum(
+                      selectedDate
+                        .toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                        .split(" ")[0],
+                    );
+                  }
+                }}
+              />
+            </div>
             <div
-              className={`${styles.selectedTime} ${timeDropDown ? "" : styles.selectedTimeDropClose}`}
-              onClick={() => {
-                setTimeDropDown(!timeDropDown);
+              className={`${styles.selectedTime} ${styles.periodDropdownWrap}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setTimePeriodDropDown(!timePeriodDropDown);
               }}
             >
-              <span>
-                {selectedDate.toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                })}
-              </span>
-              <Image src={icCaretUp} alt="More Times" width={20} height={20} />
-            </div>
-            {timeDropDown && (
-              <div className={styles.dropDown}>
-                <div className={styles.dropdownScroll}>
-                  {hourList.map((hour, i) => (
-                    <div
-                      className={styles.dropdownItemTime}
-                      key={hour}
-                      onClick={() => {
-                        handleSelectTime(i);
-                      }}
-                    >
-                      {hour}
-                    </div>
-                  ))}
+              <div className={styles.timeInput}>{timePeriod}</div>
+              {timePeriodDropDown && (
+                <div className={styles.dropDown}>
+                  <div className={styles.dropdownScroll}>
+                    {timePeriodList.map((period, i) => (
+                      <div
+                        className={styles.dropdownItemTime}
+                        key={i}
+                        onClick={() => {
+                          handleSelectTime(timeNum, period);
+                        }}
+                      >
+                        {period}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
         <div className={styles.buttons}>
@@ -271,6 +341,7 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
             type="button"
             onClick={() => {
               onDone(selectedDate);
+              onClose();
             }}
             className={styles.doneButton}
           >

@@ -10,6 +10,7 @@ const icCloseLarge = icCloseLargeAsset as string;
 
 type ModalProps = {
   onClose: () => void;
+  onClick?: () => void;
   width: string;
   radius: string;
   title: string;
@@ -21,6 +22,7 @@ type ModalProps = {
 
 export default function Modal({
   onClose,
+  onClick,
   width,
   radius,
   title,
@@ -34,13 +36,23 @@ export default function Modal({
       <div
         className={styles.modal}
         style={{ padding, width, borderRadius: radius }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick?.();
+        }}
       >
         <div className={styles.header} style={{ lineHeight: `${titleLineHeight}px` }}>
           <p className={styles.title} style={{ fontSize: titleFontSize }}>
             {title}
           </p>
-          <button className={styles.close} onClick={onClose} aria-label="Close">
+          <button
+            className={styles.close}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            aria-label="Close"
+          >
             <Image
               src={icCloseLarge}
               alt="Close"

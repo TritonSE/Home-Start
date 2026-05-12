@@ -334,6 +334,7 @@
   align-self: center;
   justify-self: flex-start;
   margin-top: 16px;
+  gap: 16px;
 }
 
 .reviewBtn,
@@ -362,6 +363,10 @@
   font-weight: 400;
   line-height: 20px;
   letter-spacing: 0.5px;
+}
+
+.scheduleBtn {
+  cursor: pointer;
 }
 
 @media (min-width: 768px) {
@@ -446,6 +451,7 @@
     justify-content: center;
     flex: 0 0 auto;
     max-width: 760px;
+    gap: 16px;
   }
 
   .desktopReview .reviewBtn,
@@ -459,7 +465,8 @@
   .toSectionNew,
   .subjectSection,
   .messageBox,
-  .insertSectionNew {
+  .insertSectionNew,
+  .scheduledTime {
     max-width: 760px;
   }
 
@@ -490,4 +497,18 @@
   .leftFooter {
     display: none;
   }
+}
+
+.scheduledTime {
+  display: flex;
+  height: 52px;
+  padding: 24px;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+
+  border-radius: 8px;
+  border: 1px solid var(--Icons-ic-information, #007a8a);
+  background: var(--foundation-off-white, #ecf3f3);
 }

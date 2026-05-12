@@ -13,8 +13,10 @@ import addPersonIconAsset from "@/assets/add_person_icon.svg";
 import blueChevronLeftAsset from "@/assets/blue_chevron_left.svg";
 import bluePlusAsset from "@/assets/blue_plus_alt.svg";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
+import icScheduleAsset from "@/assets/ic_schedule.svg";
 import mdiInformationAsset from "@/assets/mdi_information.svg";
 import { initMsal, signInWithOutlook } from "@/auth/msal";
+import DateTimePickerModal from "@/components/DateTimePickerModal";
 import RecipientsPanel from "@/components/messages/RecipientsPanel";
 import Sidebar from "@/components/Sidebar";
 
@@ -22,6 +24,7 @@ const addPersonIcon = addPersonIconAsset as string;
 const blueChevronLeft = blueChevronLeftAsset as string;
 const bluePlus = bluePlusAsset as string;
 const icCaretLeft = icCaretLeftAsset as string;
+const icSchedule = icScheduleAsset as string;
 const mdiInformation = mdiInformationAsset as string;
 
 const TOKEN = "{{First Name}}";
@@ -34,10 +37,13 @@ type ComposerProps = {
   setSubject: (subject: string) => void;
   message: string;
   setMessage: (message: string) => void;
+  sendDate: Date | undefined;
+  setSendDate: (date: Date | undefined) => void;
   recipientsCount: number;
   canReview: boolean;
   isDesktop: boolean;
   clickableTo: boolean;
+  setDateTimePickerOpen: (open: boolean) => void;
   onGoRecipients: () => void;
   onGoReview: () => void;
 };
@@ -77,10 +83,12 @@ function Composer({
   setSubject,
   message,
   setMessage,
+  sendDate,
   recipientsCount,
   canReview,
   isDesktop,
   clickableTo,
+  setDateTimePickerOpen,
   onGoRecipients,
   onGoReview,
 }: ComposerProps) {
@@ -192,6 +200,17 @@ function Composer({
     lastSyncedMessageRef.current = next;
     setDraftText(next);
     setMessage(next);
+  };
+
+  const dateFormatter = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  const formatDate = (date: Date) => {
+    return dateFormatter.format(new Date(date));
   };
 
   return (
@@ -306,6 +325,12 @@ function Composer({
         </div>
       </section>
 
+      {sendDate && (
+        <div className={styles.scheduledTime}>
+          <span>Scheduled:<b>&nbsp;{formatDate(sendDate)}</b></span>
+        </div>
+      )}
+
       {!isDesktop ? (
         <div className={styles.reviewFixed}>
           <button
@@ -316,6 +341,16 @@ function Composer({
           >
             <span className={styles.reviewBtnText}>Review and Send</span>
           </button>
+          <Image
+            src={icSchedule}
+            alt="Schedule"
+            width={56}
+            height={56}
+            className={styles.scheduleBtn}
+            onClick={() => {
+              setDateTimePickerOpen(true);
+            }}
+          />
         </div>
       ) : null}
     </>
@@ -334,8 +369,13 @@ export default function NewMessagePage() {
   const message = useTextingFlowStore((s) => s.message);
   const setMessage = useTextingFlowStore((s) => s.setMessage);
 
+  const stringifiedDate = useTextingFlowStore((s) => s.sendDate);
+  const sendDate = stringifiedDate ? new Date(stringifiedDate) : undefined;
+  const setSendDate = useTextingFlowStore((s) => s.setSendDate);
+
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
   const recipientsCount = selectedRecipientIds.length;
+  const [dateTimePickerOpen, setDateTimePickerOpen] = useState<boolean>(false);
 
   const [isDesktop, setIsDesktop] = useState(false);
 
@@ -375,6 +415,8 @@ export default function NewMessagePage() {
     setSubject,
     message: message ?? "",
     setMessage,
+    sendDate: sendDate ?? undefined,
+    setSendDate,
     recipientsCount,
     canReview,
     isDesktop,
@@ -400,7 +442,7 @@ export default function NewMessagePage() {
 
         {!isDesktop ? (
           <main className={styles.content}>
-            <Composer {...commonProps} clickableTo />
+            <Composer {...commonProps} clickableTo setDateTimePickerOpen={setDateTimePickerOpen} />
           </main>
         ) : null}
 
@@ -415,24 +457,51 @@ export default function NewMessagePage() {
 
               <section className={styles.rightPane}>
                 <div className={styles.rightScroll}>
-                  <Composer {...commonProps} clickableTo={false} />
+                  <Composer
+                    {...commonProps}
+                    clickableTo={false}
+                    setDateTimePickerOpen={setDateTimePickerOpen}
+                  />
                 </div>
 
-                <div className={styles.desktopReview}>
-                  <button
-                    type="button"
-                    className={canReview ? styles.reviewBtn : styles.reviewBtnDisabled}
-                    disabled={!canReview}
-                    onClick={goReview}
-                  >
-                    <span className={styles.reviewBtnText}>Review and Send</span>
-                  </button>
+                <div>
+                  <div className={styles.desktopReview}>
+                    <button
+                      type="button"
+                      className={canReview ? styles.reviewBtn : styles.reviewBtnDisabled}
+                      disabled={!canReview}
+                      onClick={goReview}
+                    >
+                      <span className={styles.reviewBtnText}>Review and Send</span>
+                    </button>
+                    <Image
+                      src={icSchedule}
+                      alt="Schedule"
+                      width={56}
+                      height={56}
+                      className={styles.scheduleBtn}
+                      onClick={() => {
+                        setDateTimePickerOpen(true);
+                      }}
+                    />
+                  </div>
                 </div>
               </section>
             </div>
           </main>
         ) : null}
       </div>
+      {dateTimePickerOpen && (
+        <DateTimePickerModal
+          date={sendDate ?? new Date()}
+          onDone={(date) => {
+            setSendDate(date);
+          }}
+          onClose={() => {
+            setDateTimePickerOpen(false);
+          }}
+        />
+      )}
     </Sidebar>
   );
 }

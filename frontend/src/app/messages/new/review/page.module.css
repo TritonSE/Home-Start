@@ -409,3 +409,17 @@
     max-width: 800px;
   }
 }
+
+.scheduledTime {
+  display: flex;
+  height: 52px;
+  padding: 24px;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+
+  border-radius: 8px;
+  border: 1px solid var(--Icons-ic-information, #007a8a);
+  background: var(--foundation-off-white, #ecf3f3);
+}

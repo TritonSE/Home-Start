@@ -29,6 +29,8 @@ export default function ReviewAndSendPage() {
   const subject = useTextingFlowStore((s) => s.subject);
   const message = useTextingFlowStore((s) => s.message);
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
+  const stringifiedDate = useTextingFlowStore((s) => s.sendDate);
+  const sendDate = stringifiedDate ? new Date(stringifiedDate) : undefined;
   const resetDraft = useTextingFlowStore((s) => s.resetDraft);
 
   const recipientsCount = selectedRecipientIds.length;
@@ -213,6 +215,17 @@ export default function ReviewAndSendPage() {
     </>
   );
 
+  const dateFormatter = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  const formatDate = (date: Date) => {
+    return dateFormatter.format(new Date(date));
+  };
+
   return (
     <Sidebar>
       <div className={styles.page}>
@@ -272,6 +285,14 @@ export default function ReviewAndSendPage() {
                 <div className={styles.rightScroll}>
                   <ReviewContent />
                 </div>
+
+                {sendDate && (
+                  <div className={styles.scheduledTime}>
+                    <span>
+                      Scheduled:<b>&nbsp;{formatDate(sendDate)}</b>
+                    </span>
+                  </div>
+                )}
 
                 <div className={styles.desktopSend}>
                   <button

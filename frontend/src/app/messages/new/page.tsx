@@ -327,7 +327,9 @@ function Composer({
 
       {sendDate && (
         <div className={styles.scheduledTime}>
-          <span>Scheduled:<b>&nbsp;{formatDate(sendDate)}</b></span>
+          <span>
+            Scheduled:<b>&nbsp;{formatDate(sendDate)}</b>
+          </span>
         </div>
       )}
 

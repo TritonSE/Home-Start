@@ -107,6 +107,7 @@ export default function ReviewAndSendPage() {
             recipients,
             subject,
             message,
+            ...(sendDate && { sendDate: sendDate.toISOString() }),
           }),
         });
 
@@ -124,7 +125,7 @@ export default function ReviewAndSendPage() {
   };
 
   const successMessage = useMemo(() => {
-    return `Your message has successfully\nbeen sent to ${recipientsCount} volunteers.`;
+    return `Your message has successfully\nbeen ${sendDate ? "scheduled" : "sent"} to ${recipientsCount} volunteers.`;
   }, [recipientsCount]);
 
   const onToastDone = useCallback(() => {

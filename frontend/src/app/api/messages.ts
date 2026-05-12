@@ -1,8 +1,8 @@
-import { get } from "./requests";
+import { get, handleAPIError, post } from "./requests";
 
 import type { APIResult } from "./requests";
 
-export type MessageReponse = {
+export type MessageResponse = {
   messages: Message[];
 };
 
@@ -26,12 +26,12 @@ export type Message = {
   timestamp: string;
 };
 
-export type MessageCreationProps = {
-  subject: string;
-  date: Date;
-  type: "text" | "email";
-  message: string;
+export type CreateMessageHistoryRequest = {
   recipients: string[];
+  type: "text" | "email";
+  subject: string | null;
+  body: string;
+  status?: "sent" | "pending";
 };
 
 function isRecipient(value: unknown): value is Recipient {
@@ -55,9 +55,9 @@ function isMessageResponse(value: unknown): value is Message {
   );
 }
 
-function isMessagesResponse(value: unknown): value is MessageReponse {
+function isMessagesResponse(value: unknown): value is MessageResponse {
   if (!value || typeof value !== "object") return false;
-  const c = value as Partial<MessageReponse>;
+  const c = value as Partial<MessageResponse>;
   return Array.isArray(c.messages) && c.messages.every((m) => isMessageResponse(m));
 }
 
@@ -67,6 +67,7 @@ export const getMessages = async (): Promise<APIResult<Message[]>> => {
     if (!response.ok) {
       return { success: false, error: await response.text() };
     }
+
     const responseJson: unknown = await response.json();
 
     if (!isMessagesResponse(responseJson)) {
@@ -80,5 +81,18 @@ export const getMessages = async (): Promise<APIResult<Message[]>> => {
     return { success: true, data: messages };
   } catch (_error) {
     return { success: false, error: "An unexpected error occurred" };
+  }
+};
+
+export const createMessageHistory = async (
+  messageObj: CreateMessageHistoryRequest,
+): Promise<APIResult<unknown>> => {
+  try {
+    const response = await post("/api/message", messageObj);
+    const responseJson: unknown = await response.json();
+
+    return { success: true, data: responseJson };
+  } catch (err) {
+    return handleAPIError(err);
   }
 };

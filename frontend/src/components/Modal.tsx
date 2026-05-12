@@ -14,6 +14,7 @@ type ModalProps = {
   width: string;
   radius: string;
   title: string;
+  subtitle?: string;
   titleLineHeight: number;
   titleFontSize: string;
   padding: string;
@@ -26,6 +27,7 @@ export default function Modal({
   width,
   radius,
   title,
+  subtitle,
   titleLineHeight,
   titleFontSize,
   padding,
@@ -42,9 +44,10 @@ export default function Modal({
         }}
       >
         <div className={styles.header} style={{ lineHeight: `${titleLineHeight}px` }}>
-          <p className={styles.title} style={{ fontSize: titleFontSize }}>
-            {title}
-          </p>
+          <div className={styles.titles} style={{ fontSize: titleFontSize }}>
+            <p className={styles.title}>{title}</p>
+            {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+          </div>
           <button
             className={styles.close}
             onClick={(e) => {

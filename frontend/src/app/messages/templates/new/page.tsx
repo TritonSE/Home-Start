@@ -60,7 +60,7 @@ function CreateTemplateContent() {
         />
         <header className={styles.header}>
           <Image src={icCaretLeft} alt="" width={40} height={40} onClick={() => router.back()} />
-          <h1 className={styles.headerTitle}>Compose Template</h1>
+          <h1 className={styles.headerTitle}>Create Template</h1>
           <span style={{ height: "40px" }}></span>
         </header>
         <TemplateCreate onSave={onSave} title="" message="" type={templateType} />

@@ -55,6 +55,50 @@
   letter-spacing: 0.5px;
 }
 
+.richEditor {
+  min-height: 220px;
+  border: none;
+  outline: none;
+  padding: 16px;
+  font-size: 16px;
+  color: #000;
+  white-space: pre-wrap;
+
+  font-family: var(--font-open-sans), sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0.5px;
+
+  background: var(--Surface-page, #fbffff);
+  border: 1px solid var(--Border-default, #e8e8e8);
+  border-radius: 8px;
+  height: 216px;
+  overflow-y: auto;
+}
+
+.richEditor:empty:before {
+  content: attr(data-placeholder);
+  color: #9aa3a3;
+}
+
+.pill {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #b0c7d0;
+  line-height: 1;
+
+  color: #000;
+  /* Body/md-semibold */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-md-font-size, 16px);
+  font-style: normal;
+  font-weight: 700;
+  line-height: var(--paragraph-md-line-height, 20px); /* 125% */
+  letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
+}
+
 .characterLimit {
   color: #676767;
   font-family: var(--font-open-sans), sans-serif;
@@ -62,6 +106,7 @@
   font-size: 12px;
   line-height: 16px;
   letter-spacing: 0%;
+  align-self: flex-end;
 }
 
 .insertSectionNew {

@@ -14,6 +14,7 @@ import blueChevronLeftAsset from "@/assets/blue_chevron_left.svg";
 import bluePlusAsset from "@/assets/blue_plus_alt.svg";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
 import mdiInformationAsset from "@/assets/mdi_information.svg";
+import ouiCopyAsset from "@/assets/oui_copy.svg";
 import { initMsal, signInWithOutlook } from "@/auth/msal";
 import RecipientsPanel from "@/components/messages/RecipientsPanel";
 import Sidebar from "@/components/Sidebar";
@@ -22,6 +23,7 @@ const addPersonIcon = addPersonIconAsset as string;
 const blueChevronLeft = blueChevronLeftAsset as string;
 const bluePlus = bluePlusAsset as string;
 const icCaretLeft = icCaretLeftAsset as string;
+const ouiCopy = ouiCopyAsset as string;
 const mdiInformation = mdiInformationAsset as string;
 
 const TOKEN = "{{First Name}}";
@@ -368,6 +370,10 @@ export default function NewMessagePage() {
     void router.push("/messages/new/review");
   }, [router]);
 
+  const goTemplates = useCallback(() => {
+    void router.push("/messages/templates");
+  }, [router]);
+
   const commonProps = {
     mode,
     setMode,
@@ -395,7 +401,14 @@ export default function NewMessagePage() {
             <Image src={icCaretLeft} alt="" className={styles.backIcon} width={24} height={24} />
           </button>
           <h1 className={styles.headerTitle}>New Message</h1>
-          <div className={styles.headerRight} />
+          <button
+            type="button"
+            className={styles.templateBtn}
+            aria-label="Go to templates"
+            onClick={goTemplates}
+          >
+            <Image src={ouiCopy} alt="" width={24} height={24} />
+          </button>
         </header>
 
         {!isDesktop ? (
@@ -426,6 +439,9 @@ export default function NewMessagePage() {
                     onClick={goReview}
                   >
                     <span className={styles.reviewBtnText}>Review and Send</span>
+                  </button>
+                  <button onClick={goTemplates} className={styles.templateBtnDesktop}>
+                    <Image src={ouiCopy} alt="Templates" width={20} height={20} />
                   </button>
                 </div>
               </section>

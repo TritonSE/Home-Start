@@ -13,6 +13,7 @@ import type { Template } from "@/app/api/template";
 import { deleteTemplate, getTemplates, TemplateType } from "@/app/api/template";
 import icAddAsset from "@/assets/ic_add.svg";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
+import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 import TemplateActionPopup from "@/components/TemplateActionPopup";
 import { TemplateList } from "@/components/TemplateList";
@@ -32,6 +33,7 @@ export default function TemplatePage() {
   const [openPopup, setOpenPopup] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState(false);
   const [templateType, setTemplateType] = useState<TemplateType>(TemplateType.TEXT);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const fetchTemplates = () => {
     getTemplates()
@@ -92,8 +94,19 @@ export default function TemplatePage() {
     }
   };
 
+  const onToastDone = () => {
+    setShowSuccess(false);
+    void router.push("/communication");
+  };
+
   return (
     <Sidebar>
+      <SuccessToast
+        open={showSuccess}
+        message="Your template was pasted."
+        durationMs={1600}
+        onDone={onToastDone}
+      />
       <div className={styles.page}>
         <header className={styles.header}>
           <Image src={icCaretLeft} alt="" width={40} height={40} onClick={handleBackClicked} />
@@ -107,7 +120,7 @@ export default function TemplatePage() {
           )}
         </header>
         {previewTemplate && selectedTemplate ? (
-          <TemplatePreview template={selectedTemplate} />
+          <TemplatePreview template={selectedTemplate} onUse={() => setShowSuccess(true)} />
         ) : (
           <>
             <div className={styles.templateType}>

@@ -22,7 +22,7 @@ type ImportVolunteerModalProps = {
   onComplete: () => void;
 };
 
-type Status = "idle" | "error" | "success";
+type Status = "idle" | "error" | "success" | "processing";
 type Step = "upload" | "review";
 
 type ParsedVolunteerChange = {
@@ -56,6 +56,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
     setStatus("idle");
 
     try {
+      setStatus("processing");
       const result = await parseVolunteersCsv(file);
       if (!result.ok) {
         setStatus("error");
@@ -203,6 +204,15 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                   />
                   <div>Make sure the CSV is in this order: Name, Phone Number, Email, etc.</div>
                 </div>
+              </>
+            )}
+            {status === "processing" && (
+              <>
+                <label className={`${styles.uploadBox}`}>
+                  <div className={styles.uploadContent}>
+                    <div className={styles.uploadText}>Processing ...</div>
+                  </div>
+                </label>
               </>
             )}
 

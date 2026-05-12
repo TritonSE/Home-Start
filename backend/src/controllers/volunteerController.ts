@@ -17,7 +17,7 @@ import type { Buffer } from "node:buffer";
 
 // eslint-disable-next-line regexp/no-super-linear-backtracking
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_NUMBER_REGEX = /^\(?\d{3}\)?[-\s.]?\d{3}[-\s.]?\d{4}$/;
+const PHONE_NUMBER_REGEX = /^\+?1?\d{10}$|^\(?\d{3}\)?[-\s.]?\d{3}[-\s.]?\d{4}$/;
 
 export const getVolunteer: RequestHandler = async (req, res, next) => {
   const volunteerId = req.params.id;
@@ -86,16 +86,79 @@ type CreateVolunteerBody = {
   phoneNumber: string;
   tags?: string[];
   status?: "returning" | "new";
+  address?: VolunteerAddressInfo;
+  birthday?: string;
+  preferredPronouns?: string;
+  startDate?: string;
+  endDate?: string;
+  effectiveDate?: string;
+  mediaConsent?: "yes" | "no";
+  faceConsent?: "yes" | "no";
+  nameConsent?: "first" | "full" | "no";
   assignmentName?: string;
   projectName?: string;
   shiftNames?: string[];
 };
 
-type CreateVolunteerImportBody = CreateVolunteerBody;
+type VolunteerCreationBody = CreateVolunteerBody;
+
+type RawVolunteerCSVFormat = {
+  "First Name": string;
+  "Last Name": string;
+  assignment: string;
+  project: string;
+  Status: string;
+  Address1: string;
+  Address2: string;
+  City: string;
+  State: string;
+  Zip: string;
+  Birthday: string;
+  Cell: string;
+  Email: string;
+  "NEW Pronouns": string;
+  "NEW Media Concent": string;
+  "NEW Face": string;
+  "Start Date": string;
+  "End Date": string;
+  "Effective Date (date record was updated)": string;
+};
+
+type VolunteerAddressInfo = {
+  line1: string;
+  line2: string;
+  city: string;
+  state: string;
+  zip: string;
+};
+
+type NormalizedVolunteerCSVFormat = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  status: string;
+
+  address: VolunteerAddressInfo;
+
+  birthday: string;
+  preferredPronouns: string;
+  startDate: string;
+  endDate: string;
+  effectiveDate: string;
+
+  mediaConsent: string;
+  faceConsent: string;
+  nameConsent: string;
+
+  // differs from standard schema format, just while processing csv
+  assignmentName: string;
+  projectName: string;
+};
 
 type VolunteerImportKey = string;
 
-const makeVolunteerImportKey = (body: CreateVolunteerImportBody): VolunteerImportKey => {
+const makeVolunteerImportKey = (body: CreateVolunteerBody): VolunteerImportKey => {
   const email = body.email.trim().toLowerCase();
   const phoneNumber = body.phoneNumber.trim();
   return email ? `email:${email}` : `phone:${phoneNumber}`;
@@ -109,21 +172,37 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
     email,
     phoneNumber,
     status = "new",
+    address,
+    birthday,
+    preferredPronouns,
+    startDate,
+    endDate,
+    effectiveDate,
+    mediaConsent,
+    faceConsent,
+    nameConsent,
   } = req.body as CreateVolunteerBody;
   try {
     validationErrorParser(errors);
-
     const volunteer = await VolunteerModel.findOne({ email });
     if (volunteer) {
       throw createError(409, "Volunteer with this email already exists");
     }
-
     const newVolunteer = await VolunteerModel.create({
       firstName,
       lastName,
       email,
       phoneNumber,
       status,
+      ...(address && { address }),
+      ...(toDate(birthday) && { birthday: toDate(birthday) }),
+      ...(preferredPronouns && { preferredPronouns }),
+      ...(toDate(startDate) && { startDate: toDate(startDate) }),
+      ...(toDate(endDate) && { endDate: toDate(endDate) }),
+      ...(toDate(effectiveDate) && { effectiveDate: toDate(effectiveDate) }),
+      ...(mediaConsent && { mediaConsent }),
+      ...(faceConsent && { faceConsent }),
+      ...(nameConsent && { nameConsent }),
     });
     res.status(201).json(newVolunteer);
   } catch (err) {
@@ -179,15 +258,50 @@ type UpdateVolunteerOp = {
   };
 };
 
+const toDate = (value: string | undefined): Date | undefined => {
+  if (!value) return undefined;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? undefined : d;
+};
+
 const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
-  const { firstName, lastName, email, phoneNumber, status } = body;
+  const {
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    status,
+    address,
+    birthday,
+    preferredPronouns,
+    startDate,
+    endDate,
+    effectiveDate,
+    mediaConsent,
+    faceConsent,
+    nameConsent,
+  } = body;
+
+  const birthdayDate = toDate(birthday);
+  const startDateDate = toDate(startDate);
+  const endDateDate = toDate(endDate);
+  const effectiveDateDate = toDate(effectiveDate);
 
   return {
     firstName,
     lastName,
     email,
     phoneNumber,
-    status,
+    ...(status && { status }),
+    ...(address && { address }),
+    ...(birthdayDate && { birthday: birthdayDate }),
+    ...(preferredPronouns && { preferredPronouns }),
+    ...(startDateDate && { startDate: startDateDate }),
+    ...(endDateDate && { endDate: endDateDate }),
+    ...(effectiveDateDate && { effectiveDate: effectiveDateDate }),
+    ...(mediaConsent && { mediaConsent }),
+    ...(faceConsent && { faceConsent }),
+    ...(nameConsent && { nameConsent }),
   };
 };
 
@@ -199,23 +313,10 @@ const normalizeCsvText = (value: unknown) => {
   return value.trim();
 };
 
-const parseCsvList = (value: unknown) => {
-  const text = normalizeCsvText(value);
-
-  if (!text) {
-    return [] as string[];
-  }
-
-  return text
-    .split(/[,|;]/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-};
-
 export const uploadVolunteerBatch: RequestHandler<
   object,
   object,
-  { volunteers: CreateVolunteerImportBody[] }
+  { volunteers: CreateVolunteerBody[] }
 > = async (req, res, next) => {
   const errors = validationResult(req);
   try {
@@ -223,7 +324,7 @@ export const uploadVolunteerBatch: RequestHandler<
 
     const { volunteers } = req.body;
 
-    const volunteersByKey = new Map<VolunteerImportKey, CreateVolunteerImportBody>();
+    const volunteersByKey = new Map<VolunteerImportKey, CreateVolunteerBody>();
     for (const body of volunteers) {
       volunteersByKey.set(makeVolunteerImportKey(body), body);
     }
@@ -280,7 +381,7 @@ export const uploadVolunteerBatch: RequestHandler<
       const groupedAssignments = new Map<
         string,
         {
-          volunteer: CreateVolunteerImportBody;
+          volunteer: CreateVolunteerBody;
           assignmentTag: string;
           projectTag: string;
           shiftNames: Set<string>;
@@ -404,40 +505,104 @@ const statusKeyToEnum = (key: string): string => {
   }
 };
 
-const createCSVCreationBody = (data: Record<string, string>): CreateVolunteerImportBody => {
-  const assignmentName = normalizeCsvText(data.Assignment || data["Volunteer Type"] || data.Role);
-  const projectName = normalizeCsvText(data.Project || data.Event);
-  const shiftNames = parseCsvList(data.Shift || data.Shifts);
+const normalizeCSVData = (data: RawVolunteerCSVFormat): NormalizedVolunteerCSVFormat => {
+  const normalizedCSV = {
+    firstName: normalizeCsvText(data["First Name"]),
+    lastName: normalizeCsvText(data["Last Name"]),
+    email: normalizeCsvText(data.Email),
+    phoneNumber: normalizeCsvText(data.Cell),
+    status: statusKeyToEnum(data.Status || ""),
 
-  const result = {
-    firstName: data.First,
-    lastName: data.Last,
-    email: data.Email,
-    phoneNumber: data.Phone,
-    status: statusKeyToEnum(data.New),
-    ...(assignmentName ? { assignmentName } : {}),
-    ...(projectName ? { projectName } : {}),
-    ...(shiftNames.length ? { shiftNames } : {}),
-  } as CreateVolunteerImportBody;
-  return result;
+    address: {
+      line1: normalizeCsvText(data.Address1),
+      line2: normalizeCsvText(data.Address2),
+      city: normalizeCsvText(data.City),
+      state: normalizeCsvText(data.State),
+      zip: normalizeCsvText(data.Zip),
+    },
+
+    birthday: normalizeCsvText(data.Birthday),
+    preferredPronouns: normalizeCsvText(data["NEW Pronouns"]),
+    startDate: normalizeCsvText(data["Start Date"]),
+    endDate: normalizeCsvText(data["End Date"]),
+    effectiveDate: normalizeCsvText(data["Effective Date (date record was updated)"]),
+
+    mediaConsent: normalizeCsvText(data["NEW Media Concent"]),
+    faceConsent: normalizeCsvText(data["NEW Face"]),
+    nameConsent: normalizeCsvText(data["NEW Media Concent"]),
+    assignmentName: normalizeCsvText(data.assignment),
+    projectName: normalizeCsvText(data.project),
+  } as NormalizedVolunteerCSVFormat;
+  return normalizedCSV;
+};
+
+const toConsentYesNo = (value: string): "yes" | "no" | undefined => {
+  const v = value.trim().toLowerCase();
+  if (v === "yes") return "yes";
+  if (v === "no") return "no";
+  return undefined;
+};
+
+const toConsentName = (value: string): "first" | "full" | "no" | undefined => {
+  const v = value.trim().toLowerCase();
+  if (v === "first") return "first";
+  if (v === "full") return "full";
+  if (v === "no") return "no";
+  return undefined;
+};
+
+const normalizePhoneNumber = (value: string): string => {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("1")) return digits.slice(1);
+  return digits;
+};
+
+const parseCreationBody = (data: NormalizedVolunteerCSVFormat): VolunteerCreationBody => {
+  return {
+    firstName: data.firstName,
+    lastName: data.lastName,
+    email: data.email,
+    phoneNumber: normalizePhoneNumber(data.phoneNumber),
+    status: data.status as "returning" | "new" | undefined,
+    address: data.address,
+    birthday: data.birthday || undefined,
+    preferredPronouns: data.preferredPronouns || undefined,
+    startDate: data.startDate || undefined,
+    endDate: data.endDate || undefined,
+    effectiveDate: data.effectiveDate || undefined,
+    mediaConsent: toConsentYesNo(data.mediaConsent),
+    faceConsent: toConsentYesNo(data.faceConsent),
+    nameConsent: toConsentName(data.nameConsent),
+    assignmentName: data.assignmentName || undefined,
+    projectName: data.projectName || undefined,
+  };
 };
 
 const parseVolunteersHelper = async (fileBuffer: Buffer) => {
-  const parsedVolunteers: CreateVolunteerImportBody[] = [] as CreateVolunteerImportBody[];
+  const parsedVolunteers: VolunteerCreationBody[] = [];
   const bufferStream = new PassThrough();
   bufferStream.end(fileBuffer);
+
+  console.info("Starting CSV parsing");
 
   await new Promise<void>((resolve, reject) => {
     bufferStream
       .pipe(csvParser())
       .on("data", (data: Record<string, string>) => {
+        console.log("processing:", data);
         if (data.Count === "0") {
           return;
         }
-        const creationBody = createCSVCreationBody(data);
+        console.log("datacount passed");
+        const normalized = normalizeCSVData(data as unknown as RawVolunteerCSVFormat);
+        console.log("normalized passed");
+        const creationBody = parseCreationBody(normalized);
+        console.log("creation body parsed");
         const valid = validateVolunteer(creationBody);
+        console.log("creation body validated");
 
         if (!valid) {
+          console.info("Invalid volunteer data:", data);
           bufferStream.destroy();
           reject(createError(400, `Invalid volunteer data: ${JSON.stringify(data)}`));
           return;
@@ -449,6 +614,7 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
       .on("error", reject);
   });
 
+  console.log("all volunteers parsed");
   return parsedVolunteers;
 };
 
@@ -464,6 +630,7 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
     await Promise.all(batchCreateVolunteerValidator.map(async (v) => v.run(mockReq)));
 
     const errors = validationResult(mockReq);
+    console.log("errors ", errors);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }

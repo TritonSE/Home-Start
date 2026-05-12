@@ -32,9 +32,15 @@
   width: 100%;
 }
 
+.titles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .title {
   flex: 1;
-  font-family: "Open Sans";
+  font-family: var(--Font-family-Headings, Viga);
   font-weight: 400;
   display: flex;
   align-items: center;
@@ -43,6 +49,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.subtitle {
+  color: var(--Text-gray, #676767);
+
+  /* Body/sm */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-sm-font-size, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-sm-line-height, 20px); /* 142.857% */
+  letter-spacing: var(--paragraph-sm-letter-spacing, 0.8px);
 }
 
 .close {

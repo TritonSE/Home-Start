@@ -9,9 +9,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     return NextResponse.json({ error: "NEXT_PUBLIC_API_URL is not configured" }, { status: 500 });
   }
 
-  const token = request.cookies.get("firebaseAuthToken")?.value;
-
-  if (!token) {
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
@@ -23,7 +22,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: authHeader,
       },
       body: JSON.stringify(requestBody),
       cache: "no-store",

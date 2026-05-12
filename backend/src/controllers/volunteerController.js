@@ -1,128 +1,99 @@
-import { PassThrough } from "node:stream";
-
-import csvParser from "csv-parser";
-import { validationResult } from "express-validator";
-import createError from "http-errors";
-
-import TagModel from "../models/tagModel";
-import VolunteerAssignmentModel from "../models/volunteerAssignmentModel";
-import VolunteerModel from "../models/volunteerModel";
-import validationErrorParser from "../util/validationErrorParser";
-import { batchCreateVolunteerValidator } from "../validators/volunteerValidator";
-
-import type { Request, RequestHandler } from "express";
-import type { MongoBulkWriteError, WriteError } from "mongodb";
-import type { Types } from "mongoose";
-import type { Buffer } from "node:buffer";
-
+"use strict";
+const __importDefault =
+  (this && this.__importDefault) ||
+  function (mod) {
+    return mod && mod.__esModule ? mod : { default: mod };
+  };
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getVolunteerRows =
+  exports.getSelectedVolunteers =
+  exports.createVolunteersCsv =
+  exports.parseVolunteersCsv =
+  exports.uploadVolunteerBatch =
+  exports.deleteVolunteer =
+  exports.updateVolunteerContact =
+  exports.updateVolunteer =
+  exports.createVolunteer =
+  exports.getVolunteerPhoneNumber =
+  exports.getVolunteerByEmail =
+  exports.getVolunteers =
+  exports.getVolunteer =
+    void 0;
+const node_stream_1 = require("node:stream");
+const csv_parser_1 = __importDefault(require("csv-parser"));
+const express_validator_1 = require("express-validator");
+const http_errors_1 = __importDefault(require("http-errors"));
+const tagModel_1 = __importDefault(require("../models/tagModel"));
+const volunteerAssignmentModel_1 = __importDefault(require("../models/volunteerAssignmentModel"));
+const volunteerModel_1 = __importDefault(require("../models/volunteerModel"));
+const validationErrorParser_1 = __importDefault(require("../util/validationErrorParser"));
+const volunteerValidator_1 = require("../validators/volunteerValidator");
 // eslint-disable-next-line regexp/no-super-linear-backtracking
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_NUMBER_REGEX = /^\(?\d{3}\)?[-\s.]?\d{3}[-\s.]?\d{4}$/;
-
-export const getVolunteer: RequestHandler = async (req, res, next) => {
+const getVolunteer = async (req, res, next) => {
   const volunteerId = req.params.id;
-
   try {
-    const volunteer = await VolunteerModel.findById(volunteerId)
-      .populate("groupTagIds")
-      .populate("programTagIds");
-
+    const volunteer = await volunteerModel_1.default.findById(volunteerId);
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw (0, http_errors_1.default)(404, "Could not find volunteer");
     }
-
     res.status(200).json(volunteer);
   } catch (err) {
     next(err);
   }
 };
-export const getVolunteers: RequestHandler = async (req, res, next) => {
+exports.getVolunteer = getVolunteer;
+const getVolunteers = async (req, res, next) => {
   try {
-    const volunteers = await VolunteerModel.find()
-      .populate("groupTagIds")
-      .populate("programTagIds");
+    const volunteers = await volunteerModel_1.default.find();
     res.status(200).json(volunteers);
   } catch (err) {
     next(err);
   }
 };
-
-type VolunteerByEmailBody = {
-  email: string;
-};
-
-export const getVolunteerByEmail: RequestHandler = async (req, res, next) => {
-  const { email } = req.body as VolunteerByEmailBody;
-
+exports.getVolunteers = getVolunteers;
+const getVolunteerByEmail = async (req, res, next) => {
+  const { email } = req.body;
   try {
-    const volunteer = await VolunteerModel.findOne({ email });
+    const volunteer = await volunteerModel_1.default.findOne({ email });
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw (0, http_errors_1.default)(404, "Could not find volunteer");
     }
     res.status(200).json(volunteer);
   } catch (err) {
     next(err);
   }
 };
-
-type VolunteerByPhoneNumberBody = {
-  phoneNumber: string;
-};
-
-export const getVolunteerPhoneNumber: RequestHandler = async (req, res, next) => {
-  const { phoneNumber } = req.body as VolunteerByPhoneNumberBody;
-
+exports.getVolunteerByEmail = getVolunteerByEmail;
+const getVolunteerPhoneNumber = async (req, res, next) => {
+  const { phoneNumber } = req.body;
   try {
-    const volunteer = await VolunteerModel.findOne({ phoneNumber });
+    const volunteer = await volunteerModel_1.default.findOne({ phoneNumber });
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw (0, http_errors_1.default)(404, "Could not find volunteer");
     }
     res.status(200).json(volunteer);
   } catch (err) {
     next(err);
   }
 };
-
-type CreateVolunteerBody = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  tags?: string[];
-  status?: "returning" | "new";
-  assignmentName?: string;
-  projectName?: string;
-  shiftNames?: string[];
-};
-
-type CreateVolunteerImportBody = CreateVolunteerBody;
-
-type VolunteerImportKey = string;
-
-const makeVolunteerImportKey = (body: CreateVolunteerImportBody): VolunteerImportKey => {
+exports.getVolunteerPhoneNumber = getVolunteerPhoneNumber;
+const makeVolunteerImportKey = (body) => {
   const email = body.email.trim().toLowerCase();
   const phoneNumber = body.phoneNumber.trim();
   return email ? `email:${email}` : `phone:${phoneNumber}`;
 };
-
-export const createVolunteer: RequestHandler = async (req, res, next) => {
-  const errors = validationResult(req);
-  const {
-    firstName,
-    lastName,
-    email,
-    phoneNumber,
-    status = "new",
-  } = req.body as CreateVolunteerBody;
+const createVolunteer = async (req, res, next) => {
+  const errors = (0, express_validator_1.validationResult)(req);
+  const { firstName, lastName, email, phoneNumber, status = "new" } = req.body;
   try {
-    validationErrorParser(errors);
-
-    const volunteer = await VolunteerModel.findOne({ email });
+    (0, validationErrorParser_1.default)(errors);
+    const volunteer = await volunteerModel_1.default.findOne({ email });
     if (volunteer) {
-      throw createError(409, "Volunteer with this email already exists");
+      throw (0, http_errors_1.default)(409, "Volunteer with this email already exists");
     }
-
-    const newVolunteer = await VolunteerModel.create({
+    const newVolunteer = await volunteerModel_1.default.create({
       firstName,
       lastName,
       email,
@@ -134,38 +105,9 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
     next(err);
   }
 };
-
-type UpdateVolunteerBody = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  tags?: string[];
-  groupTagIds?: string[] | null;
-  programTagIds?: string[] | null;
-  status?: "returning" | "new";
-  volunteerTypeTags?: string[];
-  events?: string[];
-  additionalNotes?: string;
-  address?: {
-    line1?: string;
-    line2?: string;
-    city?: string;
-    state?: string;
-    zip?: string;
-  };
-  birthday?: string | Date;
-  preferredPronouns?: string;
-  hours?: number;
-  startDate?: string | Date;
-  endDate?: string | Date;
-  mediaConsent?: "yes" | "no";
-  faceConsent?: "yes" | "no";
-  nameConsent?: "no" | "first" | "full";
-};
-
-export const updateVolunteer: RequestHandler = async (req, res, next) => {
-  const errors = validationResult(req);
+exports.createVolunteer = createVolunteer;
+const updateVolunteer = async (req, res, next) => {
+  const errors = (0, express_validator_1.validationResult)(req);
   const volunteerId = req.params.id;
   const {
     firstName,
@@ -173,8 +115,6 @@ export const updateVolunteer: RequestHandler = async (req, res, next) => {
     email,
     phoneNumber,
     tags,
-    groupTagIds,
-    programTagIds,
     status,
     volunteerTypeTags,
     events,
@@ -188,12 +128,10 @@ export const updateVolunteer: RequestHandler = async (req, res, next) => {
     mediaConsent,
     faceConsent,
     nameConsent,
-  } = req.body as UpdateVolunteerBody;
-
+  } = req.body;
   try {
-    validationErrorParser(errors);
-
-    const updatePayload: Record<string, unknown> = {
+    (0, validationErrorParser_1.default)(errors);
+    const updatePayload = {
       firstName,
       lastName,
       email,
@@ -212,88 +150,59 @@ export const updateVolunteer: RequestHandler = async (req, res, next) => {
       nameConsent,
       effectiveDate: new Date(),
     };
-
     if (Array.isArray(tags)) {
       updatePayload.tags = tags;
-    }
-    if (groupTagIds !== undefined) {
-      updatePayload.groupTagIds = groupTagIds;
-    }
-    if (programTagIds !== undefined) {
-      updatePayload.programTagIds = programTagIds;
     }
     if (status === "new" || status === "returning") {
       updatePayload.status = status;
     }
-
-    const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, updatePayload, {
+    const volunteer = await volunteerModel_1.default.findByIdAndUpdate(volunteerId, updatePayload, {
       returnDocument: "after",
       runValidators: true,
-    })
-      .populate("groupTagIds")
-      .populate("programTagIds");
-
+    });
     if (!volunteer) {
       return res.status(404).json({ error: "Could not find volunteer" });
     }
-
     res.status(200).json(volunteer);
   } catch (err) {
     next(err);
   }
 };
-
-type UpdateVolunteerContactBody = {
-  email: string;
-  phoneNumber: string;
-};
-
-export const updateVolunteerContact: RequestHandler = async (req, res, next) => {
-  const errors = validationResult(req);
+exports.updateVolunteer = updateVolunteer;
+const updateVolunteerContact = async (req, res, next) => {
+  const errors = (0, express_validator_1.validationResult)(req);
   const volunteerId = req.params.id;
-  const { email, phoneNumber } = req.body as UpdateVolunteerContactBody;
-
+  const { email, phoneNumber } = req.body;
   try {
-    validationErrorParser(errors);
-
-    const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, {
+    (0, validationErrorParser_1.default)(errors);
+    const volunteer = await volunteerModel_1.default.findByIdAndUpdate(volunteerId, {
       phoneNumber,
       email,
     });
-
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw (0, http_errors_1.default)(404, "Could not find volunteer");
     }
-
     res.status(200).json(volunteer);
   } catch (err) {
     next(err);
   }
 };
-
-export const deleteVolunteer: RequestHandler = async (req, res, next) => {
+exports.updateVolunteerContact = updateVolunteerContact;
+const deleteVolunteer = async (req, res, next) => {
   const volunteerId = req.params.id;
-
   try {
-    const volunteer = await VolunteerModel.findByIdAndDelete(volunteerId);
+    const volunteer = await volunteerModel_1.default.findByIdAndDelete(volunteerId);
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw (0, http_errors_1.default)(404, "Could not find volunteer");
     }
     res.status(200).json({ message: "Volunteer deleted successfully" });
   } catch (err) {
     next(err);
   }
 };
-
-type UpdateVolunteerOp = {
-  u: {
-    $set: CreateVolunteerBody;
-  };
-};
-
-const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
+exports.deleteVolunteer = deleteVolunteer;
+const normalizeVolunteerForBulkWrite = (body) => {
   const { firstName, lastName, email, phoneNumber, status } = body;
-
   return {
     firstName,
     lastName,
@@ -302,46 +211,32 @@ const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
     status,
   };
 };
-
-const normalizeCsvText = (value: unknown) => {
+const normalizeCsvText = (value) => {
   if (typeof value !== "string") {
     return "";
   }
-
   return value.trim();
 };
-
-const parseCsvList = (value: unknown) => {
+const parseCsvList = (value) => {
   const text = normalizeCsvText(value);
-
   if (!text) {
-    return [] as string[];
+    return [];
   }
-
   return text
     .split(/[,|;]/)
     .map((item) => item.trim())
     .filter(Boolean);
 };
-
-export const uploadVolunteerBatch: RequestHandler<
-  object,
-  object,
-  { volunteers: CreateVolunteerImportBody[] }
-> = async (req, res, next) => {
-  const errors = validationResult(req);
+const uploadVolunteerBatch = async (req, res, next) => {
+  const errors = (0, express_validator_1.validationResult)(req);
   try {
-    validationErrorParser(errors);
-
+    (0, validationErrorParser_1.default)(errors);
     const { volunteers } = req.body;
-
-    const volunteersByKey = new Map<VolunteerImportKey, CreateVolunteerImportBody>();
+    const volunteersByKey = new Map();
     for (const body of volunteers) {
       volunteersByKey.set(makeVolunteerImportKey(body), body);
     }
-
     const uniqueVolunteers = [...volunteersByKey.values()];
-
     const bulkOps = uniqueVolunteers.map((body) => ({
       updateOne: {
         filter: {
@@ -350,20 +245,18 @@ export const uploadVolunteerBatch: RequestHandler<
         update: {
           $set: normalizeVolunteerForBulkWrite(body),
           // Mongo operator to set a field to the current date
-          $currentDate: { updated: true as const },
+          $currentDate: { updated: true },
         },
         upsert: true,
       },
     }));
     // Continue writing others even if one fails
-    const createdVolunteers = await VolunteerModel.bulkWrite(bulkOps, { ordered: false });
-
+    const createdVolunteers = await volunteerModel_1.default.bulkWrite(bulkOps, { ordered: false });
     const assignmentRows = volunteers.filter(
       (volunteer) => volunteer.assignmentName && volunteer.projectName,
     );
-
     if (assignmentRows.length > 0) {
-      const uniqueNames = new Set<string>();
+      const uniqueNames = new Set();
       for (const volunteer of assignmentRows) {
         if (volunteer.assignmentName) uniqueNames.add(volunteer.assignmentName);
         if (volunteer.projectName) uniqueNames.add(volunteer.projectName);
@@ -371,46 +264,32 @@ export const uploadVolunteerBatch: RequestHandler<
           uniqueNames.add(shiftName);
         }
       }
-
       const [allTags, savedVolunteers] = await Promise.all([
-        TagModel.find({ name: { $in: [...uniqueNames] } }),
-        VolunteerModel.find({
+        tagModel_1.default.find({ name: { $in: [...uniqueNames] } }),
+        volunteerModel_1.default.find({
           $or: uniqueVolunteers.flatMap((volunteer) => [
             { email: volunteer.email },
             { phoneNumber: volunteer.phoneNumber },
           ]),
         }),
       ]);
-
       const tagByName = new Map(allTags.map((tag) => [tag.name, tag]));
-      const volunteerByKey = new Map<string, (typeof savedVolunteers)[number]>();
+      const volunteerByKey = new Map();
       for (const volunteer of savedVolunteers) {
         volunteerByKey.set(volunteer.email, volunteer);
         volunteerByKey.set(volunteer.phoneNumber, volunteer);
       }
-
-      const groupedAssignments = new Map<
-        string,
-        {
-          volunteer: CreateVolunteerImportBody;
-          assignmentTag: string;
-          projectTag: string;
-          shiftNames: Set<string>;
-        }
-      >();
-
+      const groupedAssignments = new Map();
       for (const row of assignmentRows) {
         const key = makeVolunteerImportKey(row);
         const assignmentKey = `${key}|${row.assignmentName}|${row.projectName}`;
         const current = groupedAssignments.get(assignmentKey);
-
         if (current) {
           for (const shiftName of row.shiftNames ?? []) {
             current.shiftNames.add(shiftName);
           }
           continue;
         }
-
         groupedAssignments.set(assignmentKey, {
           volunteer: row,
           assignmentTag: row.assignmentName ?? "",
@@ -418,33 +297,29 @@ export const uploadVolunteerBatch: RequestHandler<
           shiftNames: new Set(row.shiftNames ?? []),
         });
       }
-
       const assignmentOps = [...groupedAssignments.values()].map((entry) => {
         const volunteer =
           volunteerByKey.get(entry.volunteer.email) ??
           volunteerByKey.get(entry.volunteer.phoneNumber);
-
         if (!volunteer) {
-          throw createError(400, `Could not resolve volunteer for ${entry.volunteer.email}`);
+          throw (0, http_errors_1.default)(
+            400,
+            `Could not resolve volunteer for ${entry.volunteer.email}`,
+          );
         }
-
         const assignmentTag = tagByName.get(entry.assignmentTag);
         const projectTag = tagByName.get(entry.projectTag);
-
         if (!assignmentTag || assignmentTag.type !== "assignment") {
-          throw createError(400, `Unknown assignment tag: ${entry.assignmentTag}`);
+          throw (0, http_errors_1.default)(400, `Unknown assignment tag: ${entry.assignmentTag}`);
         }
-
         if (!projectTag || projectTag.type !== "project") {
-          throw createError(400, `Unknown project tag: ${entry.projectTag}`);
+          throw (0, http_errors_1.default)(400, `Unknown project tag: ${entry.projectTag}`);
         }
-
         const shiftTagIds = [...entry.shiftNames]
           .map((shiftName) => tagByName.get(shiftName))
-          .filter((tag): tag is NonNullable<typeof tag> => Boolean(tag))
+          .filter((tag) => Boolean(tag))
           .filter((tag) => tag.type === "shift")
           .map((tag) => tag._id);
-
         return {
           updateOne: {
             filter: {
@@ -459,24 +334,22 @@ export const uploadVolunteerBatch: RequestHandler<
           },
         };
       });
-
-      await VolunteerAssignmentModel.bulkWrite(assignmentOps, { ordered: false });
+      await volunteerAssignmentModel_1.default.bulkWrite(assignmentOps, { ordered: false });
     }
-
     res.status(200).json({
       message: "Volunteers created successfully",
       created: createdVolunteers.upsertedCount,
       updated: createdVolunteers.modifiedCount,
     });
-  } catch (err: any) {
-    if ((err as MongoBulkWriteError)?.name === "MongoBulkWriteError") {
-      const typedErr = err as MongoBulkWriteError;
+  } catch (err) {
+    if (err?.name === "MongoBulkWriteError") {
+      const typedErr = err;
       const failedBodies = [];
-      const writeErrors: WriteError[] = Array.isArray(typedErr.writeErrors)
-        ? (typedErr.writeErrors as WriteError[])
-        : [typedErr.writeErrors as WriteError];
+      const writeErrors = Array.isArray(typedErr.writeErrors)
+        ? typedErr.writeErrors
+        : [typedErr.writeErrors];
       for (const writeError of writeErrors) {
-        const body = (writeError.err?.op as UpdateVolunteerOp)?.u?.$set;
+        const body = writeError.err?.op?.u?.$set;
         failedBodies.push(body);
       }
       res.status(500).json({
@@ -490,9 +363,9 @@ export const uploadVolunteerBatch: RequestHandler<
     next(err);
   }
 };
-
-const validateVolunteer = (volunteer: unknown) => {
-  const typedVolunteer = volunteer as CreateVolunteerBody;
+exports.uploadVolunteerBatch = uploadVolunteerBatch;
+const validateVolunteer = (volunteer) => {
+  const typedVolunteer = volunteer;
   if (!typedVolunteer?.firstName || !typedVolunteer?.lastName) {
     return false;
   }
@@ -504,8 +377,7 @@ const validateVolunteer = (volunteer: unknown) => {
   }
   return true;
 };
-
-const statusKeyToEnum = (key: string): string => {
+const statusKeyToEnum = (key) => {
   key = key.trim().toUpperCase();
   if (key === "R") {
     return "returning";
@@ -515,12 +387,10 @@ const statusKeyToEnum = (key: string): string => {
     return key;
   }
 };
-
-const createCSVCreationBody = (data: Record<string, string>): CreateVolunteerImportBody => {
+const createCSVCreationBody = (data) => {
   const assignmentName = normalizeCsvText(data.Assignment || data["Volunteer Type"] || data.Role);
   const projectName = normalizeCsvText(data.Project || data.Event);
   const shiftNames = parseCsvList(data.Shift || data.Shifts);
-
   const result = {
     firstName: data.First,
     lastName: data.Last,
@@ -530,77 +400,67 @@ const createCSVCreationBody = (data: Record<string, string>): CreateVolunteerImp
     ...(assignmentName ? { assignmentName } : {}),
     ...(projectName ? { projectName } : {}),
     ...(shiftNames.length ? { shiftNames } : {}),
-  } as CreateVolunteerImportBody;
+  };
   return result;
 };
-
-const parseVolunteersHelper = async (fileBuffer: Buffer) => {
-  const parsedVolunteers: CreateVolunteerImportBody[] = [] as CreateVolunteerImportBody[];
-  const bufferStream = new PassThrough();
+const parseVolunteersHelper = async (fileBuffer) => {
+  const parsedVolunteers = [];
+  const bufferStream = new node_stream_1.PassThrough();
   bufferStream.end(fileBuffer);
-
-  await new Promise<void>((resolve, reject) => {
+  await new Promise((resolve, reject) => {
     bufferStream
-      .pipe(csvParser())
-      .on("data", (data: Record<string, string>) => {
+      .pipe((0, csv_parser_1.default)())
+      .on("data", (data) => {
         if (data.Count === "0") {
           return;
         }
         const creationBody = createCSVCreationBody(data);
         const valid = validateVolunteer(creationBody);
-
         if (!valid) {
           bufferStream.destroy();
-          reject(createError(400, `Invalid volunteer data: ${JSON.stringify(data)}`));
+          reject(
+            (0, http_errors_1.default)(400, `Invalid volunteer data: ${JSON.stringify(data)}`),
+          );
           return;
         }
-
         parsedVolunteers.push(creationBody);
       })
       .on("end", resolve)
       .on("error", reject);
   });
-
   return parsedVolunteers;
 };
-
-export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
+const parseVolunteersCsv = async (req, res, next) => {
   try {
     if (req.file === undefined) {
-      throw createError(400, "No CSV file attached");
+      throw (0, http_errors_1.default)(400, "No CSV file attached");
     }
-
     const parsedVolunteers = await parseVolunteersHelper(req.file.buffer);
-
-    const mockReq = { body: { volunteers: parsedVolunteers } } as unknown as Request;
-    await Promise.all(batchCreateVolunteerValidator.map(async (v) => v.run(mockReq)));
-
-    const errors = validationResult(mockReq);
+    const mockReq = { body: { volunteers: parsedVolunteers } };
+    await Promise.all(
+      volunteerValidator_1.batchCreateVolunteerValidator.map(async (v) => v.run(mockReq)),
+    );
+    const errors = (0, express_validator_1.validationResult)(mockReq);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
     const emails = parsedVolunteers.map((v) => v.email);
     const phoneNumbers = parsedVolunteers.map((v) => v.phoneNumber);
-    const existing = await VolunteerModel.find({
+    const existing = await volunteerModel_1.default.find({
       // Find all in one await
       $or: [{ email: { $in: emails } }, { phoneNumber: { $in: phoneNumbers } }],
     });
-
-    const existingSet = new Set<string>();
+    const existingSet = new Set();
     existing.forEach((volunteer) => {
       existingSet.add(volunteer.email);
       existingSet.add(volunteer.phoneNumber);
     });
-
     const wouldCreate = parsedVolunteers
       .filter((v) => !existingSet.has(v.email) && !existingSet.has(v.phoneNumber))
       .map((v) => v.email);
-
     const wouldUpdate = parsedVolunteers
       .filter((v) => existingSet.has(v.email) || existingSet.has(v.phoneNumber))
       .map((v) => v.email);
-
     res.status(200).json({
       message: "CSV parsed successfully",
       volunteerInfo: parsedVolunteers,
@@ -614,15 +474,13 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
     next(err);
   }
 };
-
-export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
+exports.parseVolunteersCsv = parseVolunteersCsv;
+const createVolunteersCsv = async (req, res, next) => {
   try {
     if (req.file === undefined) {
-      throw createError(400, "No CSV file attached");
+      throw (0, http_errors_1.default)(400, "No CSV file attached");
     }
-
     const volunteerCreationBodies = await parseVolunteersHelper(req.file.buffer);
-
     const bulkOps = volunteerCreationBodies.map((body) => ({
       updateOne: {
         filter: {
@@ -631,28 +489,27 @@ export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
         update: {
           $set: normalizeVolunteerForBulkWrite(body),
           // Mongo operator to set a field to the current date
-          $currentDate: { updated: true as const },
+          $currentDate: { updated: true },
         },
         upsert: true,
       },
     }));
     // Continue writing others even if one fails
-    const createdVolunteers = await VolunteerModel.bulkWrite(bulkOps, { ordered: false });
-
+    const createdVolunteers = await volunteerModel_1.default.bulkWrite(bulkOps, { ordered: false });
     res.status(200).json({
       message: "Volunteers created successfully",
       created: createdVolunteers.upsertedCount,
       updated: createdVolunteers.modifiedCount,
     });
   } catch (err) {
-    if ((err as MongoBulkWriteError)?.name === "MongoBulkWriteError") {
-      const typedErr = err as MongoBulkWriteError;
+    if (err?.name === "MongoBulkWriteError") {
+      const typedErr = err;
       const failedBodies = [];
-      const writeErrors: WriteError[] = Array.isArray(typedErr.writeErrors)
-        ? (typedErr.writeErrors as WriteError[])
-        : [typedErr.writeErrors as WriteError];
+      const writeErrors = Array.isArray(typedErr.writeErrors)
+        ? typedErr.writeErrors
+        : [typedErr.writeErrors];
       for (const writeError of writeErrors) {
-        const body = (writeError.err?.op as UpdateVolunteerOp)?.u?.$set;
+        const body = writeError.err?.op?.u?.$set;
         failedBodies.push(body);
       }
       res.status(500).json({
@@ -666,51 +523,39 @@ export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
     next(err);
   }
 };
-
-export const getSelectedVolunteers: RequestHandler = async (req, res, next) => {
-  const { events, statuses } = req.body as { events: string[]; statuses: string[] };
+exports.createVolunteersCsv = createVolunteersCsv;
+const getSelectedVolunteers = async (req, res, next) => {
+  const { events, statuses } = req.body;
   try {
-    const volunteerFilter: {
-      tags?: { $in: Types.ObjectId[] };
-      status?: { $in: Array<"new" | "returning"> };
-    } = {};
-
+    const volunteerFilter = {};
     if (events.length > 0) {
-      const tagEventsMap = await TagModel.find({
-        name: { $in: events },
-        type: "project" as const,
-      }).select("_id");
-
+      const tagEventsMap = await tagModel_1.default
+        .find({
+          name: { $in: events },
+          type: "Event",
+        })
+        .select("_id");
       const tagEvents = tagEventsMap.map((tag) => tag._id);
-
       if (tagEvents.length !== events.length) {
         return res.status(400).json({ error: "One or more event tags not found" });
       }
-
       volunteerFilter.tags = { $in: tagEvents };
     }
-
-    const selectedStatuses = statuses.filter(
-      (status): status is "new" | "returning" => status === "new" || status === "returning",
-    );
-
-    if (selectedStatuses.length > 0) {
-      volunteerFilter.status = { $in: selectedStatuses };
+    if (statuses.length > 0) {
+      volunteerFilter.status = { $in: statuses };
     }
-
-    const volunteersMap = await VolunteerModel.find(volunteerFilter).select(
-      "_id firstName lastName email phoneNumber",
-    );
-
+    const volunteersMap = await volunteerModel_1.default
+      .find(volunteerFilter)
+      .select("_id firstName lastName email phoneNumber");
     return res.status(200).json(volunteersMap);
   } catch (err) {
     next(err);
   }
 };
-
-export const getVolunteerRows: RequestHandler = async (req, res, next) => {
+exports.getSelectedVolunteers = getSelectedVolunteers;
+const getVolunteerRows = async (req, res, next) => {
   try {
-    const volunteers = await VolunteerModel.find();
+    const volunteers = await volunteerModel_1.default.find();
     const volunteerRows = volunteers.map((volunteer) => ({
       id: volunteer._id,
       firstName: volunteer.firstName,
@@ -721,3 +566,4 @@ export const getVolunteerRows: RequestHandler = async (req, res, next) => {
     next(err);
   }
 };
+exports.getVolunteerRows = getVolunteerRows;

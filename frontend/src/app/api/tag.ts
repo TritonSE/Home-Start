@@ -126,3 +126,48 @@ export async function fetchProjectProgramMaps(): Promise<ProjectProgramMapDTO[]>
       : new Error("An unknown error occurred while fetching project-program maps");
   }
 }
+
+export async function searchTags(name?: string, type?: string): Promise<VolunteerTag[]> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const url = new URL(`${API_BASE_URL}/api/tag`);
+    if (name) {
+      url.searchParams.append("name", name);
+    }
+    if (type) {
+      url.searchParams.append("type", type);
+    }
+
+    const response = await fetch(url.toString(), {
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to search tags: ${response.status} ${response.statusText}`);
+    }
+
+    const data: unknown = await response.json();
+    if (!Array.isArray(data)) {
+      throw new TypeError("Unexpected response format: expected an array of tags");
+    }
+
+    return data.map((tag, index) => {
+      if (!isTagDTO(tag)) {
+        throw new TypeError(`Unexpected tag format at index ${index}`);
+      }
+
+      return {
+        _id: tag._id,
+        name: tag.name,
+        color: tag.color,
+        type: tag.type,
+      };
+    });
+  } catch (error) {
+    console.error("Error searching tags:", error);
+    throw error instanceof Error
+      ? error
+      : new Error("An unknown error occurred while searching tags");
+  }
+}

@@ -184,7 +184,8 @@ export default function VolunteerTable({
                       volunteer.status === "new" ? styles.pillTagNew : styles.pillTagReturning
                     }
                   >
-                    {volunteer.status.charAt(0).toUpperCase() + volunteer.status.slice(1)}
+                    {(volunteer.status ?? "new").charAt(0).toUpperCase() +
+                      (volunteer.status ?? "new").slice(1)}
                   </span>
                 </div>
               </td>
@@ -193,7 +194,11 @@ export default function VolunteerTable({
                 <div className={styles.tagsContainerNoWrap}>
                   {(() => {
                     const { visibleTags, hiddenCount } = getVisibleTags(
-                      volunteer.tags ?? [],
+                      Array.isArray(volunteer.programTagIds) && volunteer.programTagIds.length > 0
+                        ? volunteer.programTagIds.filter(
+                            (tag): tag is VolunteerTag => typeof tag === "object" && tag !== null,
+                          )
+                        : (volunteer.tags ?? []),
                       "program",
                       1,
                     );

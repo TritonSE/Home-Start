@@ -56,6 +56,23 @@
   color: #000000;
 }
 
+.lastEditedWrapper {
+  width: 100%;
+  margin-bottom: -8px;
+}
+
+.lastEdited {
+  font-family: "Open Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #676767;
+  line-height: 16px;
+}
+
+.lastEdited strong {
+  color: #141414;
+}
+
 .closeButton {
   width: 24px;
   height: 24px;
@@ -152,7 +169,7 @@
 .editSection {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 24px;
   width: 100%;
 }
 
@@ -188,6 +205,265 @@
 
 .editInput:focus {
   border-color: #1d3a6b;
+}
+
+.twoColumnRow {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.twoColItem {
+  flex: 1;
+}
+
+.sectionHeaders {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 0; /* per-mode margins handled below to ensure exact 24px spacing */
+  width: 100%;
+}
+
+/* In view mode (`.infoSection`) the container gap is 16px; keep no additional margin */
+.infoSection .sectionHeaders {
+  margin-top: 0;
+}
+
+/* In edit mode (`.editSection`) the container gap is 24px; keep top margin 0 */
+.editSection .sectionHeaders {
+  margin-top: 0;
+}
+
+/* Each section within sectionHeaders should have 24px margin-bottom to separate from next section header */
+.sectionHeaders > div {
+  margin-bottom: 12px;
+}
+
+.sectionHeader {
+  color: #000000;
+  /* Body/md-semibold */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-md-font-size, 16px);
+  font-style: normal;
+  font-weight: 700;
+  line-height: var(--paragraph-md-line-height, 20px);
+  letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
+}
+
+.sectionHeaderRow {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.tapRemoveHint {
+  color: var(--Text-gray, #676767);
+  /* Body/xsm */
+  font-family: var(--Font-family-Body, "Open Sans"), sans-serif;
+  font-size: var(--paragraph-xsm-font-size, 12px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-xsm-line-height, 16px); /* 133.333% */
+  flex-shrink: 0;
+}
+
+.statusToggleRow {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+.statusToggleButton {
+  display: flex;
+  padding: 12px 20px;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex: 1 0 0;
+  border-radius: 64px;
+  border: 1px solid var(--Border-default, #e8e8e8);
+  background: none;
+  cursor: pointer;
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #141414;
+}
+
+.statusSelected {
+  border: 1px solid var(--Icons-ic-action, #1d3a6b);
+  background: var(--foundation-off-white, #ecf3f3);
+}
+
+/* pill tag styles reused from VolunteerTable */
+.pillTagNew {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 8px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  gap: 8px;
+  font-size: 12px;
+  min-height: 32px;
+  line-height: 16px;
+  background-color: #f9efe6;
+  color: #c46200;
+}
+
+.pillTagReturning {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 8px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  gap: 8px;
+  font-size: 12px;
+  min-height: 32px;
+  line-height: 16px;
+  background-color: #e9ecf1;
+  color: #1d3a6b;
+}
+
+/* Consent status buttons for View mode */
+.consentRowView {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.consentColView {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  align-items: flex-start;
+}
+
+.consentButtonsRow {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.consentButtonsRow > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.consentFieldLabel {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  color: #676767;
+}
+
+.consentButton {
+  display: flex;
+  padding: 8px 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  width: max-content;
+}
+
+.consentNo {
+  color: var(--Text-error, #a40026);
+  background: var(--Surface-error-light, #f6e6e9);
+}
+
+.consentYes {
+  background: var(--Surface-success, #e6f2ec);
+  color: var(--Text-success, #007f3f);
+}
+
+.consentFirst {
+  background: var(--Surface-purple, #efebf3);
+  color: var(--Text-txt-purple, #452861);
+}
+
+/* Consent status dropdowns for Edit mode */
+.consentDropdownsRow {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.consentDropdownItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.customDropdownWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.consentDropdownCustom {
+  display: flex;
+  padding: 12px 16px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  align-self: stretch;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #141414;
+  background: #ffffff;
+  cursor: pointer;
+  outline: none;
+  width: 100%;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 1L6 6L11 1" stroke="%23141414" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+.consentDropdownCustom:hover {
+  border-color: #1d3a6b;
+}
+
+.consentDropdownCustom:focus {
+  border-color: #1d3a6b;
+  outline: none;
 }
 
 .tagsSection {
@@ -345,6 +621,80 @@
 .saveButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Tags wrapper for Groups/Programs sections */
+.tagsWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  align-items: flex-start;
+  margin-top: 8px;
+}
+
+.pillTag {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 100px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  gap: 8px;
+  font-size: 12px;
+  min-height: 32px;
+  line-height: 16px;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 500;
+}
+
+.pillTagWithClose {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  padding-left: 12px;
+  padding-right: 8px;
+  border-radius: 100px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  gap: 8px;
+  font-size: 12px;
+  min-height: 32px;
+  line-height: 16px;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 500;
+}
+
+.tagCloseButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #a40026;
+  line-height: 1;
+}
+
+.tagCloseButton svg {
+  stroke: #a40026;
+  width: 12px;
+  height: 12px;
+}
+
+.tagSearchSection {
+  margin-top: 12px;
+  margin-bottom: 24px;
 }
 
 @media (max-width: 768px) {

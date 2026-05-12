@@ -79,6 +79,7 @@ export default function Page() {
           volunteerTags.push(tag);
         };
 
+        // Add assignment and project tags
         for (const assignment of volunteerAssignments) {
           pushTag(assignment.assignmentTagId);
           pushTag(assignment.projectTagId);
@@ -86,6 +87,35 @@ export default function Page() {
 
           for (const shiftTag of assignment.shiftTagIds ?? []) {
             pushTag(shiftTag);
+          }
+        }
+
+        // Add group tags from groupIds
+        if (Array.isArray(volunteer.groupIds) && volunteer.groupIds.length > 0) {
+          for (const groupId of volunteer.groupIds) {
+            const groupTag = tagData.find((tag) => tag._id === groupId);
+            pushTag(groupTag);
+          }
+        }
+
+        // Add directly saved group/program tags so filters use the latest edits.
+        if (Array.isArray(volunteer.groupTagIds) && volunteer.groupTagIds.length > 0) {
+          for (const groupTag of volunteer.groupTagIds) {
+            if (typeof groupTag === "string") {
+              pushTag(tagData.find((tag) => tag._id === groupTag));
+            } else {
+              pushTag(groupTag);
+            }
+          }
+        }
+
+        if (Array.isArray(volunteer.programTagIds) && volunteer.programTagIds.length > 0) {
+          for (const programTag of volunteer.programTagIds) {
+            if (typeof programTag === "string") {
+              pushTag(tagData.find((tag) => tag._id === programTag));
+            } else {
+              pushTag(programTag);
+            }
           }
         }
 
@@ -331,11 +361,7 @@ export default function Page() {
           onClose={handleSheetClose}
           onVolunteerUpdated={(updatedVolunteer) => {
             setSelectedVolunteer(updatedVolunteer);
-            setVolunteers((prev) =>
-              prev.map((volunteer) =>
-                volunteer._id === updatedVolunteer._id ? updatedVolunteer : volunteer,
-              ),
-            );
+            void loadVolunteers();
           }}
         />
       </div>

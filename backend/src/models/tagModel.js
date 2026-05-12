@@ -1,8 +1,7 @@
-import { model, Schema } from "mongoose";
-
-import type { InferSchemaType } from "mongoose";
-
-const tagSchema = new Schema({
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = require("mongoose");
+const tagSchema = new mongoose_1.Schema({
   name: { type: String, required: true, trim: true, unique: true },
   color: { type: String, required: true, trim: true },
   type: {
@@ -11,7 +10,4 @@ const tagSchema = new Schema({
     required: true,
   },
 });
-
-type Tag = InferSchemaType<typeof tagSchema>;
-
-export default model<Tag>("Tag", tagSchema);
+exports.default = (0, mongoose_1.model)("Tag", tagSchema);

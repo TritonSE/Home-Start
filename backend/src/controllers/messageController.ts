@@ -102,6 +102,7 @@ export const sendEmails = async (req: Request, res: Response, next: NextFunction
             },
           ],
         };
+
         const reqBody = {
           message: messageBody,
           saveToSentItems: true,

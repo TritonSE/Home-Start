@@ -184,11 +184,15 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
                     mask: IMask.MaskedRange,
                     from: 1,
                     to: 12,
+                    maxLength: 2,
+                    autofix: "pad",
                   },
                   mm: {
                     mask: IMask.MaskedRange,
                     from: 0,
                     to: 59,
+                    maxLength: 2,
+                    autofix: "pad",
                   },
                 }}
                 placeholder="HH:MM"

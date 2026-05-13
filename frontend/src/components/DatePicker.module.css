@@ -1,0 +1,79 @@
+.calendarContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.week {
+  display: flex;
+  align-items: flex-start;
+  align-self: stretch;
+  gap: 0px;
+
+  color: var(--Text-headings, #141414);
+  text-align: center;
+
+  /* Body/sm */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-sm-font-size, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-sm-line-height, 20px); /* 142.857% */
+  letter-spacing: var(--paragraph-sm-letter-spacing, 0.8px);
+}
+
+.day {
+  display: flex;
+  /* padding: 16px; */
+  min-width: 50px;
+  height: 44px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 1 0 0;
+}
+
+.dateGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  gap: 0px;
+}
+
+.dateCell {
+  border: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 44px;
+  min-width: 50px;
+  padding: 12px 2px;
+  justify-content: center;
+  align-items: center;
+
+  color: var(--Text-headings, #141414);
+  background: var(--Neutral-White, #fff);
+
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-sm-font-size, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-sm-line-height, 20px); /* 142.857% */
+  letter-spacing: var(--paragraph-sm-letter-spacing, 0.8px);
+
+  cursor: pointer;
+}
+
+.selectedDate {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+
+  border-radius: 40px;
+  background: var(--Surface-action, #1d3a6b);
+  color: var(--Inverse-Content-contentInversePrimary, #fff);
+}

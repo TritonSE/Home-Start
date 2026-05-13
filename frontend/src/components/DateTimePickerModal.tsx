@@ -1,10 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { IMask, IMaskInput } from "react-imask";
 
+import { DatePicker } from "./DatePicker";
 import styles from "./DateTimePickerModal.module.css";
+import { DropDown } from "./DropDown";
 import Modal from "./Modal";
 
 import chevronLeftAsset from "@/assets/chevron_left.svg";
@@ -25,12 +27,6 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
   const [monthDropDown, setMonthDropDown] = useState<boolean>(false);
   const [yearDropDown, setYearDropDown] = useState<boolean>(false);
   const [timePeriodDropDown, setTimePeriodDropDown] = useState<boolean>(false);
-  // const initialFormattedSelectedTime = selectedDate.toLocaleTimeString("en-US", {
-  //   hour: "numeric",
-  //   minute: "2-digit",
-  //   hour12: true,
-  // });
-  // const [initialFormattedTime, initialFormattedTimePeriod] = initialFormattedSelectedTime.split(" ");
   const [timeNum, setTimeNum] = useState("");
   const [timePeriod, setTimePeriod] = useState("");
   const currYear = currentDate.getFullYear();
@@ -50,23 +46,8 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
   const monthList = Array.from({ length: 12 }, (_, i) =>
     new Date(2000, i, 1).toLocaleString("default", { month: "long" }),
   );
-
   const yearList = Array.from({ length: 2 }, (_, i) => new Date().getFullYear() + i);
-
   const timePeriodList = ["AM", "PM"];
-
-  const isSameDate = (d1: Date, d2: Date) =>
-    d1.getDate() === d2.getDate() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getFullYear() === d2.getFullYear();
-
-  const getDaysInMonth = (year: number, month: number) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
-
-  const getFirstDayOfMonth = (year: number, month: number) => {
-    return new Date(year, month, 1).getDay();
-  };
 
   const handlePrevMonth = () => {
     const newMonth = currMonth === 0 ? 11 : currMonth - 1;
@@ -85,8 +66,8 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
     setMonthDropDown(false);
   };
 
-  const handleSelectYear = (year: number) => {
-    setCurrentDate(new Date(year, currMonth, 1));
+  const handleSelectYear = (yearIndex: number) => {
+    setCurrentDate(new Date(yearList[yearIndex], currMonth, 1));
     setYearDropDown(false);
   };
 
@@ -126,43 +107,6 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
     setTimePeriodDropDown(false);
   };
 
-  const daysInMonth = getDaysInMonth(currYear, currMonth);
-  const firstDay = getFirstDayOfMonth(currYear, currMonth);
-  const dates = [];
-
-  for (let i = 0; i < firstDay; i++) {
-    dates.push(<div key={`emptyDateCell-${i.toString()}`} />);
-  }
-
-  for (let i = 1; i <= daysInMonth; i++) {
-    const day = new Date(currYear, currMonth, i);
-    const isSelected = selectedDate && isSameDate(day, selectedDate);
-
-    dates.push(
-      <button
-        type="button"
-        key={i}
-        className={styles.dateCell}
-        onClick={() => {
-          handleSelectDay(i);
-        }}
-      >
-        {isSelected ? <span className={styles.selectedDate}>{i}</span> : <span>{i}</span>}
-      </button>,
-    );
-  }
-
-  for (let i = dates.length; i <= 35; i++) {
-    dates.push(<div key={`emptyDateCell-${i.toString()}`} className={styles.dateCell} />);
-  }
-
-  // const formattedSelectedTime = selectedDate.toLocaleTimeString("en-US", {
-  //   hour: "numeric",
-  //   minute: "2-digit",
-  //   hour12: true,
-  // });
-  // const [formattedTime, formattedTimePeriod] = formattedSelectedTime.split(" ");
-
   return (
     <Modal
       onClose={onClose}
@@ -187,58 +131,28 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
                 style={{ cursor: "pointer" }}
               />
             </div>
-            <div
-              className={styles.month}
-              onClick={(e) => {
-                e.stopPropagation();
+            <DropDown
+              onClick={() => {
                 setMonthDropDown(!monthDropDown);
               }}
-            >
-              <div>{currentDate.toLocaleString("default", { month: "long" })}</div>
-              {monthDropDown && (
-                <div className={styles.dropDown}>
-                  <div className={styles.dropdownScroll}>
-                    {monthList.map((month, i) => (
-                      <div
-                        className={styles.dropdownItem}
-                        key={month}
-                        onClick={() => {
-                          handleSelectMonth(i);
-                        }}
-                      >
-                        {month}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            <div
-              className={styles.year}
-              onClick={(e) => {
-                e.stopPropagation();
+              selectedDisplay={currentDate.toLocaleString("default", { month: "long" })}
+              dropdownOpen={monthDropDown}
+              items={monthList}
+              onSelect={(i) => {
+                handleSelectMonth(i);
+              }}
+            />
+            <DropDown
+              onClick={() => {
                 setYearDropDown(!yearDropDown);
               }}
-            >
-              <div>{currentDate.getFullYear()}</div>
-              {yearDropDown && (
-                <div className={styles.dropDown}>
-                  <div className={styles.dropdownScroll}>
-                    {yearList.map((year) => (
-                      <div
-                        className={styles.dropdownItem}
-                        key={year}
-                        onClick={() => {
-                          handleSelectYear(year);
-                        }}
-                      >
-                        {year}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+              selectedDisplay={currentDate.getFullYear().toString()}
+              dropdownOpen={yearDropDown}
+              items={yearList}
+              onSelect={(i) => {
+                handleSelectYear(i);
+              }}
+            />
             <div className={styles.arrowPaddingRight}>
               <Image
                 src={chevronRight}
@@ -250,16 +164,13 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
               />
             </div>
           </div>
-          <div className={styles.week}>
-            <span className={styles.day}>Su</span>
-            <span className={styles.day}>Mo</span>
-            <span className={styles.day}>Tu</span>
-            <span className={styles.day}>We</span>
-            <span className={styles.day}>Th</span>
-            <span className={styles.day}>Fr</span>
-            <span className={styles.day}>Sa</span>
-          </div>
-          <div className={styles.dateGrid}>{dates}</div>
+          <DatePicker
+            currentDate={currentDate}
+            selectedDate={selectedDate}
+            onSelect={(i) => {
+              handleSelectDay(i);
+            }}
+          />
         </div>
         <div className={styles.time}>
           <span className={styles.timeLabel}>Time</span>
@@ -305,32 +216,17 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
                 }}
               />
             </div>
-            <div
-              className={`${styles.selectedTime} ${styles.periodDropdownWrap}`}
-              onClick={(e) => {
-                e.stopPropagation();
+            <DropDown
+              onClick={() => {
                 setTimePeriodDropDown(!timePeriodDropDown);
               }}
-            >
-              <div className={styles.timeInput}>{timePeriod}</div>
-              {timePeriodDropDown && (
-                <div className={styles.dropDown}>
-                  <div className={styles.dropdownScroll}>
-                    {timePeriodList.map((period, i) => (
-                      <div
-                        className={styles.dropdownItemTime}
-                        key={i}
-                        onClick={() => {
-                          handleSelectTime(timeNum, period);
-                        }}
-                      >
-                        {period}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+              selectedDisplay={timePeriod}
+              dropdownOpen={timePeriodDropDown}
+              items={timePeriodList}
+              onSelect={(i) => {
+                handleSelectTime(timeNum, timePeriodList[i]);
+              }}
+            />
           </div>
         </div>
         <div className={styles.buttons}>

@@ -98,7 +98,7 @@ export default function TemplatePage() {
   const onToastDone = async () => {
     setShowSuccess(false);
     if (await initMsal()) {
-      void router.push("/communication?try-login=true");
+      void router.push("/communication");
     } else {
       await signInWithOutlook();
     }

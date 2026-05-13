@@ -13,6 +13,7 @@ import type { Template } from "@/app/api/template";
 import { deleteTemplate, getTemplates, TemplateType } from "@/app/api/template";
 import icAddAsset from "@/assets/ic_add.svg";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
+import { initMsal, signInWithOutlook } from "@/auth/msal";
 import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 import TemplateActionPopup from "@/components/TemplateActionPopup";
@@ -94,9 +95,13 @@ export default function TemplatePage() {
     }
   };
 
-  const onToastDone = () => {
+  const onToastDone = async () => {
     setShowSuccess(false);
-    void router.push("/communication");
+    if (await initMsal()) {
+      void router.push("/communication?try-login=true");
+    } else {
+      await signInWithOutlook();
+    }
   };
 
   return (
@@ -105,7 +110,9 @@ export default function TemplatePage() {
         open={showSuccess}
         message="Your template was pasted."
         durationMs={1600}
-        onDone={onToastDone}
+        onDone={() => {
+          void onToastDone();
+        }}
       />
       <div className={styles.page}>
         <header className={styles.header}>

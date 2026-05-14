@@ -57,9 +57,9 @@ export const createTag: RequestHandler = async (req, res, next) => {
   try {
     validationErrorParser(errors);
 
-    const tag = await TagModel.findOne({ name });
+    const tag = await TagModel.findOne({ name, type });
     if (tag) {
-      throw createHttpError(409, "Tag with this name already exists");
+      throw createHttpError(409, "Tag with this name and type already exists");
     }
 
     const newTag = await TagModel.create({

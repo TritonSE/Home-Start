@@ -10,6 +10,7 @@ import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer"
 import styles from "@/app/page.module.css";
 import CreateRoleModal from "@/components/CreateRoleModal";
 import CreateShiftModal from "@/components/CreateShiftModal";
+import EditTagModal from "@/components/EditTagModal";
 import PageBar from "@/components/PageBar";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
@@ -31,8 +32,10 @@ type ProjectProgramMap = {
 export default function Page() {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
   const [showCreateTagModal, setShowCreateTagModal] = useState(false);
   const [showCreateShiftModal, setShowCreateShiftModal] = useState(false);
+  const [showEditTagModal, setShowEditTagModal] = useState(false);
 
   const [search, setSearch] = useState("");
   const [selectedProject, setSelectedProject] = useState<Set<string>>(new Set());
@@ -102,6 +105,7 @@ export default function Page() {
 
       setVolunteers(volunteersWithTags);
       setTags(tagData);
+      setAssignments(assignmentData);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -271,7 +275,14 @@ export default function Page() {
 
   const renderCreateShiftModal = () => {
     if (!showCreateShiftModal) return null;
-    //return <CreateShiftModal onClose={() => setShowCreateShiftModal(false)} />;
+    // For testing: find assignment with id 69f98cb6e9e25f2173e429ff
+    const testAssignment = assignments.find((a) => a._id === "69f98cb6e9e25f2173e429ff") || null;
+    return <CreateShiftModal onClose={() => setShowCreateShiftModal(false)} assignment={testAssignment} />;
+  };
+
+  const renderEditTagModal = () => {
+    if (!showEditTagModal) return null;
+    return <EditTagModal onClose={() => setShowEditTagModal(false)} />;
   };
 
   return (
@@ -280,6 +291,7 @@ export default function Page() {
         <main className={styles.main}>
           {renderCreateTagModal()}
           {renderCreateShiftModal()}
+          {renderEditTagModal()}
 
           <div style={{ display: 'flex', gap: 8 }}>
             <button
@@ -295,6 +307,13 @@ export default function Page() {
               onClick={() => setShowCreateShiftModal(true)}
             >
               Create Shift Tag Modal
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowEditTagModal(true)}
+            >
+              Edit Tag Modal
             </button>
           </div>
 

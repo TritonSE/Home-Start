@@ -1,9 +1,10 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import styles from "./CreateShiftModal.module.css";
 import { COLOR_OPTIONS } from "./colorOptions";
+import type { VolunteerTag } from "@/types/volunteer";
 
 import icCloseLargeAsset from "@/assets/ic_close_large.svg";
 
@@ -11,6 +12,7 @@ const icCloseLarge = icCloseLargeAsset as string;
 
 type Props = {
   onClose: () => void;
+  tag: VolunteerTag;
 };
 
 function CheckIcon({ color }: { color: string }) {
@@ -26,10 +28,19 @@ function CheckIcon({ color }: { color: string }) {
   );
 }
 
-export default function EditTagModal({ onClose }: Props) {
-  const [tagName, setTagName] = useState("");
+export default function EditTagModal({ onClose, tag }: Props) {
+  const [tagName, setTagName] = useState(tag.name);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
   const isTagNameEmpty = tagName.trim().length === 0;
+
+  useEffect(() => {
+    setTagName(tag.name);
+
+    const matchingColorIndex = COLOR_OPTIONS.findIndex(
+      (option) => option.backgroundColor.toLowerCase() === tag.color.toLowerCase(),
+    );
+    setSelectedColorIndex(matchingColorIndex >= 0 ? matchingColorIndex : 0);
+  }, [tag]);
 
   const handleSave = async () => {
     // TODO: Implement save logic

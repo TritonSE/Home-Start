@@ -282,7 +282,12 @@ export default function Page() {
 
   const renderEditTagModal = () => {
     if (!showEditTagModal) return null;
-    return <EditTagModal onClose={() => setShowEditTagModal(false)} />;
+
+    // For testing: find tag with id 69f98cb3e9e25f2173e4293e
+    const testTag = tags.find((tag) => tag._id === "69f98cb3e9e25f2173e4293e");
+    if (!testTag) return null;
+
+    return <EditTagModal onClose={() => setShowEditTagModal(false)} tag={testTag} />;
   };
 
   return (
@@ -309,10 +314,7 @@ export default function Page() {
               Create Shift Tag Modal
             </button>
 
-            <button
-              type="button"
-              onClick={() => setShowEditTagModal(true)}
-            >
+            <button type="button" onClick={() => setShowEditTagModal(true)}>
               Edit Tag Modal
             </button>
           </div>

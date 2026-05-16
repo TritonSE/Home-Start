@@ -239,26 +239,18 @@ export default function SearchBar({
 
   return (
     <div className={styles.searchBar}>
-      <div className={styles.searchField}>
-        <div className={styles.inputField}>
-          <span className={styles.ic_search}>
-            <Image
-              src={unionIcon}
-              alt="Union logo"
-              className={styles.union}
-              width={24}
-              height={24}
-            />
-          </span>
-          <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search Volunteer"
-            />
-          </form>
-        </div>
+      <div className={styles.inputField}>
+        <span className={styles.ic_search}>
+          <Image src={unionIcon} alt="Union logo" className={styles.union} width={24} height={24} />
+        </span>
+        <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search"
+          />
+        </form>
       </div>
 
       <div className={styles.tagsContainer} ref={wrapperRef}>

@@ -7,7 +7,7 @@ import RecipientRow from "./RecipientRow";
 import styles from "./RecipientsPanel.module.css";
 
 import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
-import SearchBar from "@/components/SearchBar";
+import SearchBarPanel from "@/components/SearchBarPanel";
 import volunteerFilterHook from "@/hooks/volunteerFilterHook";
 
 type RecipientsPanelProps = {
@@ -26,13 +26,23 @@ export default function RecipientsPanel({ mode }: RecipientsPanelProps) {
   const {
     search,
     handleSearchChange,
-    selectedStatus,
-    handleSelectedStatusChange,
     filteredVolunteers,
     displayedVolunteers,
     currentPage,
     itemsPerPage,
     setCurrentPage,
+    projectTags,
+    programTags,
+    assignmentTags,
+    statusTags,
+    selectedProject,
+    handleSelectedProjectChange,
+    selectedProgram,
+    handleSelectedProgramChange,
+    selectedAssignment,
+    handleSelectedAssignmentChange,
+    selectedStatus,
+    handleSelectedStatusChange,
   } = volunteerFilterHook({ itemsPerPage: NUMBER_OF_VOLUNTEERS_PER_PAGE });
 
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
@@ -48,14 +58,21 @@ export default function RecipientsPanel({ mode }: RecipientsPanelProps) {
 
   return (
     <div className={mode === "panel" ? styles.panel : styles.pageBody}>
-      <SearchBar
+      <SearchBarPanel
         search={search}
         setSearch={handleSearchChange}
+        projectTags={projectTags}
+        programTags={programTags}
+        assignmentTags={assignmentTags}
+        statusTags={statusTags}
+        selectedProject={selectedProject}
+        setSelectedProject={handleSelectedProjectChange}
+        selectedProgram={selectedProgram}
+        setSelectedProgram={handleSelectedProgramChange}
+        selectedAssignment={selectedAssignment}
+        setSelectedAssignment={handleSelectedAssignmentChange}
         selectedStatus={selectedStatus}
         setSelectedStatus={handleSelectedStatusChange}
-        projectTags={[]}
-        assignmentTags={[]}
-        programTags={[]}
         sortType="Newest"
         onSortOptionChange={() => {}}
       />

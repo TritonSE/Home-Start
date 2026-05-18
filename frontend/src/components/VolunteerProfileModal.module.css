@@ -33,7 +33,7 @@
 }
 
 .topper {
-  height: 24px;
+  height: 8px;
   width: 100%;
 }
 
@@ -74,8 +74,8 @@
 }
 
 .closeButton {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   background: none;
   border: none;
   cursor: pointer;
@@ -621,6 +621,71 @@
 .saveButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.actionRow {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.cancelButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 16px;
+  flex: 1;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #141414;
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.cancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actionRow .saveButton {
+  flex: 1;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.confirmSecondary {
+  flex: 1;
+  padding: 8px 12px;
+  height: 48px;
+  border: 1px solid #1d3a6b;
+  border-radius: 4px;
+  background: transparent;
+  color: #1d3a6b;
+  font-family: "Open Sans", sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.confirmPrimary {
+  flex: 1;
+  padding: 8px 12px;
+  height: 48px;
+  border: none;
+  border-radius: 4px;
+  background: #a40026;
+  color: #fbffff;
+  font-family: "Open Sans", sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  cursor: pointer;
 }
 
 /* Tags wrapper for Groups/Programs sections */

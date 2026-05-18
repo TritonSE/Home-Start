@@ -2,7 +2,9 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
+import Modal from "./Modal";
 import RoleTable from "./RoleTable";
+import SuccessNotification from "./SuccessNotification";
 import TagSearch from "./TagSearch";
 import styles from "./VolunteerProfileModal.module.css";
 
@@ -314,6 +316,9 @@ export default function VolunteerProfileModal({
   const [nameConsent, setNameConsent] = useState<"no" | "first" | "full">("no");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [saveKey, setSaveKey] = useState(0);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [removedGroupIds, setRemovedGroupIds] = useState<Set<string>>(new Set());
   const [removedProgramIds, setRemovedProgramIds] = useState<Set<string>>(new Set());
   const [addedGroupTags, setAddedGroupTags] = useState<VolunteerTag[]>([]);
@@ -419,6 +424,14 @@ export default function VolunteerProfileModal({
     void fetchAssignments();
   }, [volunteer]);
 
+  useEffect(() => {
+    setShowSuccess(false);
+  }, [volunteer?._id]);
+
+  useEffect(() => {
+    if (!isOpen) setShowSuccess(false);
+  }, [isOpen]);
+
   // Validate hours input before save
   const validateHours = (value: string): number | undefined => {
     const trimmed = value.trim();
@@ -475,7 +488,8 @@ export default function VolunteerProfileModal({
         }
       });
 
-      const response = await fetch(`/api/volunteer/${volunteer._id}`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+      const response = await fetch(`${apiUrl}/api/volunteer/${volunteer._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -515,6 +529,8 @@ export default function VolunteerProfileModal({
 
       const updated = (await response.json()) as Volunteer;
       onVolunteerUpdated?.(updated);
+      setSaveKey((k) => k + 1);
+      setShowSuccess(true);
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : "Failed to update volunteer");
     } finally {
@@ -532,8 +548,12 @@ export default function VolunteerProfileModal({
           <div className={styles.topper} />
           <div className={styles.headerRow}>
             <h5 className={styles.modalHeader}>View Volunteer</h5>
-            <button className={styles.closeButton} onClick={onClose} aria-label="Close">
-              <Image src={icCloseAsset as string} alt="" width={16} height={16} />
+            <button
+              className={styles.closeButton}
+              onClick={() => (activeTab === "edit" ? setShowCancelConfirm(true) : onClose())}
+              aria-label="Close"
+            >
+              <Image src={icCloseAsset as string} alt="" width={22} height={22} />
             </button>
           </div>
         </div>
@@ -1062,20 +1082,57 @@ export default function VolunteerProfileModal({
               </div>
 
               {saveError ? <span className={styles.saveError}>{saveError}</span> : null}
-              <button
-                type="button"
-                className={styles.saveButton}
-                onClick={() => {
-                  void handleSave();
-                }}
-                disabled={isSaving}
-              >
-                {isSaving ? "Saving..." : "Save Changes"}
-              </button>
+              <div className={styles.actionRow}>
+                <button
+                  type="button"
+                  className={styles.cancelButton}
+                  onClick={() => setShowCancelConfirm(true)}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className={styles.saveButton}
+                  onClick={() => {
+                    void handleSave();
+                  }}
+                  disabled={isSaving}
+                >
+                  {isSaving ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
+      {showSuccess ? <SuccessNotification key={saveKey} message="Successfully Created Role" /> : null}
+      {showCancelConfirm ? (
+        <Modal
+          onClose={() => setShowCancelConfirm(false)}
+          width="370px"
+          radius="5px"
+          title="Are you sure you want to discard your changes?"
+          titleFontSize="16px"
+          titleLineHeight={24}
+          padding="16px"
+        >
+          <div className={styles.confirmActions}>
+            <button className={styles.confirmSecondary} onClick={() => setShowCancelConfirm(false)}>
+              Keep Editing
+            </button>
+            <button
+              className={styles.confirmPrimary}
+              onClick={() => {
+                setShowCancelConfirm(false);
+                onClose();
+              }}
+            >
+              Discard
+            </button>
+          </div>
+        </Modal>
+      ) : null}
     </>
   );
 }

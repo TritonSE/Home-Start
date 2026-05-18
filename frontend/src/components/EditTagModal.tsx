@@ -2,10 +2,13 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import styles from "./CreateShiftModal.module.css";
 import { COLOR_OPTIONS } from "./colorOptions";
+import styles from "./CreateShiftModal.module.css";
+import DeleteTagConfirmationModal from "./DeleteTagConfirmationModal";
+
 import type { VolunteerTag } from "@/types/volunteer";
 
+import { deleteTag, updateTag } from "@/app/api/tag";
 import icCloseLargeAsset from "@/assets/ic_close_large.svg";
 
 const icCloseLarge = icCloseLargeAsset as string;
@@ -31,6 +34,7 @@ function CheckIcon({ color }: { color: string }) {
 export default function EditTagModal({ onClose, tag }: Props) {
   const [tagName, setTagName] = useState(tag.name);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const isTagNameEmpty = tagName.trim().length === 0;
 
   useEffect(() => {
@@ -43,15 +47,44 @@ export default function EditTagModal({ onClose, tag }: Props) {
   }, [tag]);
 
   const handleSave = async () => {
-    // TODO: Implement save logic
+    try {
+      const newName = tagName.trim();
+      const color = COLOR_OPTIONS[selectedColorIndex]?.backgroundColor ?? tag.color;
+      await updateTag(tag._id, { name: newName, color });
+      onClose();
+    } catch (err) {
+      console.error("Failed to update tag:", err);
+      const msg = err instanceof Error ? err.message : "Failed to update tag";
+      alert(msg);
+    }
   };
 
-  const handleDelete = async () => {
-    // TODO: Implement delete logic
+  const handleDeleteClick = () => {
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteTag(tag._id);
+      onClose();
+      window.location.reload();
+    } catch (err) {
+      console.error("Failed to delete tag:", err);
+      const msg = err instanceof Error ? err.message : "Failed to delete tag";
+      alert(msg);
+      setShowDeleteConfirmation(false);
+    }
   };
 
   return (
     <>
+      {showDeleteConfirmation && (
+        <DeleteTagConfirmationModal
+          tagName={tag.name}
+          onClose={() => setShowDeleteConfirmation(false)}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
       <div className={styles.overlay} onClick={onClose} />
       <div className={styles.modal} role="dialog" aria-modal="true">
         <div className={styles.header}>
@@ -86,7 +119,11 @@ export default function EditTagModal({ onClose, tag }: Props) {
                 onClick={() => setSelectedColorIndex(index)}
                 aria-label={`Select ${option.name} color`}
               >
-                {isSelected ? <CheckIcon color={option.textColor} /> : <span className={styles.colorButtonLabel}>A</span>}
+                {isSelected ? (
+                  <CheckIcon color={option.textColor} />
+                ) : (
+                  <span className={styles.colorButtonLabel}>A</span>
+                )}
               </button>
             );
           })}
@@ -97,7 +134,7 @@ export default function EditTagModal({ onClose, tag }: Props) {
         <div className={styles.actions}>
           <button
             className={styles.secondary}
-            onClick={handleDelete}
+            onClick={handleDeleteClick}
             type="button"
             style={{ width: 85, borderColor: "#A40026", color: "#A40026" }}
           >

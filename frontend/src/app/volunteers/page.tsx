@@ -277,14 +277,19 @@ export default function Page() {
     if (!showCreateShiftModal) return null;
     // For testing: find assignment with id 69f98cb6e9e25f2173e429ff
     const testAssignment = assignments.find((a) => a._id === "69f98cb6e9e25f2173e429ff") || null;
-    return <CreateShiftModal onClose={() => setShowCreateShiftModal(false)} assignment={testAssignment} />;
+    return (
+      <CreateShiftModal
+        onClose={() => setShowCreateShiftModal(false)}
+        assignment={testAssignment}
+      />
+    );
   };
 
   const renderEditTagModal = () => {
     if (!showEditTagModal) return null;
 
-    // For testing: find tag with id 69f98cb3e9e25f2173e4293e
-    const testTag = tags.find((tag) => tag._id === "69f98cb3e9e25f2173e4293e");
+    // For testing: find tag with id 69fd0ae113eaf3c469fb4341
+    const testTag = tags.find((tag) => tag._id === "69fd0ae113eaf3c469fb4341");
     if (!testTag) return null;
 
     return <EditTagModal onClose={() => setShowEditTagModal(false)} tag={testTag} />;
@@ -298,7 +303,7 @@ export default function Page() {
           {renderCreateShiftModal()}
           {renderEditTagModal()}
 
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: "flex", gap: 8 }}>
             <button
               type="button"
               onClick={() => setShowCreateTagModal(true)}
@@ -307,10 +312,7 @@ export default function Page() {
               Create VolunteerAssignment Modal
             </button>
 
-            <button
-              type="button"
-              onClick={() => setShowCreateShiftModal(true)}
-            >
+            <button type="button" onClick={() => setShowCreateShiftModal(true)}>
               Create Shift Tag Modal
             </button>
 

@@ -128,7 +128,8 @@
   padding-top: 8px;
 }
 
-.secondary, .primary {
+.secondary,
+.primary {
   width: 70px;
   height: 48px;
   border-radius: 4px;

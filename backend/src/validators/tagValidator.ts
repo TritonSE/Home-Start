@@ -37,4 +37,4 @@ const makeTypeValidator = () =>
     .bail();
 
 export const createTagValidator = [makeNameValidator(), makeColorValidator(), makeTypeValidator()];
-  export const updateTagValidator = [makeNameValidator(), makeColorValidator()];
+export const updateTagValidator = [makeNameValidator(), makeColorValidator()];

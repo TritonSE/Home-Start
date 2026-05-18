@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
+import { COLOR_OPTIONS } from "./colorOptions";
 import styles from "./CreateRoleModal.module.css";
 
 import type { Volunteer, VolunteerTag } from "@/types/volunteer";
@@ -10,7 +11,6 @@ import { createTag, fetchTags } from "@/app/api/tag";
 import { createVolunteerAssignment } from "@/app/api/volunteer";
 import icCloseLargeAsset from "@/assets/ic_close_large.svg";
 import rightArrowAsset from "@/assets/rightarrow.svg";
-import { COLOR_OPTIONS } from "./colorOptions";
 
 const icCloseLarge = icCloseLargeAsset as string;
 const rightArrow = rightArrowAsset as string;
@@ -180,9 +180,7 @@ export default function CreateRoleModal({ onClose, volunteer }: Props) {
       <div className={styles.overlay} onClick={handleClose} />
       <div className={styles.modal}>
         <div className={styles.header}>
-          <p className={styles.title}>
-            {"Create Role"}
-          </p>
+          <p className={styles.title}>{"Create Role"}</p>
           <button className={styles.close} onClick={handleClose} aria-label="Close">
             <Image src={icCloseLarge} alt="" width={24} height={24} />
           </button>

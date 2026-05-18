@@ -163,3 +163,61 @@ export async function createTag(body: {
       : new Error("An unknown error occurred while creating a tag");
   }
 }
+
+export async function updateTag(
+  id: string,
+  body: { name: string; color: string },
+): Promise<VolunteerTag> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_BASE_URL}/api/tag/${encodeURIComponent(id)}`, {
+      method: "PUT",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => "");
+      throw new Error(`Failed to update tag: ${response.status} ${response.statusText} ${text}`);
+    }
+
+    const data: unknown = await response.json();
+    if (!isTagDTO(data)) {
+      throw new TypeError("Unexpected response format: expected a tag object");
+    }
+
+    return {
+      _id: data._id,
+      name: data.name,
+      color: data.color,
+      type: data.type,
+    };
+  } catch (error) {
+    console.error("Error updating tag:", error);
+    throw error instanceof Error
+      ? error
+      : new Error("An unknown error occurred while updating a tag");
+  }
+}
+
+export async function deleteTag(id: string): Promise<void> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_BASE_URL}/api/tag/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers,
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => "");
+      throw new Error(`Failed to delete tag: ${response.status} ${response.statusText} ${text}`);
+    }
+  } catch (error) {
+    console.error("Error deleting tag:", error);
+    throw error instanceof Error
+      ? error
+      : new Error("An unknown error occurred while deleting a tag");
+  }
+}

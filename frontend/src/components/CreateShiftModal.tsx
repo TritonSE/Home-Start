@@ -2,12 +2,13 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import styles from "./CreateShiftModal.module.css";
 import { COLOR_OPTIONS } from "./colorOptions";
-import { VolunteerAssignment, VolunteerTag } from "@/types/volunteer";
+import styles from "./CreateShiftModal.module.css";
 
-import { fetchTags, createTag } from "@/app/api/tag";
-import { fetchVolunteerAssignments, updateVolunteerAssignment } from "@/app/api/volunteer";
+import type { VolunteerAssignment, VolunteerTag } from "@/types/volunteer";
+
+import { createTag, fetchTags } from "@/app/api/tag";
+import { updateVolunteerAssignment } from "@/app/api/volunteer";
 import icCloseLargeAsset from "@/assets/ic_close_large.svg";
 
 const icCloseLarge = icCloseLargeAsset as string;
@@ -87,9 +88,7 @@ export default function CreateShiftModal({ onClose, assignment }: Props) {
     if (!query) return undefined;
 
     // Search for existing shift tag matching the name (case-insensitive)
-    const existing = shiftTags.find(
-      (t) => t.name.trim().toLowerCase() === query.toLowerCase(),
-    );
+    const existing = shiftTags.find((t) => t.name.trim().toLowerCase() === query.toLowerCase());
     if (existing) return existing;
 
     // Create a new shift tag with the selected color
@@ -150,7 +149,11 @@ export default function CreateShiftModal({ onClose, assignment }: Props) {
                 onClick={() => setSelectedColorIndex(index)}
                 aria-label={`Select ${option.name} color`}
               >
-                {isSelected ? <CheckIcon color={option.textColor} /> : <span className={styles.colorButtonLabel}>A</span>}
+                {isSelected ? (
+                  <CheckIcon color={option.textColor} />
+                ) : (
+                  <span className={styles.colorButtonLabel}>A</span>
+                )}
               </button>
             );
           })}
@@ -162,7 +165,12 @@ export default function CreateShiftModal({ onClose, assignment }: Props) {
           <button className={styles.secondary} onClick={onClose} type="button">
             Cancel
           </button>
-          <button className={styles.primary} onClick={handleSubmit} type="button" disabled={isTagNameEmpty}>
+          <button
+            className={styles.primary}
+            onClick={handleSubmit}
+            type="button"
+            disabled={isTagNameEmpty}
+          >
             Add Tag
           </button>
         </div>

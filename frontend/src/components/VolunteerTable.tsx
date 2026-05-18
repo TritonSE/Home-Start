@@ -38,14 +38,26 @@ type VolunteerTableProps = {
   volunteers: Volunteer[];
   selectableVolunteers?: Volunteer[];
   onSelectedCountChange?: (count: number) => void;
+  onSelectedVolunteersChange?: (volunteers: Volunteer[]) => void;
+  // Controlled selection — when provided the table uses the store as source of truth
+  controlledSelectedIds?: Set<string>;
+  onControlledToggleOne?: (id: string) => void;
+  onControlledToggleAll?: (scope: Volunteer[]) => void;
 };
 
 export default function VolunteerTable({
   volunteers,
   selectableVolunteers,
   onSelectedCountChange,
+  onSelectedVolunteersChange,
+  controlledSelectedIds,
+  onControlledToggleOne,
+  onControlledToggleAll,
 }: VolunteerTableProps) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
+  const isControlled = controlledSelectedIds !== undefined;
+  const selectedIds = isControlled ? controlledSelectedIds : internalSelectedIds;
+
   const selectionScope = selectableVolunteers ?? volunteers;
 
   const allSelected =
@@ -54,27 +66,35 @@ export default function VolunteerTable({
   const someSelected = selectionScope.some((volunteer) => selectedIds.has(volunteer._id));
 
   function toggleAll() {
-    if (allSelected) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(selectionScope.map((volunteer) => volunteer._id)));
+    if (isControlled) {
+      onControlledToggleAll?.(selectionScope);
+      return;
     }
-  }
-
-  function deselectAll() {
-    setSelectedIds(new Set());
+    if (allSelected) {
+      setInternalSelectedIds(new Set());
+    } else {
+      setInternalSelectedIds(new Set(selectionScope.map((volunteer) => volunteer._id)));
+    }
   }
 
   useEffect(() => {
     onSelectedCountChange?.(selectedIds.size);
-  }, [selectedIds, onSelectedCountChange]);
+    const selectedVolunteers = selectionScope.filter((v) => selectedIds.has(v._id));
+    onSelectedVolunteersChange?.(selectedVolunteers);
+  }, [selectedIds, onSelectedCountChange, onSelectedVolunteersChange, selectionScope]);
 
   useEffect(() => {
-    deselectAll();
-  }, [selectionScope]);
+    if (!isControlled) {
+      setInternalSelectedIds(new Set());
+    }
+  }, [selectionScope, isControlled]);
 
   function toggleOne(id: string) {
-    setSelectedIds((prev) => {
+    if (isControlled) {
+      onControlledToggleOne?.(id);
+      return;
+    }
+    setInternalSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -159,9 +179,10 @@ export default function VolunteerTable({
           {volunteers.map((volunteer) => (
             <tr
               key={volunteer._id}
-              className={selectedIds.has(volunteer._id) ? styles.selectedRow : ""}
+              className={`${selectedIds.has(volunteer._id) ? styles.selectedRow : ""} ${styles.clickableRow}`}
+              onClick={() => toggleOne(volunteer._id)}
             >
-              <td className={styles.checkboxCell}>
+              <td className={styles.checkboxCell} onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
                   className={styles.checkbox}

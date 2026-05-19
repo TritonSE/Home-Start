@@ -319,6 +319,7 @@ export default function VolunteerProfileModal({
   const [showSuccess, setShowSuccess] = useState(false);
   const [saveKey, setSaveKey] = useState(0);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [pendingExitAction, setPendingExitAction] = useState<"close" | "switchToView" | null>(null);
   const [removedGroupIds, setRemovedGroupIds] = useState<Set<string>>(new Set());
   const [removedProgramIds, setRemovedProgramIds] = useState<Set<string>>(new Set());
   const [addedGroupTags, setAddedGroupTags] = useState<VolunteerTag[]>([]);
@@ -531,6 +532,7 @@ export default function VolunteerProfileModal({
       onVolunteerUpdated?.(updated);
       setSaveKey((k) => k + 1);
       setShowSuccess(true);
+      setActiveTab("view");
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : "Failed to update volunteer");
     } finally {
@@ -538,11 +540,51 @@ export default function VolunteerProfileModal({
     }
   };
 
+  const checkIsDirty = (): boolean => {
+    if (!volunteer) return false;
+    return (
+      firstName !== volunteer.firstName ||
+      lastName !== volunteer.lastName ||
+      email !== volunteer.email ||
+      phoneNumber !== volunteer.phoneNumber ||
+      addressLine1 !== (volunteer.address?.line1 ?? "") ||
+      addressLine2 !== (volunteer.address?.line2 ?? "") ||
+      city !== (volunteer.address?.city ?? "") ||
+      state !== (volunteer.address?.state ?? "") ||
+      zip !== (volunteer.address?.zip ?? "") ||
+      birthday !== (volunteer.birthday ? new Date(volunteer.birthday).toISOString().split("T")[0] : "") ||
+      preferredPronouns !== (volunteer.preferredPronouns ?? "") ||
+      startDate !== (volunteer.startDate ? new Date(volunteer.startDate).toISOString().split("T")[0] : "") ||
+      endDate !== (volunteer.endDate ? new Date(volunteer.endDate).toISOString().split("T")[0] : "") ||
+      hours !== (volunteer.hours != null ? String(volunteer.hours) : "") ||
+      status !== deriveStatus(volunteer) ||
+      additionalNotes !== (volunteer.additionalNotes ?? "") ||
+      mediaConsent !== (volunteer.mediaConsent ?? "no") ||
+      faceConsent !== (volunteer.faceConsent ?? "no") ||
+      nameConsent !== (volunteer.nameConsent ?? "no") ||
+      removedGroupIds.size > 0 ||
+      removedProgramIds.size > 0 ||
+      addedGroupTags.length > 0 ||
+      addedProgramTags.length > 0
+    );
+  };
+
+  const requestExit = (action: "close" | "switchToView") => {
+    if (activeTab === "edit" && checkIsDirty()) {
+      setPendingExitAction(action);
+      setShowCancelConfirm(true);
+    } else if (action === "close") {
+      onClose();
+    } else {
+      setActiveTab("view");
+    }
+  };
+
   if (!isOpen || !volunteer) return null;
 
   return (
     <>
-      <div className={styles.backdrop} aria-hidden="true" />
+      <div className={styles.backdrop} aria-hidden="true" onClick={() => requestExit("close")} />
       <div className={styles.modal}>
         <div className={styles.heading}>
           <div className={styles.topper} />
@@ -550,7 +592,7 @@ export default function VolunteerProfileModal({
             <h5 className={styles.modalHeader}>View Volunteer</h5>
             <button
               className={styles.closeButton}
-              onClick={() => (activeTab === "edit" ? setShowCancelConfirm(true) : onClose())}
+              onClick={() => requestExit("close")}
               aria-label="Close"
             >
               <Image src={icCloseAsset as string} alt="" width={22} height={22} />
@@ -561,7 +603,7 @@ export default function VolunteerProfileModal({
         <div className={styles.tabs}>
           <button
             className={`${styles.tabButton} ${activeTab === "view" ? styles.tabActive : styles.tabInactive}`}
-            onClick={() => setActiveTab("view")}
+            onClick={() => requestExit("switchToView")}
           >
             View
           </button>
@@ -1086,7 +1128,7 @@ export default function VolunteerProfileModal({
                 <button
                   type="button"
                   className={styles.cancelButton}
-                  onClick={() => setShowCancelConfirm(true)}
+                  onClick={() => requestExit("close")}
                   disabled={isSaving}
                 >
                   Cancel
@@ -1106,29 +1148,39 @@ export default function VolunteerProfileModal({
           )}
         </div>
       </div>
-      {showSuccess ? <SuccessNotification key={saveKey} message="Successfully Created Role" /> : null}
+      {showSuccess ? (
+        <SuccessNotification key={saveKey} message="Successfully Created Role" />
+      ) : null}
       {showCancelConfirm ? (
         <Modal
           onClose={() => setShowCancelConfirm(false)}
-          width="370px"
-          radius="5px"
-          title="Are you sure you want to discard your changes?"
-          titleFontSize="16px"
+          width="310px"
+          radius="12px"
+          title="Unsaved Changes"
+          titleFontSize="18px"
           titleLineHeight={24}
-          padding="16px"
+          padding="20px"
         >
+          <p className={styles.confirmBody}>
+            All changes will be discarded if you leave. Are you sure?
+          </p>
           <div className={styles.confirmActions}>
             <button className={styles.confirmSecondary} onClick={() => setShowCancelConfirm(false)}>
-              Keep Editing
+              Cancel
             </button>
             <button
               className={styles.confirmPrimary}
               onClick={() => {
                 setShowCancelConfirm(false);
-                onClose();
+                if (pendingExitAction === "close") {
+                  onClose();
+                } else {
+                  setActiveTab("view");
+                }
+                setPendingExitAction(null);
               }}
             >
-              Discard
+              Discard Changes
             </button>
           </div>
         </Modal>

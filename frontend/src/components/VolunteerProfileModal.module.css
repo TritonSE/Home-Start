@@ -654,37 +654,49 @@
   flex: 1;
 }
 
+.confirmBody {
+  margin: 12px 0 28px;
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #141414;
+}
+
 .confirmActions {
   display: flex;
   gap: 12px;
-  margin-top: 16px;
 }
 
 .confirmSecondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: 1;
-  padding: 8px 12px;
-  height: 48px;
+  height: 56px;
   border: 1px solid #1d3a6b;
-  border-radius: 4px;
-  background: transparent;
+  border-radius: 8px;
+  background: #ffffff;
   color: #1d3a6b;
   font-family: "Open Sans", sans-serif;
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 14px;
+  font-weight: 400;
   cursor: pointer;
 }
 
 .confirmPrimary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: 1;
-  padding: 8px 12px;
-  height: 48px;
+  height: 56px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   background: #a40026;
-  color: #fbffff;
+  color: #ffffff;
   font-family: "Open Sans", sans-serif;
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
 }
 

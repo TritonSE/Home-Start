@@ -412,6 +412,73 @@
 }
 
 /* Consent status dropdowns for Edit mode */
+.customSelect {
+  position: relative;
+  width: 100%;
+}
+
+.customSelectTrigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #ffffff;
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #141414;
+  cursor: pointer;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.customSelectTrigger:hover,
+.customSelectTriggerOpen {
+  border-color: #1d3a6b;
+  outline: none;
+}
+
+.customSelectDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  overflow: hidden;
+}
+
+.customSelectOption {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #141414;
+  cursor: pointer;
+  text-align: left;
+}
+
+.customSelectOption:hover {
+  background: #f5f5f5;
+}
+
+.customSelectOptionSelected {
+  background: #ecf3f3;
+  color: #007a8a;
+  font-weight: 500;
+}
+
 .consentDropdownsRow {
   display: flex;
   flex-direction: row;

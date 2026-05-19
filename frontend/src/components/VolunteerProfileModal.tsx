@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Modal from "./Modal";
 import RoleTable from "./RoleTable";
@@ -64,6 +64,69 @@ const getTextColorForBackground = (backgroundColor: string): string => {
   );
   return found?.color ?? "#000000";
 };
+
+function ConsentSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedLabel = options.find((o) => o.value === value)?.label ?? value;
+
+  return (
+    <div ref={ref} className={styles.customSelect}>
+      <button
+        type="button"
+        className={`${styles.customSelectTrigger} ${open ? styles.customSelectTriggerOpen : ""}`}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span>{selectedLabel}</span>
+        <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+          <path
+            d="M1 1L6 6L11 1"
+            stroke="#141414"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+      {open && (
+        <div className={styles.customSelectDropdown}>
+          {options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={`${styles.customSelectOption} ${option.value === value ? styles.customSelectOptionSelected : ""}`}
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ViewContent({
   volunteer,
@@ -241,21 +304,12 @@ function ViewContent({
               </div>
               <div className={styles.consentColView}>
                 <span className={styles.fieldLabel}>Name</span>
-                <button
-                  className={`${styles.consentButton} ${
-                    volunteer.nameConsent === "full"
-                      ? styles.consentYes
-                      : volunteer.nameConsent === "first"
-                        ? styles.consentFirst
-                        : styles.consentNo
-                  }`}
-                  disabled
-                >
+                <button className={`${styles.consentButton} ${styles.consentFirst}`} disabled>
                   {volunteer.nameConsent === "full"
-                    ? "Full"
+                    ? "Full Name"
                     : volunteer.nameConsent === "first"
                       ? "First"
-                      : "No"}
+                      : "No Name"}
                 </button>
               </div>
             </div>
@@ -840,45 +894,37 @@ export default function VolunteerProfileModal({
                   <div className={styles.consentDropdownsRow}>
                     <div className={styles.consentDropdownItem}>
                       <label className={styles.editLabel}>Media</label>
-                      <div className={styles.customDropdownWrapper}>
-                        <select
-                          className={styles.consentDropdownCustom}
-                          value={mediaConsent}
-                          onChange={(e) => setMediaConsent(e.target.value as "yes" | "no")}
-                        >
-                          <option value="no">No</option>
-                          <option value="yes">Yes</option>
-                        </select>
-                      </div>
+                      <ConsentSelect
+                        value={mediaConsent}
+                        onChange={(v) => setMediaConsent(v as "yes" | "no")}
+                        options={[
+                          { value: "yes", label: "Yes" },
+                          { value: "no", label: "No" },
+                        ]}
+                      />
                     </div>
                     <div className={styles.consentDropdownItem}>
                       <label className={styles.editLabel}>Face</label>
-                      <div className={styles.customDropdownWrapper}>
-                        <select
-                          className={styles.consentDropdownCustom}
-                          value={faceConsent}
-                          onChange={(e) => setFaceConsent(e.target.value as "yes" | "no")}
-                        >
-                          <option value="no">No</option>
-                          <option value="yes">Yes</option>
-                        </select>
-                      </div>
+                      <ConsentSelect
+                        value={faceConsent}
+                        onChange={(v) => setFaceConsent(v as "yes" | "no")}
+                        options={[
+                          { value: "yes", label: "Yes" },
+                          { value: "no", label: "No" },
+                        ]}
+                      />
                     </div>
                     <div className={styles.consentDropdownItem}>
                       <label className={styles.editLabel}>Name</label>
-                      <div className={styles.customDropdownWrapper}>
-                        <select
-                          className={styles.consentDropdownCustom}
-                          value={nameConsent}
-                          onChange={(e) =>
-                            setNameConsent(e.target.value as "no" | "first" | "full")
-                          }
-                        >
-                          <option value="no">No</option>
-                          <option value="first">First</option>
-                          <option value="full">Full</option>
-                        </select>
-                      </div>
+                      <ConsentSelect
+                        value={nameConsent}
+                        onChange={(v) => setNameConsent(v as "no" | "first" | "full")}
+                        options={[
+                          { value: "first", label: "First" },
+                          { value: "full", label: "Full Name" },
+                          { value: "no", label: "No Name" },
+                        ]}
+                      />
                     </div>
                   </div>
                 </div>

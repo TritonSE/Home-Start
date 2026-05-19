@@ -88,17 +88,17 @@ export default function VolunteerTable({
   return (
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
-      <colgroup>
-        <col style={{ minWidth: "60px" }} />
-        <col style={{ minWidth: "200px" }} />
-        <col style={{ minWidth: "200px" }} />
-        <col style={{ minWidth: "304px" }} />
-        <col style={{ minWidth: "304px" }} />
-        <col style={{ minWidth: "304px" }} />
-        <col style={{ minWidth: "240px" }} />
-        <col style={{ minWidth: "107px" }} />
-        <col style={{ minWidth: "304px" }} />
-      </colgroup>
+        <colgroup>
+          <col style={{ minWidth: "60px" }} />
+          <col style={{ minWidth: "200px" }} />
+          <col style={{ minWidth: "200px" }} />
+          <col style={{ minWidth: "304px" }} />
+          <col style={{ minWidth: "304px" }} />
+          <col style={{ minWidth: "304px" }} />
+          <col style={{ minWidth: "240px" }} />
+          <col style={{ minWidth: "107px" }} />
+          <col style={{ minWidth: "304px" }} />
+        </colgroup>
         <thead>
           <tr>
             <th className={styles.checkboxCell}>
@@ -113,7 +113,7 @@ export default function VolunteerTable({
                 aria-label="Select all volunteers"
               />
             </th>
-              <th>
+            <th>
               <div className={styles.headerContent}>
                 <span>Last Name</span>
               </div>

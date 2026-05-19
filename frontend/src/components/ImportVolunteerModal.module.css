@@ -289,7 +289,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 32px;
+  position: sticky;
+  bottom: -0.5px;
+  background: #ffffff;
+  padding-top: 16px;
+  margin-top: 16px;
 }
 
 .cancel {

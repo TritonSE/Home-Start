@@ -88,17 +88,17 @@ export default function VolunteerTable({
   return (
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
-        <colgroup>
-          <col style={{ minWidth: "60px" }} />
-          <col style={{ minWidth: "200px" }} />
-          <col style={{ minWidth: "200px" }} />
-          <col style={{ minWidth: "304px" }} />
-          <col style={{ minWidth: "240px" }} />
-          <col style={{ minWidth: "107px" }} />
-          <col style={{ minWidth: "304px" }} />
-          <col style={{ minWidth: "304px" }} />
-          <col style={{ minWidth: "304px" }} />
-        </colgroup>
+      <colgroup>
+        <col style={{ minWidth: "60px" }} />
+        <col style={{ minWidth: "200px" }} />
+        <col style={{ minWidth: "200px" }} />
+        <col style={{ minWidth: "304px" }} />
+        <col style={{ minWidth: "304px" }} />
+        <col style={{ minWidth: "304px" }} />
+        <col style={{ minWidth: "240px" }} />
+        <col style={{ minWidth: "107px" }} />
+        <col style={{ minWidth: "304px" }} />
+      </colgroup>
         <thead>
           <tr>
             <th className={styles.checkboxCell}>
@@ -113,7 +113,7 @@ export default function VolunteerTable({
                 aria-label="Select all volunteers"
               />
             </th>
-            <th>
+              <th>
               <div className={styles.headerContent}>
                 <span>Last Name</span>
               </div>
@@ -121,6 +121,16 @@ export default function VolunteerTable({
             <th>
               <div className={styles.headerContent}>
                 <span>First Name</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Phone Number</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Email</span>
               </div>
             </th>
             <th>
@@ -143,16 +153,6 @@ export default function VolunteerTable({
                 <span>Project</span>
               </div>
             </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Phone Number</span>
-              </div>
-            </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Email</span>
-              </div>
-            </th>
           </tr>
         </thead>
         <tbody>
@@ -172,6 +172,8 @@ export default function VolunteerTable({
               </td>
               <td>{volunteer.lastName}</td>
               <td>{volunteer.firstName}</td>
+              <td>{volunteer.phoneNumber}</td>
+              <td>{volunteer.email}</td>
               <td>
                 <div className={styles.tagsContainer}>
                   <span
@@ -288,9 +290,6 @@ export default function VolunteerTable({
                   })()}
                 </div>
               </td>
-
-              <td>{volunteer.phoneNumber}</td>
-              <td>{volunteer.email}</td>
             </tr>
           ))}
         </tbody>

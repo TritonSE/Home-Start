@@ -142,6 +142,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
         status: v.status as "returning" | "new" | undefined,
         address: v.address,
         birthday: v.birthday,
+        preferredPronouns: v.preferredPronouns,
         startDate: v.startDate,
         endDate: v.endDate,
         effectiveDate: v.effectiveDate,
@@ -151,7 +152,6 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
         assignmentName: v.assignmentName,
         projectName: v.projectName,
         shiftNames: v.shiftNames,
-        tags: v.tags,
       })),
     );
 

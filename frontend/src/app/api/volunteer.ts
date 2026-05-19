@@ -54,6 +54,7 @@ type VolunteerParseCsvDTO = {
     status?: string;
     address?: VolunteerAddressInfo;
     birthday?: string;
+    preferredPronouns?: string;
     startDate?: string;
     endDate?: string;
     effectiveDate?: string;
@@ -63,7 +64,6 @@ type VolunteerParseCsvDTO = {
     assignmentName?: string;
     projectName?: string;
     shiftNames?: string[];
-    tags?: string[];
   }[];
 };
 
@@ -160,6 +160,7 @@ export type VolunteerCsvParseResult = {
     status?: string;
     address?: VolunteerAddressInfo;
     birthday?: string;
+    preferredPronouns?: string;
     startDate?: string;
     endDate?: string;
     effectiveDate?: string;
@@ -169,7 +170,6 @@ export type VolunteerCsvParseResult = {
     assignmentName?: string;
     projectName?: string;
     shiftNames?: string[];
-    tags?: string[];
   }[];
 };
 
@@ -251,6 +251,7 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
           status: typeof item.status === "string" ? item.status : undefined,
           address: item.address ?? undefined,
           birthday: typeof item.birthday === "string" ? item.birthday : undefined,
+          preferredPronouns: typeof item.preferredPronouns === "string" ? item.preferredPronouns : undefined,
           startDate: typeof item.startDate === "string" ? item.startDate : undefined,
           endDate: typeof item.endDate === "string" ? item.endDate : undefined,
           effectiveDate: typeof item.effectiveDate === "string" ? item.effectiveDate : undefined,
@@ -261,9 +262,6 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
           projectName: typeof item.projectName === "string" ? item.projectName : undefined,
           shiftNames: Array.isArray(item.shiftNames)
             ? item.shiftNames.filter((value): value is string => typeof value === "string")
-            : undefined,
-          tags: Array.isArray(item.tags)
-            ? item.tags.filter((tag): tag is string => typeof tag === "string")
             : undefined,
         })),
     };
@@ -284,13 +282,13 @@ type VolunteerCreationBody = {
   status?: "returning" | "new";
   address?: VolunteerAddressInfo;
   birthday?: string;
+  preferredPronouns?: string;
   startDate?: string;
   endDate?: string;
   effectiveDate?: string;
   mediaConsent?: string;
   faceConsent?: string;
   nameConsent?: string;
-  tags?: string[];
   assignmentName?: string;
   projectName?: string;
   shiftNames?: string[];

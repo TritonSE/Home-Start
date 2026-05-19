@@ -4,10 +4,12 @@ import Image from "next/image";
 import { useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
-import successIconAsset from "@/assets/success.svg";
+import icCloseAsset from "@/assets/ic_close.svg";
+import successFilledIconAsset from "@/assets/ic_success_filled.svg";
 import styles from "@/components/messages/SuccessToast.module.css";
 
-const successIconSrc = successIconAsset as string;
+const successFilledIconSrc = successFilledIconAsset as string;
+const icClose = icCloseAsset as string;
 
 type Props = {
   open: boolean;
@@ -17,13 +19,7 @@ type Props = {
   onDone?: () => void;
 };
 
-export default function SuccessToast({
-  open,
-  title = "Success!",
-  message,
-  durationMs = 1800,
-  onDone,
-}: Props) {
+export default function SuccessToast({ open, message, durationMs = 1800, onDone }: Props) {
   useEffect(() => {
     if (!open) return;
 
@@ -40,16 +36,25 @@ export default function SuccessToast({
     return (
       <div className={styles.wrap} aria-live="polite" aria-atomic="true">
         <div className={styles.card} style={{ ["--toast-ms" as string]: `${durationMs}ms` }}>
-          <Image src={successIconSrc} alt="" className={styles.icon} width={24} height={24} />
+          <Image src={successFilledIconSrc} alt="" width={20} height={20} />
 
           <div className={styles.textWrap}>
-            <div className={styles.title}>{title}</div>
             <div className={styles.message}>{message}</div>
           </div>
+
+          <Image
+            src={icClose}
+            alt="Close"
+            width={0}
+            height={0}
+            onClick={() => {
+              onDone?.();
+            }}
+          />
         </div>
       </div>
     );
-  }, [open, title, message, durationMs]);
+  }, [open, message, durationMs]);
 
   if (typeof document === "undefined" || !body) {
     return null;

@@ -2,13 +2,12 @@
 
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 
 import styles from "./page.module.css";
 
 import { createTemplate, type CreateTemplateRequest, TemplateType } from "@/app/api/template";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
-import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 import { TemplateCreate } from "@/components/TemplateCreate";
 
@@ -18,7 +17,6 @@ function CreateTemplateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [showSuccess, setShowSuccess] = useState(false);
   const templateType =
     searchParams.get("type") === "email" ? TemplateType.EMAIL : TemplateType.TEXT;
 
@@ -34,7 +32,8 @@ function CreateTemplateContent() {
     createTemplate(createTemplateRequest)
       .then((result) => {
         if (result.success) {
-          setShowSuccess(true);
+          sessionStorage.setItem("success-toast", "Your template was saved.");
+          void router.push("/messages/templates");
         } else {
           console.error(result.error);
         }
@@ -44,20 +43,9 @@ function CreateTemplateContent() {
       });
   };
 
-  const onToastDone = () => {
-    setShowSuccess(false);
-    void router.push("/messages/templates");
-  };
-
   return (
     <Sidebar>
       <div className={styles.page}>
-        <SuccessToast
-          open={showSuccess}
-          message="Your template was saved."
-          durationMs={2600}
-          onDone={onToastDone}
-        />
         <header className={styles.header}>
           <Image src={icCaretLeft} alt="" width={40} height={40} onClick={() => router.back()} />
           <h1 className={styles.headerTitle}>Create Template</h1>

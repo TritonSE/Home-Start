@@ -34,7 +34,7 @@ export default function TemplatePage() {
   const [openPopup, setOpenPopup] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState(false);
   const [templateType, setTemplateType] = useState<TemplateType>(TemplateType.TEXT);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [successToast, setSuccessToast] = useState("");
 
   const fetchTemplates = () => {
     getTemplates()
@@ -53,6 +53,11 @@ export default function TemplatePage() {
 
   useEffect(() => {
     fetchTemplates();
+    const message = sessionStorage.getItem("success-toast");
+    if (message) {
+      setSuccessToast(message);
+      sessionStorage.removeItem("success-toast");
+    }
   }, []);
 
   useEffect(() => {
@@ -79,6 +84,7 @@ export default function TemplatePage() {
             setOpenPopup(false);
             // reload data
             fetchTemplates();
+            setSuccessToast("Template Deleted");
           } else {
             console.error(result.error);
           }
@@ -95,8 +101,8 @@ export default function TemplatePage() {
     }
   };
 
-  const onToastDone = async () => {
-    setShowSuccess(false);
+  const onSelectTemplate = async () => {
+    sessionStorage.setItem("success-toast", "Template Successfully Pasted");
     if (await initMsal()) {
       void router.push("/communication");
     } else {
@@ -104,15 +110,17 @@ export default function TemplatePage() {
     }
   };
 
+  const onToastDone = () => {
+    setSuccessToast("");
+  };
+
   return (
     <Sidebar>
       <SuccessToast
-        open={showSuccess}
-        message="Your template was pasted."
-        durationMs={1600}
-        onDone={() => {
-          void onToastDone();
-        }}
+        open={!!successToast}
+        message={successToast}
+        durationMs={2600}
+        onDone={onToastDone}
       />
       <div className={styles.page}>
         <header className={styles.header}>
@@ -127,7 +135,7 @@ export default function TemplatePage() {
           )}
         </header>
         {previewTemplate && selectedTemplate ? (
-          <TemplatePreview template={selectedTemplate} onUse={() => setShowSuccess(true)} />
+          <TemplatePreview template={selectedTemplate} onUse={() => void onSelectTemplate()} />
         ) : (
           <>
             <div className={styles.templateType}>

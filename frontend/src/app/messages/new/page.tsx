@@ -17,6 +17,7 @@ import mdiInformationAsset from "@/assets/mdi_information.svg";
 import ouiCopyAsset from "@/assets/oui_copy.svg";
 import { initMsal, signInWithOutlook } from "@/auth/msal";
 import RecipientsPanel from "@/components/messages/RecipientsPanel";
+import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 
 const addPersonIcon = addPersonIconAsset as string;
@@ -339,6 +340,8 @@ export default function NewMessagePage() {
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
   const recipientsCount = selectedRecipientIds.length;
 
+  const [successToast, setSuccessToast] = useState("");
+
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
@@ -346,6 +349,11 @@ export default function NewMessagePage() {
     const mql = window.matchMedia(DESKTOP_MQ);
     const onChange = () => setIsDesktop(mql.matches);
     onChange();
+    const toastMsg = sessionStorage.getItem("success-toast");
+    if (toastMsg) {
+      setSuccessToast(toastMsg);
+      sessionStorage.removeItem("success-toast");
+    }
     mql.addEventListener?.("change", onChange);
     return () => mql.removeEventListener?.("change", onChange);
   }, []);
@@ -374,6 +382,10 @@ export default function NewMessagePage() {
     void router.push("/messages/templates");
   }, [router]);
 
+  const onToastDone = () => {
+    setSuccessToast("");
+  };
+
   const commonProps = {
     mode,
     setMode,
@@ -390,6 +402,12 @@ export default function NewMessagePage() {
 
   return (
     <Sidebar>
+      <SuccessToast
+        open={!!successToast}
+        message={successToast}
+        durationMs={2600}
+        onDone={onToastDone}
+      />
       <div className={styles.page}>
         <header className={styles.header}>
           <button

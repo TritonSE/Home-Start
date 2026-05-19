@@ -4,9 +4,9 @@ import { useCallback, useState } from "react";
 import styles from "./ImportVolunteerModal.module.css";
 import Modal from "./Modal";
 
-import { parseVolunteersCsv, uploadVolunteerBatch } from "@/app/api/volunteer";
 import type { VolunteerCsvParseResult } from "@/app/api/volunteer";
 
+import { parseVolunteersCsv, uploadVolunteerBatch } from "@/app/api/volunteer";
 import icErrorAsset from "@/assets/ic_error.svg";
 import icNewAsset from "@/assets/ic_new.svg";
 import icSuccessAsset from "@/assets/ic_success.svg";

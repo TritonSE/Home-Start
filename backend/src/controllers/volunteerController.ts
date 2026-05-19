@@ -102,29 +102,6 @@ type CreateVolunteerBody = {
 
 type VolunteerCreationBody = CreateVolunteerBody;
 
-type RawVolunteerCSVFormat = {
-  "First Name": string;
-  "Last Name": string;
-  assignment: string;
-  project: string;
-  Status: string;
-  Address1: string;
-  Address2: string;
-  City: string;
-  State: string;
-  Zip: string;
-  Birthday: string;
-  Cell: string;
-  Email: string;
-  "NEW Pronouns": string;
-  "NEW Media Consent": string;
-  "NEW Name Consent": string;
-  "NEW Face": string;
-  "Start Date": string;
-  "End Date": string;
-  "Effective Date (date record was updated)": string;
-};
-
 type VolunteerAddressInfo = {
   line1: string;
   line2: string;
@@ -163,6 +140,12 @@ const makeVolunteerImportKey = (body: CreateVolunteerBody): VolunteerImportKey =
   const email = body.email.trim().toLowerCase();
   const phoneNumber = body.phoneNumber.trim();
   return email ? `email:${email}` : `phone:${phoneNumber}`;
+};
+
+const toDate = (value: string | undefined): Date | undefined => {
+  if (!value) return undefined;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? undefined : d;
 };
 
 export const createVolunteer: RequestHandler = async (req, res, next) => {
@@ -257,12 +240,6 @@ type UpdateVolunteerOp = {
   u: {
     $set: CreateVolunteerBody;
   };
-};
-
-const toDate = (value: string | undefined): Date | undefined => {
-  if (!value) return undefined;
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? undefined : d;
 };
 
 const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
@@ -423,12 +400,16 @@ export const uploadVolunteerBatch: RequestHandler<
         const projectTag = tagByName.get(entry.projectTag);
 
         if (!assignmentTag || assignmentTag.type !== "assignment") {
-          console.warn(`Skipping unknown assignment tag: ${entry.assignmentTag}`);
+          // TEMP
+          console.info(
+            `Assignment "${entry.assignmentTag}" does not exist and needs to be created.`,
+          );
           return [];
         }
 
         if (!projectTag || projectTag.type !== "project") {
-          console.warn(`Skipping unknown project tag: ${entry.projectTag}`);
+          // TEMP
+          console.info(`Project "${entry.projectTag}" does not exist and needs to be created.`);
           return [];
         }
 
@@ -504,19 +485,19 @@ const validateVolunteer = (volunteer: unknown) => {
 
 const statusKeyToEnum = (key: string): "returning" | "new" | undefined => {
   const normalized = key.trim().toLowerCase();
-  if (normalized === "r" || normalized === "return" || normalized === "returning") return "returning";
+  if (normalized === "r" || normalized === "return" || normalized === "returning")
+    return "returning";
   if (normalized === "n" || normalized === "new") return "new";
   return undefined;
 };
 
-const normalizeCSVData = (data: RawVolunteerCSVFormat): NormalizedVolunteerCSVFormat => {
-  const normalizedCSV = {
+const normalizeCSVData = (data: Record<string, string>): NormalizedVolunteerCSVFormat => {
+  return {
     firstName: normalizeCsvText(data["First Name"]),
     lastName: normalizeCsvText(data["Last Name"]),
     email: normalizeCsvText(data.Email),
     phoneNumber: normalizeCsvText(data.Cell),
-    status: statusKeyToEnum(data.Status || ""),
-
+    status: statusKeyToEnum(data.Status ?? ""),
     address: {
       line1: normalizeCsvText(data.Address1),
       line2: normalizeCsvText(data.Address2),
@@ -524,20 +505,17 @@ const normalizeCSVData = (data: RawVolunteerCSVFormat): NormalizedVolunteerCSVFo
       state: normalizeCsvText(data.State),
       zip: normalizeCsvText(data.Zip),
     },
-
     birthday: normalizeCsvText(data.Birthday),
     preferredPronouns: normalizeCsvText(data["NEW Pronouns"]),
     startDate: normalizeCsvText(data["Start Date"]),
     endDate: normalizeCsvText(data["End Date"]),
     effectiveDate: normalizeCsvText(data["Effective Date (date record was updated)"]),
-
     mediaConsent: normalizeCsvText(data["NEW Media Consent"]),
     faceConsent: normalizeCsvText(data["NEW Face"]),
     nameConsent: normalizeCsvText(data["NEW Name Consent"]),
     assignmentName: normalizeCsvText(data.assignment),
     projectName: normalizeCsvText(data.project),
-  } as NormalizedVolunteerCSVFormat;
-  return normalizedCSV;
+  };
 };
 
 const toConsentYesNo = (value: string): "yes" | "no" | undefined => {
@@ -594,7 +572,7 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
         if (data.Count === "0") {
           return;
         }
-        const normalized = normalizeCSVData(data as unknown as RawVolunteerCSVFormat);
+        const normalized = normalizeCSVData(data);
         const creationBody = parseCreationBody(normalized);
         const valid = validateVolunteer(creationBody);
 
@@ -705,6 +683,106 @@ export const getSelectedVolunteers: RequestHandler = async (req, res, next) => {
     );
 
     return res.status(200).json(volunteersMap);
+  } catch (err) {
+    next(err);
+  }
+};
+
+type PopulatedTag = { name: string };
+type PopulatedAssignment = {
+  volunteerId: Types.ObjectId;
+  assignmentTagId: PopulatedTag;
+  projectTagId: PopulatedTag;
+  shiftTagIds: PopulatedTag[];
+};
+
+type VolunteerExportDoc = Awaited<ReturnType<typeof VolunteerModel.findOne>> & object;
+
+type CsvColumn = {
+  header: string;
+  toCell: (volunteer: VolunteerExportDoc, assignmentName: string, projectName: string) => string;
+};
+
+const fmtDate = (date: Date | null | undefined): string =>
+  date ? date.toISOString().split("T")[0] : "";
+
+const escapeCsvField = (value: string): string => {
+  if (value.includes(",") || value.includes('"') || value.includes("\n") || value.includes("\r")) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+};
+
+const CSV_COLUMNS: CsvColumn[] = [
+  { header: "First Name", toCell: (v) => v.firstName },
+  { header: "Last Name", toCell: (v) => v.lastName },
+  { header: "assignment", toCell: (_, a) => a },
+  { header: "project", toCell: (_, __, p) => p },
+  { header: "Status", toCell: (v) => v.status ?? "" },
+  { header: "Address1", toCell: (v) => v.address?.line1 ?? "" },
+  { header: "Address2", toCell: (v) => v.address?.line2 ?? "" },
+  { header: "City", toCell: (v) => v.address?.city ?? "" },
+  { header: "State", toCell: (v) => v.address?.state ?? "" },
+  { header: "Zip", toCell: (v) => v.address?.zip ?? "" },
+  { header: "Birthday", toCell: (v) => fmtDate(v.birthday) },
+  { header: "Cell", toCell: (v) => v.phoneNumber },
+  { header: "Email", toCell: (v) => v.email },
+  { header: "NEW Pronouns", toCell: (v) => v.preferredPronouns ?? "" },
+  { header: "NEW Media Consent", toCell: (v) => v.mediaConsent ?? "" },
+  { header: "NEW Name Consent", toCell: (v) => v.nameConsent ?? "" },
+  { header: "NEW Face", toCell: (v) => v.faceConsent ?? "" },
+  { header: "Start Date", toCell: (v) => fmtDate(v.startDate) },
+  { header: "End Date", toCell: (v) => fmtDate(v.endDate) },
+  { header: "Effective Date (date record was updated)", toCell: (v) => fmtDate(v.effectiveDate) },
+];
+
+const buildCsvRow = (
+  volunteer: VolunteerExportDoc,
+  assignmentName: string,
+  projectName: string,
+): string[] => CSV_COLUMNS.map((col) => col.toCell(volunteer, assignmentName, projectName));
+
+const buildCsv = (rows: string[][]): string =>
+  rows.map((row) => row.map(escapeCsvField).join(",")).join("\r\n");
+
+export const exportVolunteersCsv: RequestHandler = async (req, res, next) => {
+  try {
+    const [volunteers, assignments] = await Promise.all([
+      VolunteerModel.find(),
+      VolunteerAssignmentModel.find()
+        .populate("assignmentTagId")
+        .populate("projectTagId")
+        .populate("shiftTagIds"),
+    ]);
+
+    const assignmentsByVolunteerId = new Map<string, PopulatedAssignment[]>();
+    for (const a of assignments) {
+      const key = a.volunteerId.toString();
+      if (!assignmentsByVolunteerId.has(key)) {
+        assignmentsByVolunteerId.set(key, []);
+      }
+      assignmentsByVolunteerId.get(key)!.push(a as unknown as PopulatedAssignment);
+    }
+
+    const rows: string[][] = [CSV_COLUMNS.map((col) => col.header)];
+
+    for (const volunteer of volunteers) {
+      const volunteerAssignments = assignmentsByVolunteerId.get(volunteer._id.toString()) ?? [];
+
+      if (volunteerAssignments.length === 0) {
+        rows.push(buildCsvRow(volunteer, "", ""));
+      } else {
+        for (const a of volunteerAssignments) {
+          rows.push(
+            buildCsvRow(volunteer, a.assignmentTagId?.name ?? "", a.projectTagId?.name ?? ""),
+          );
+        }
+      }
+    }
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", 'attachment; filename="volunteers.csv"');
+    res.status(200).send(buildCsv(rows));
   } catch (err) {
     next(err);
   }

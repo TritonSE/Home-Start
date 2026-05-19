@@ -435,3 +435,21 @@ export async function getSelectedVolunteers({
     throw error;
   }
 }
+
+export async function exportVolunteersCsv(): Promise<void> {
+  const headers = await getAuthHeaders();
+
+  const response = await fetch(`${API_BASE_URL}/api/volunteer/export-csv`, { headers });
+
+  if (!response.ok) {
+    throw new Error(`Failed to export volunteers: ${response.status} ${response.statusText}`);
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "volunteers.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}

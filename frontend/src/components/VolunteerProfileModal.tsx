@@ -552,10 +552,13 @@ export default function VolunteerProfileModal({
       city !== (volunteer.address?.city ?? "") ||
       state !== (volunteer.address?.state ?? "") ||
       zip !== (volunteer.address?.zip ?? "") ||
-      birthday !== (volunteer.birthday ? new Date(volunteer.birthday).toISOString().split("T")[0] : "") ||
+      birthday !==
+        (volunteer.birthday ? new Date(volunteer.birthday).toISOString().split("T")[0] : "") ||
       preferredPronouns !== (volunteer.preferredPronouns ?? "") ||
-      startDate !== (volunteer.startDate ? new Date(volunteer.startDate).toISOString().split("T")[0] : "") ||
-      endDate !== (volunteer.endDate ? new Date(volunteer.endDate).toISOString().split("T")[0] : "") ||
+      startDate !==
+        (volunteer.startDate ? new Date(volunteer.startDate).toISOString().split("T")[0] : "") ||
+      endDate !==
+        (volunteer.endDate ? new Date(volunteer.endDate).toISOString().split("T")[0] : "") ||
       hours !== (volunteer.hours != null ? String(volunteer.hours) : "") ||
       status !== deriveStatus(volunteer) ||
       additionalNotes !== (volunteer.additionalNotes ?? "") ||

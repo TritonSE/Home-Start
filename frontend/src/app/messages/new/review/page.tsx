@@ -261,6 +261,13 @@ export default function ReviewAndSendPage() {
 
             <div className={styles.bottomCta}>
               {sendError && <p className={styles.sendError}>{sendError}</p>}
+              {sendDate && (
+                <div className={styles.scheduledTime}>
+                  <span>
+                    Scheduled:<b>&nbsp;{formatDate(sendDate)}</b>
+                  </span>
+                </div>
+              )}
               <button
                 type="button"
                 className={styles.sendBtn}

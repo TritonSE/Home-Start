@@ -187,15 +187,15 @@
 }
 
 .bottomCta {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: calc(120px + env(safe-area-inset-bottom));
-  z-index: 20;
-  padding: 0 16px;
-  background: transparent;
+  min-width: min(420px, calc(100% - 30px));
+  width: 100%;
+  bottom: calc(102px + 12px + env(safe-area-inset-bottom));
   display: flex;
-  justify-content: center;
+  align-self: center;
+  justify-self: flex-start;
+  margin-top: 16px;
+  gap: 16px;
+  flex-direction: column;
 }
 
 .sendBtn {

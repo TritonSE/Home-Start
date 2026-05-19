@@ -13,6 +13,7 @@ import addPersonIconAsset from "@/assets/add_person_icon.svg";
 import blueChevronLeftAsset from "@/assets/blue_chevron_left.svg";
 import bluePlusAsset from "@/assets/blue_plus_alt.svg";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
+import icCloseAsset from "@/assets/ic_close.svg";
 import icScheduleAsset from "@/assets/ic_schedule.svg";
 import mdiInformationAsset from "@/assets/mdi_information.svg";
 import { initMsal, signInWithOutlook } from "@/auth/msal";
@@ -24,6 +25,7 @@ const addPersonIcon = addPersonIconAsset as string;
 const blueChevronLeft = blueChevronLeftAsset as string;
 const bluePlus = bluePlusAsset as string;
 const icCaretLeft = icCaretLeftAsset as string;
+const icClose = icCloseAsset as string;
 const icSchedule = icScheduleAsset as string;
 const mdiInformation = mdiInformationAsset as string;
 
@@ -84,6 +86,7 @@ function Composer({
   message,
   setMessage,
   sendDate,
+  setSendDate,
   recipientsCount,
   canReview,
   isDesktop,
@@ -327,9 +330,18 @@ function Composer({
 
       {sendDate && (
         <div className={styles.scheduledTime}>
+          <span />
           <span>
             Scheduled:<b>&nbsp;{formatDate(sendDate)}</b>
           </span>
+          <Image
+            className={styles.removeScheduleBtn}
+            src={icClose}
+            alt="Remove Schedule"
+            width={20}
+            height={20}
+            onClick={() => setSendDate(undefined)}
+          />
         </div>
       )}
 

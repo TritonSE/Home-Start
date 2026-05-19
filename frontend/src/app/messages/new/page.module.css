@@ -328,7 +328,8 @@
 }
 
 .reviewFixed {
-  width: min(420px, calc(100% - 30px));
+  min-width: min(420px, calc(100% - 30px));
+  width: 100%;
   bottom: calc(102px + 12px + env(safe-area-inset-bottom));
   display: flex;
   align-self: center;
@@ -366,6 +367,10 @@
 }
 
 .scheduleBtn {
+  cursor: pointer;
+}
+
+.removeScheduleBtn {
   cursor: pointer;
 }
 
@@ -502,8 +507,8 @@
 .scheduledTime {
   display: flex;
   height: 52px;
-  padding: 24px;
-  justify-content: center;
+  padding: 24px 16px;
+  justify-content: space-between;
   align-items: center;
   gap: 16px;
   margin-top: 16px;

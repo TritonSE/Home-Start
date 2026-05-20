@@ -1172,30 +1172,34 @@ export default function VolunteerProfileModal({
                 />
               </div>
 
-              {saveError ? <span className={styles.saveError}>{saveError}</span> : null}
-              <div className={styles.actionRow}>
-                <button
-                  type="button"
-                  className={styles.cancelButton}
-                  onClick={() => requestExit("close")}
-                  disabled={isSaving}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className={styles.saveButton}
-                  onClick={() => {
-                    void handleSave();
-                  }}
-                  disabled={isSaving}
-                >
-                  {isSaving ? "Saving..." : "Save Changes"}
-                </button>
-              </div>
             </div>
           )}
         </div>
+        {activeTab === "edit" ? (
+          <div className={styles.stickyFooter}>
+            {saveError ? <span className={styles.saveError}>{saveError}</span> : null}
+            <div className={styles.actionRow}>
+              <button
+                type="button"
+                className={styles.cancelButton}
+                onClick={() => requestExit("close")}
+                disabled={isSaving}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.saveButton}
+                onClick={() => {
+                  void handleSave();
+                }}
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
       {showSuccess ? (
         <SuccessNotification key={saveKey} message="Successfully Created Role" />

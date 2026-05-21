@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import Modal from "./Modal";
 import RoleTable from "./RoleTable";
+import RoleTableEdit from "./RoleTableEdit";
 import SuccessNotification from "./SuccessNotification";
 import TagSearch from "./TagSearch";
 import styles from "./VolunteerProfileModal.module.css";
@@ -1156,6 +1157,9 @@ export default function VolunteerProfileModal({
                   <div className={styles.sectionHeaderRow}>
                     <div className={styles.sectionHeader}>Roles</div>
                     <span className={styles.tapRemoveHint}>Tap x to Remove</span>
+                  </div>
+                  <div className={styles.tagsWrapper}>
+                    <RoleTableEdit volunteerAssignments={volunteerAssignments} />
                   </div>
                 </div>
               </div>

@@ -1,0 +1,152 @@
+.table {
+  border-radius: 8px;
+  border: 1px solid var(--Border-default, #e8e8e8);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  width: 100%;
+  height: auto;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  width: 100%;
+  height: 52px;
+  background-color: #e6f2f3;
+  align-items: center;
+  border-bottom: 1px solid var(--Border-default, #e8e8e8);
+  border-radius: 8px 8px 0 0;
+}
+
+.headerCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 16px;
+  height: 100%;
+  color: #676767;
+  font-family: "Open Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  width: 100%;
+  border-bottom: 1px solid var(--Border-default, #e8e8e8);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12px 16px;
+  min-height: 44px;
+  gap: 4px;
+}
+
+.tagCell {
+  display: flex;
+  padding: 8px 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+}
+
+.shiftCell {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+}
+
+.pillTag {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 100px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 500;
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 24px;
+  color: #676767;
+  font-family: "Open Sans", sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.shiftAddButton,
+.createRoleButton {
+  border: 1px solid #e8e8e8;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.shiftAddButton {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.createRoleFooter {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 20px;
+}
+
+.createRoleButton {
+  width: 462px;
+  height: 36px;
+  border-radius: 8px;
+  gap: 8px;
+  color: #141414;
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.createRoleText {
+  display: inline-flex;
+  align-items: center;
+}

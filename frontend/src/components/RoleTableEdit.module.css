@@ -1,31 +1,40 @@
 .table {
-  border-radius: 8px;
-  border: 1px solid var(--Border-default, #e8e8e8);
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  align-self: stretch;
+  gap: 12px;
   width: 100%;
+}
+
+.scrollContainer {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tableInner {
+  display: table;
+  border-radius: 8px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--Border-default, #e8e8e8);
+  width: max-content;
+  min-width: 100%;
   height: auto;
 }
 
 .header {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  width: 100%;
-  height: 52px;
   background-color: #e6f2f3;
-  align-items: center;
-  border-bottom: 1px solid var(--Border-default, #e8e8e8);
-  border-radius: 8px 8px 0 0;
+  display: table-header-group;
 }
 
 .headerCell {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 0 16px;
-  height: 100%;
+  display: table-cell;
+  vertical-align: middle;
+  padding: 0 16px 0 20px;
+  height: 52px;
+  border-bottom: 1px solid var(--Border-default, #e8e8e8);
+  text-align: left;
   color: #676767;
   font-family: "Open Sans", sans-serif;
   font-size: 12px;
@@ -34,16 +43,11 @@
 }
 
 .body {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  flex: 1;
+  display: table-row-group;
 }
 
 .row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  width: 100%;
+  display: table-row;
   border-bottom: 1px solid var(--Border-default, #e8e8e8);
 }
 
@@ -52,19 +56,15 @@
 }
 
 .cell {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
   padding: 12px 16px;
   min-height: 44px;
-  gap: 4px;
+  border-bottom: 1px solid var(--Border-default, #e8e8e8);
 }
 
 .tagCell {
   display: flex;
   padding: 8px 12px;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: 8px;
   border-radius: 8px;
@@ -99,15 +99,16 @@
 }
 
 .emptyState {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
   padding: 24px;
+  text-align: center;
   color: #676767;
   font-family: "Open Sans", sans-serif;
   font-size: 12px;
   line-height: 16px;
+}
+
+.row:last-child .cell {
+  border-bottom: none;
 }
 
 .shiftAddButton,
@@ -131,7 +132,6 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  padding: 16px 0 20px;
 }
 
 .createRoleButton {
@@ -139,11 +139,11 @@
   height: 36px;
   border-radius: 8px;
   gap: 8px;
-  color: #141414;
+  color: #676767;
   font-family: "Open Sans", sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 20px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
 }
 
 .createRoleText {

@@ -40,7 +40,7 @@ const resolveTags = (tags: (string | VolunteerTag)[] | undefined): VolunteerTag[
   return tags.map(resolveTag).filter((tag): tag is VolunteerTag => tag !== null);
 };
 
-const PillTag = ({ tag }: { tag: VolunteerTag }) => {
+const PillTag = ({ tag, borderRadius = "100px" }: { tag: VolunteerTag; borderRadius?: string }) => {
   const backgroundColor =
     tag.color.startsWith("#") || tag.color.startsWith("rgb") ? tag.color : `#${tag.color}`;
 
@@ -52,6 +52,7 @@ const PillTag = ({ tag }: { tag: VolunteerTag }) => {
       style={{
         backgroundColor,
         color: textColor,
+        borderRadius,
       }}
     >
       {tag.name}
@@ -64,57 +65,75 @@ const PlusIcon = () => <Image src={icPlusAsset as string} alt="" width={12} heig
 export default function RoleTableEdit({ volunteerAssignments }: RoleTableProps) {
   return (
     <div className={styles.table}>
-      <div className={styles.header}>
-        <div className={styles.headerCell}>Assignment</div>
-        <div className={styles.headerCell}>Project</div>
-        <div className={styles.headerCell}>Shift</div>
-      </div>
-      <div className={styles.body}>
-        {volunteerAssignments.length === 0 ? (
-          <div className={styles.emptyState}>No assignments</div>
-        ) : (
-          volunteerAssignments.map((assignment) => {
-            const assignmentTag = resolveTag(assignment.assignmentTagId);
-            const projectTag = resolveTag(assignment.projectTagId);
-            const shiftTags = resolveTags(assignment.shiftTagIds);
+      <div className={styles.scrollContainer}>
+        <table className={styles.tableInner}>
+          <thead className={styles.header}>
+            <tr>
+              <th className={styles.headerCell}>Assignment</th>
+              <th className={styles.headerCell}>Project</th>
+              <th className={styles.headerCell}>Shift</th>
+            </tr>
+          </thead>
+          <tbody className={styles.body}>
+            {volunteerAssignments.length === 0 ? (
+              <tr className={styles.row}>
+                <td className={`${styles.cell} ${styles.emptyState}`} colSpan={3}>
+                  No assignments
+                </td>
+              </tr>
+            ) : (
+              volunteerAssignments.map((assignment) => {
+                const assignmentTag = resolveTag(assignment.assignmentTagId);
+                const projectTag = resolveTag(assignment.projectTagId);
+                const shiftTags = resolveTags(assignment.shiftTagIds);
 
-            return (
-              <div key={assignment._id} className={styles.row}>
-                <div className={`${styles.cell} ${styles.tagCell}`}>
-                  {assignmentTag ? <PillTag tag={assignmentTag} /> : <span>—</span>}
-                </div>
-                <div className={`${styles.cell} ${styles.tagCell}`}>
-                  {projectTag ? <PillTag tag={projectTag} /> : <span>—</span>}
-                </div>
-                <div className={`${styles.cell} ${styles.shiftCell}`}>
-                  {shiftTags.length > 0 ? shiftTags.map((tag) => <PillTag key={tag._id} tag={tag} />) : null}
-                  <button
-                    type="button"
-                    className={styles.shiftAddButton}
-                    onClick={() => {
-                      console.debug("Add shift clicked", assignment._id);
-                    }}
-                    aria-label="Add shift"
-                  >
-                    <PlusIcon />
-                  </button>
-                </div>
-              </div>
-            );
-          })
-        )}
-        <div className={styles.createRoleFooter}>
-          <button
-            type="button"
-            className={styles.createRoleButton}
-            onClick={() => {
-              console.debug("Create Role clicked");
-            }}
-          >
-            <PlusIcon />
-            <span className={styles.createRoleText}>Create Role</span>
-          </button>
-        </div>
+                return (
+                  <tr key={assignment._id} className={styles.row}>
+                    <td className={styles.cell}>
+                      <div className={styles.tagCell}>
+                        {assignmentTag ? <PillTag tag={assignmentTag} borderRadius="8px" /> : <span>—</span>}
+                      </div>
+                    </td>
+                    <td className={styles.cell}>
+                      <div className={styles.tagCell}>
+                        {projectTag ? <PillTag tag={projectTag} borderRadius="8px" /> : <span>—</span>}
+                      </div>
+                    </td>
+                    <td className={styles.cell}>
+                      <div className={styles.shiftCell}>
+                        {shiftTags.length > 0
+                          ? shiftTags.map((tag) => <PillTag key={tag._id} tag={tag} />)
+                          : null}
+                        <button
+                          type="button"
+                          className={styles.shiftAddButton}
+                          onClick={() => {
+                            console.debug("Add shift clicked", assignment._id);
+                          }}
+                          aria-label="Add shift"
+                        >
+                          <PlusIcon />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+      <div className={styles.createRoleFooter}>
+        <button
+          type="button"
+          className={styles.createRoleButton}
+          onClick={() => {
+            console.debug("Create Role clicked");
+          }}
+        >
+          <span className={styles.createRoleText}>Create Role</span>
+          <PlusIcon />
+        </button>
       </div>
     </div>
   );

@@ -8,6 +8,9 @@ import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
 import styles from "@/app/page.module.css";
+import CreateRoleModal from "@/components/CreateRoleModal";
+import CreateShiftModal from "@/components/CreateShiftModal";
+import EditTagModal from "@/components/EditTagModal";
 import PageBar from "@/components/PageBar";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
@@ -28,18 +31,19 @@ type ProjectProgramMap = {
 };
 
 export default function Page() {
-  // Data state
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
+  const [showCreateTagModal, setShowCreateTagModal] = useState(false);
+  const [showCreateShiftModal, setShowCreateShiftModal] = useState(false);
+  const [showEditTagModal, setShowEditTagModal] = useState(false);
 
-  // Filter states
   const [search, setSearch] = useState("");
   const [selectedProject, setSelectedProject] = useState<Set<string>>(new Set());
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedAssignment, setSelectedAssignment] = useState<Set<string>>(new Set());
   const [selectedProgram, setSelectedProgram] = useState<Set<string>>(new Set());
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [showImportSuccess, setShowImportSuccess] = useState(false);
   const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
@@ -58,36 +62,46 @@ export default function Page() {
         fetchVolunteerAssignments(),
         fetchProjectProgramMaps(),
       ]);
+
+      const tagById = new Map<string, VolunteerTag>();
+      for (const t of tagData) tagById.set(t._id, t);
+
       const programByProjectId = new Map<string, VolunteerTag>();
-      for (const map of projectProgramMapData as ProjectProgramMap[]) {
-        programByProjectId.set(map.projectTagId._id, map.programTagId);
+      for (const map of projectProgramMapData) {
+        const projectId =
+          typeof map.projectTagId === "string" ? map.projectTagId : map.projectTagId._id;
+        const programTag =
+          typeof map.programTagId === "string" ? tagById.get(map.programTagId) : map.programTagId;
+        if (projectId && programTag) programByProjectId.set(projectId, programTag);
       }
 
+      const resolveTag = (t?: string | VolunteerTag | null) => {
+        if (!t) return undefined;
+        return typeof t === "string" ? tagById.get(t) : t;
+      };
+
       const volunteersWithTags = volunteerData.map((volunteer) => {
-        const volunteerAssignments = (assignmentData as PopulatedAssignment[]).filter(
+        const volunteerAssignments = assignmentData.filter(
           (assignment) => assignment.volunteerId === volunteer._id,
         );
         const seenTagIds = new Set<string>();
         const volunteerTags: VolunteerTag[] = [];
 
         const pushTag = (tag: VolunteerTag | undefined) => {
-          if (!tag || seenTagIds.has(tag._id)) {
-            return;
-          }
-
+          if (!tag || seenTagIds.has(tag._id)) return;
           seenTagIds.add(tag._id);
           volunteerTags.push(tag);
         };
 
         // Add assignment and project tags
         for (const assignment of volunteerAssignments) {
-          pushTag(assignment.assignmentTagId);
-          pushTag(assignment.projectTagId);
-          pushTag(programByProjectId.get(assignment.projectTagId._id));
+          pushTag(resolveTag(assignment.assignmentTagId));
+          pushTag(resolveTag(assignment.projectTagId));
 
-          for (const shiftTag of assignment.shiftTagIds ?? []) {
-            pushTag(shiftTag);
-          }
+          const projTag = resolveTag(assignment.projectTagId);
+          pushTag(projTag ? programByProjectId.get(projTag._id) : undefined);
+
+          for (const shiftTag of assignment.shiftTagIds ?? []) pushTag(resolveTag(shiftTag));
         }
 
         // Add group tags from groupIds
@@ -124,6 +138,7 @@ export default function Page() {
 
       setVolunteers(volunteersWithTags);
       setTags(tagData);
+      setAssignments(assignmentData);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -176,17 +191,16 @@ export default function Page() {
     void loadVolunteers();
   }, []);
 
-  // Project dropdown should only include projects currently assigned to volunteers.
   const projectTags = [
     ...new Set(
       volunteers
-        .flatMap((volunteer) => volunteer.tags ?? [])
-        .filter((tag) => tag.type === "project")
-        .map((tag) => tag.name),
+        .flatMap((v) => v.tags ?? [])
+        .filter((t) => t.type === "project")
+        .map((t) => t.name),
     ),
   ];
-  const assignmentTags = tags.filter((tag) => tag.type === "assignment").map((tag) => tag.name);
-  const programTags = tags.filter((tag) => tag.type === "program").map((tag) => tag.name);
+  const assignmentTags = tags.filter((t) => t.type === "assignment").map((t) => t.name);
+  const programTags = tags.filter((t) => t.type === "program").map((t) => t.name);
 
   // Apply ALL filters here (search + tags)
   const filteredVolunteers = useMemo(() => {
@@ -217,7 +231,6 @@ export default function Page() {
         if (!hasMatchingProgram) return false;
       }
 
-      // Status filter
       if (selectedStatus && volunteer.status !== selectedStatus) return false;
 
       // Search filter (includes first/last/full name, phone, email)
@@ -230,14 +243,14 @@ export default function Page() {
         const phoneNumber = (volunteer.phoneNumber ?? "").toLowerCase();
         const email = (volunteer.email ?? "").toLowerCase();
 
-        const matchesSearch =
+        const matches =
           firstName.includes(query) ||
           lastName.includes(query) ||
           fullName.includes(query) ||
           reverseFullName.includes(query) ||
-          phoneNumber.includes(query) ||
-          email.includes(query);
-        if (!matchesSearch) return false;
+          email.includes(query) ||
+          phoneNumber?.includes(query);
+        if (!matches) return false;
       }
 
       return true;
@@ -287,10 +300,69 @@ export default function Page() {
     setIsSheetOpen(false);
   };
 
+  const renderCreateTagModal = () => {
+    if (!showCreateTagModal) return null;
+
+    // For testing, the renderCreateTagModal will pass the first volunteer on the currently displayed page.
+    const volunteerToPass = displayedVolunteers.length > 0 ? displayedVolunteers[0] : undefined;
+    return (
+      <CreateRoleModal onClose={() => setShowCreateTagModal(false)} volunteer={volunteerToPass} />
+    );
+  };
+
+  const renderCreateShiftModal = () => {
+    if (!showCreateShiftModal) return null;
+    // For testing: find assignment with id 69f98cb6e9e25f2173e429ff
+    const testAssignment = assignments.find((a) => a._id === "69fd099efc2344329a5745c0") || null;
+    return (
+      <CreateShiftModal
+        onClose={() => setShowCreateShiftModal(false)}
+        assignment={testAssignment}
+      />
+    );
+  };
+
+  const renderEditTagModal = () => {
+    if (!showEditTagModal) return null;
+
+    // For testing: find tag with id 69fd0ae113eaf3c469fb4341
+    const testTag = tags.find((tag) => tag._id === "69fd0ae113eaf3c469fb4341");
+    if (!testTag) return null;
+
+    return <EditTagModal onClose={() => setShowEditTagModal(false)} tag={testTag} />;
+  };
+
   return (
     <Sidebar>
       <div className={styles.page}>
         <main className={styles.main}>
+          {renderCreateTagModal()}
+          {renderCreateShiftModal()}
+          {renderEditTagModal()}
+
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => setShowCreateTagModal(true)}
+              disabled={filteredVolunteers.length === 0}
+            >
+              Create VolunteerAssignment Modal
+            </button>
+
+            <button type="button" onClick={() => setShowCreateShiftModal(true)}>
+              Create Shift Tag Modal
+            </button>
+
+            <button type="button" onClick={() => setShowEditTagModal(true)}>
+              Edit Tag Modal
+            </button>
+          </div>
+
+          <p>
+            Above testing button creates the VolunteerAssignment modal for the first volunteer in
+            the list.
+          </p>
+
           {showImportSuccess && (
             <div className={styles.importSuccessBanner}>
               <div className={styles.importSuccessContent}>
@@ -311,13 +383,16 @@ export default function Page() {
               ></button>
             </div>
           )}
+
           <TitleBar onImportComplete={handleImportComplete} />
+
           <SearchBar
             search={search}
             setSearch={handleSearchChange}
             projectTags={projectTags}
             assignmentTags={assignmentTags}
             programTags={programTags}
+            sortType={sortOption}
             selectedProject={selectedProject}
             setSelectedProject={handleSelectedProjectChange}
             selectedStatus={selectedStatus}
@@ -326,9 +401,9 @@ export default function Page() {
             setSelectedAssignment={handleSelectedAssignmentChange}
             selectedProgram={selectedProgram}
             setSelectedProgram={handleSelectedProgramChange}
-            sortType={sortOption}
             onSortOptionChange={handleSortOptionChange}
           />
+
           <div className={styles.tableSection}>
             <VolunteerTable
               volunteers={displayedVolunteers}
@@ -348,6 +423,7 @@ export default function Page() {
               </span>
             </div>
           </div>
+
           <PageBar
             totalItems={filteredVolunteers.length}
             currentPage={currentPage}

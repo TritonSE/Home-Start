@@ -100,20 +100,43 @@ export default function RoleTableEdit({ volunteerAssignments }: RoleTableProps) 
                       </div>
                     </td>
                     <td className={styles.cell}>
-                      <div className={styles.shiftCell}>
-                        {shiftTags.length > 0
-                          ? shiftTags.map((tag) => <PillTag key={tag._id} tag={tag} />)
-                          : null}
-                        <button
-                          type="button"
-                          className={styles.shiftAddButton}
-                          onClick={() => {
-                            console.debug("Add shift clicked", assignment._id);
-                          }}
-                          aria-label="Add shift"
-                        >
-                          <PlusIcon />
-                        </button>
+                      <div
+                        className={`${styles.shiftCell} ${shiftTags.length === 0 ? styles.shiftCellEmpty : ""}`}
+                      >
+                        {shiftTags.length > 0 ? (
+                          shiftTags.map((tag, index) => {
+                            const isLastShiftTag = index === shiftTags.length - 1;
+
+                            return (
+                              <div key={tag._id} className={styles.shiftTagRow}>
+                                <PillTag tag={tag} />
+                                {isLastShiftTag ? (
+                                  <button
+                                    type="button"
+                                    className={`${styles.shiftAddButton} ${styles.shiftAddButtonInline}`}
+                                    onClick={() => {
+                                      console.debug("Add shift clicked", assignment._id);
+                                    }}
+                                    aria-label="Add shift"
+                                  >
+                                    <PlusIcon />
+                                  </button>
+                                ) : null}
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <button
+                            type="button"
+                            className={styles.shiftAddButton}
+                            onClick={() => {
+                              console.debug("Add shift clicked", assignment._id);
+                            }}
+                            aria-label="Add shift"
+                          >
+                            <PlusIcon />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -72,12 +72,22 @@
 
 .shiftCell {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-direction: column;
   padding: 8px 12px;
   justify-content: flex-start;
   align-items: center;
   gap: 8px;
+}
+
+.shiftCellEmpty {
+  align-items: flex-start;
+}
+
+.shiftTagRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
 }
 
 .pillTag {
@@ -126,6 +136,10 @@
   height: 24px;
   border-radius: 999px;
   flex: 0 0 auto;
+}
+
+.shiftAddButtonInline {
+  margin-left: 0;
 }
 
 .createRoleFooter {

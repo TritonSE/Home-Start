@@ -189,6 +189,18 @@ function ViewContent({
               : "N/A"}
           </strong>
         </span>
+        <span className={styles.lastEdited}>
+          Created on{" "}
+          <strong>
+            {volunteer.dateCreated
+              ? new Date(volunteer.dateCreated as string | Date).toLocaleDateString("en-US", {
+                  month: "2-digit",
+                  day: "2-digit",
+                  year: "2-digit",
+                })
+              : "N/A"}
+          </strong>
+        </span>
       </div>
       <div className={styles.infoSection}>
         <div className={styles.infoField}>
@@ -238,36 +250,6 @@ function ViewContent({
         <div className={styles.infoField}>
           <span className={styles.fieldLabel}>Pref Pronouns</span>
           <span className={styles.fieldValue}>{volunteer.preferredPronouns ?? ""}</span>
-        </div>
-        <div className={styles.twoColumnRow}>
-          <div className={styles.twoColItem}>
-            <div className={styles.infoField}>
-              <span className={styles.fieldLabel}>Start Date</span>
-              <span className={styles.fieldValue}>
-                {volunteer.startDate
-                  ? new Date(volunteer.startDate).toLocaleDateString("en-US", {
-                      month: "2-digit",
-                      day: "2-digit",
-                      year: "2-digit",
-                    })
-                  : ""}
-              </span>
-            </div>
-          </div>
-          <div className={styles.twoColItem}>
-            <div className={styles.infoField}>
-              <span className={styles.fieldLabel}>End Date</span>
-              <span className={styles.fieldValue}>
-                {volunteer.endDate
-                  ? new Date(volunteer.endDate).toLocaleDateString("en-US", {
-                      month: "2-digit",
-                      day: "2-digit",
-                      year: "2-digit",
-                    })
-                  : ""}
-              </span>
-            </div>
-          </div>
         </div>
         <div className={styles.infoField}>
           <span className={styles.fieldLabel}>Total Volunteer Hours</span>
@@ -363,8 +345,6 @@ export default function VolunteerProfileModal({
   const [birthday, setBirthday] = useState("");
   const [preferredPronouns, setPreferredPronouns] = useState("");
   const [hours, setHours] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [mediaConsent, setMediaConsent] = useState<"yes" | "no">("no");
   const [faceConsent, setFaceConsent] = useState<"yes" | "no">("no");
@@ -454,10 +434,6 @@ export default function VolunteerProfileModal({
     setZip(volunteer.address?.zip ?? "");
     setBirthday(volunteer.birthday ? new Date(volunteer.birthday).toISOString().split("T")[0] : "");
     setPreferredPronouns(volunteer.preferredPronouns ?? "");
-    setStartDate(
-      volunteer.startDate ? new Date(volunteer.startDate).toISOString().split("T")[0] : "",
-    );
-    setEndDate(volunteer.endDate ? new Date(volunteer.endDate).toISOString().split("T")[0] : "");
     setHours(volunteer.hours != null ? String(volunteer.hours) : "");
     setStatus(deriveStatus(volunteer));
     setAdditionalNotes(volunteer.additionalNotes ?? "");
@@ -565,8 +541,6 @@ export default function VolunteerProfileModal({
           },
           birthday,
           preferredPronouns,
-          startDate: startDate === "" ? undefined : startDate,
-          endDate: endDate === "" ? undefined : endDate,
           hours: parsedHours === undefined ? undefined : parsedHours,
           status,
           additionalNotes,
@@ -610,10 +584,6 @@ export default function VolunteerProfileModal({
       birthday !==
         (volunteer.birthday ? new Date(volunteer.birthday).toISOString().split("T")[0] : "") ||
       preferredPronouns !== (volunteer.preferredPronouns ?? "") ||
-      startDate !==
-        (volunteer.startDate ? new Date(volunteer.startDate).toISOString().split("T")[0] : "") ||
-      endDate !==
-        (volunteer.endDate ? new Date(volunteer.endDate).toISOString().split("T")[0] : "") ||
       hours !== (volunteer.hours != null ? String(volunteer.hours) : "") ||
       status !== deriveStatus(volunteer) ||
       additionalNotes !== (volunteer.additionalNotes ?? "") ||
@@ -732,6 +702,17 @@ export default function VolunteerProfileModal({
                           day: "2-digit",
                           year: "2-digit",
                         })
+                      : "N/A"}
+                  </strong>
+                </span>
+                <span className={styles.lastEdited}>
+                  Created on{" "}
+                  <strong>
+                    {volunteer.dateCreated
+                      ? new Date(volunteer.dateCreated as string | Date).toLocaleDateString(
+                          "en-US",
+                          { month: "2-digit", day: "2-digit", year: "2-digit" },
+                        )
                       : "N/A"}
                   </strong>
                 </span>
@@ -864,38 +845,6 @@ export default function VolunteerProfileModal({
                   value={preferredPronouns}
                   onChange={(event) => setPreferredPronouns(event.target.value)}
                 />
-              </div>
-
-              <div className={styles.twoColumnRow}>
-                <div className={styles.twoColItem}>
-                  <div className={styles.editField}>
-                    <label className={styles.editLabel} htmlFor="edit-start-date">
-                      Start Date
-                    </label>
-                    <input
-                      id="edit-start-date"
-                      className={styles.editInput}
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className={styles.twoColItem}>
-                  <div className={styles.editField}>
-                    <label className={styles.editLabel} htmlFor="edit-end-date">
-                      End Date
-                    </label>
-                    <input
-                      id="edit-end-date"
-                      className={styles.editInput}
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                    />
-                  </div>
-                </div>
               </div>
 
               <div className={styles.editField}>

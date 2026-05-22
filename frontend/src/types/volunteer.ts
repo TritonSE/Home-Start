@@ -31,8 +31,7 @@ export type Volunteer = {
   tags: VolunteerTag[];
   status?: "new" | "returning";
   // Optional fields populated from backend
-  startDate?: string | Date | null;
-  endDate?: string | Date | null;
+  dateCreated?: string | Date | null;
   effectiveDate?: string | Date | null;
   hours?: number;
   wageRate?: number;

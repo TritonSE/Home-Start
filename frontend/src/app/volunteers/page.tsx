@@ -257,9 +257,9 @@ export default function Page() {
 
     switch (sortOption) {
       case "Newest":
-        return sorted.sort((a, b) => toTime(b.startDate) - toTime(a.startDate));
+        return sorted.sort((a, b) => toTime(b.dateCreated) - toTime(a.dateCreated));
       case "Oldest":
-        return sorted.sort((a, b) => toTime(a.startDate) - toTime(b.startDate));
+        return sorted.sort((a, b) => toTime(a.dateCreated) - toTime(b.dateCreated));
       case "First Name A-Z":
         return sorted.sort((a, b) => a.firstName.localeCompare(b.firstName));
       case "First Name Z-A":

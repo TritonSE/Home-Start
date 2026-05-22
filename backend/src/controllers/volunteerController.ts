@@ -157,8 +157,6 @@ type UpdateVolunteerBody = {
   birthday?: string | Date;
   preferredPronouns?: string;
   hours?: number;
-  startDate?: string | Date;
-  endDate?: string | Date;
   mediaConsent?: "yes" | "no";
   faceConsent?: "yes" | "no";
   nameConsent?: "no" | "first" | "full";
@@ -183,8 +181,6 @@ export const updateVolunteer: RequestHandler = async (req, res, next) => {
     birthday,
     preferredPronouns,
     hours,
-    startDate,
-    endDate,
     mediaConsent,
     faceConsent,
     nameConsent,
@@ -205,8 +201,6 @@ export const updateVolunteer: RequestHandler = async (req, res, next) => {
       birthday,
       preferredPronouns,
       hours,
-      startDate,
-      endDate,
       mediaConsent,
       faceConsent,
       nameConsent,

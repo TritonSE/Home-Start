@@ -417,30 +417,38 @@ export default function VolunteerProfileModal({
     return () => clearTimeout(timeoutId);
   }, [programSearchQuery]);
 
-  useEffect(() => {
-    if (!volunteer) return;
+  const resetForm = (v: typeof volunteer) => {
+    if (!v) return;
     setRemovedGroupIds(new Set());
     setRemovedProgramIds(new Set());
     setAddedGroupTags([]);
     setAddedProgramTags([]);
-    setFirstName(volunteer.firstName);
-    setLastName(volunteer.lastName);
-    setEmail(volunteer.email);
-    setPhoneNumber(volunteer.phoneNumber);
-    setAddressLine1(volunteer.address?.line1 ?? "");
-    setAddressLine2(volunteer.address?.line2 ?? "");
-    setCity(volunteer.address?.city ?? "");
-    setState(volunteer.address?.state ?? "");
-    setZip(volunteer.address?.zip ?? "");
-    setBirthday(volunteer.birthday ? new Date(volunteer.birthday).toISOString().split("T")[0] : "");
-    setPreferredPronouns(volunteer.preferredPronouns ?? "");
-    setHours(volunteer.hours != null ? String(volunteer.hours) : "");
-    setStatus(deriveStatus(volunteer));
-    setAdditionalNotes(volunteer.additionalNotes ?? "");
-    setMediaConsent(volunteer.mediaConsent ?? "no");
-    setFaceConsent(volunteer.faceConsent ?? "no");
-    setNameConsent(volunteer.nameConsent ?? "no");
+    setGroupSearchQuery("");
+    setProgramSearchQuery("");
+    setFirstName(v.firstName);
+    setLastName(v.lastName);
+    setEmail(v.email);
+    setPhoneNumber(v.phoneNumber);
+    setAddressLine1(v.address?.line1 ?? "");
+    setAddressLine2(v.address?.line2 ?? "");
+    setCity(v.address?.city ?? "");
+    setState(v.address?.state ?? "");
+    setZip(v.address?.zip ?? "");
+    setBirthday(v.birthday ? new Date(v.birthday).toISOString().split("T")[0] : "");
+    setPreferredPronouns(v.preferredPronouns ?? "");
+    setHours(v.hours != null ? String(v.hours) : "");
+    setStatus(deriveStatus(v));
+    setAdditionalNotes(v.additionalNotes ?? "");
+    setMediaConsent(v.mediaConsent ?? "no");
+    setFaceConsent(v.faceConsent ?? "no");
+    setNameConsent(v.nameConsent ?? "no");
     setSaveError("");
+  };
+
+  useEffect(() => {
+    if (!volunteer || !isOpen) return;
+    setActiveTab("view");
+    resetForm(volunteer);
 
     // Fetch volunteer assignments
     const fetchAssignments = async () => {
@@ -454,7 +462,7 @@ export default function VolunteerProfileModal({
     };
 
     void fetchAssignments();
-  }, [volunteer]);
+  }, [volunteer, isOpen]);
 
   useEffect(() => {
     setShowSuccess(false);
@@ -1228,6 +1236,7 @@ export default function VolunteerProfileModal({
               className={styles.confirmPrimary}
               onClick={() => {
                 setShowCancelConfirm(false);
+                resetForm(volunteer);
                 if (pendingExitAction === "close") {
                   onClose();
                 } else {

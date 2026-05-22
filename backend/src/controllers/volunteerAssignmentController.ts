@@ -85,7 +85,7 @@ export const updateVolunteerAssignment: RequestHandler = async (req, res, next) 
     if (shiftTagIds === undefined || shiftTagIds === null) {
       // leave untouched
     } else if (isStringArray(shiftTagIds)) {
-      update.shiftTagIds = shiftTagIds;
+      update.$addToSet = { shiftTagIds: { $each: shiftTagIds } };
     } else {
       throw createError(400, "shiftTagIds must be an array of strings");
     }

@@ -276,7 +276,7 @@ export default function Page() {
   const renderCreateShiftModal = () => {
     if (!showCreateShiftModal) return null;
     // For testing: find assignment with id 69f98cb6e9e25f2173e429ff
-    const testAssignment = assignments.find((a) => a._id === "69f98cb6e9e25f2173e429ff") || null;
+    const testAssignment = assignments.find((a) => a._id === "69fd099efc2344329a5745c0") || null;
     return (
       <CreateShiftModal
         onClose={() => setShowCreateShiftModal(false)}

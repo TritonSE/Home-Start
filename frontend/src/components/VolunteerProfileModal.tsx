@@ -11,7 +11,7 @@ import styles from "./VolunteerProfileModal.module.css";
 
 import type { Volunteer, VolunteerAssignment, VolunteerTag } from "../types/volunteer";
 
-import { searchTags } from "@/app/api/tag";
+import { createTag, searchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignmentsByVolunteerId } from "@/app/api/volunteer";
 import icCloseAsset from "@/assets/ic_close.svg";
 import { auth } from "@/firebase/firebase";
@@ -627,6 +627,46 @@ export default function VolunteerProfileModal({
     );
   };
 
+  const handleCreateGroupTag = async (name: string): Promise<void> => {
+    let newTag: VolunteerTag;
+    try {
+      newTag = await createTag(name, "group");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      if (message.toLowerCase().includes("already exists")) {
+        const existing = await searchTags(name);
+        const match = existing.find((t) => t.name.toLowerCase() === name.toLowerCase());
+        if (!match) throw new Error(`Tag "${name}" already exists but could not be found.`);
+        newTag = match;
+      } else {
+        throw err;
+      }
+    }
+    setAddedGroupTags((prev) =>
+      prev.some((t) => t._id === newTag._id) ? prev : [...prev, newTag],
+    );
+  };
+
+  const handleCreateProgramTag = async (name: string): Promise<void> => {
+    let newTag: VolunteerTag;
+    try {
+      newTag = await createTag(name, "program");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      if (message.toLowerCase().includes("already exists")) {
+        const existing = await searchTags(name);
+        const match = existing.find((t) => t.name.toLowerCase() === name.toLowerCase());
+        if (!match) throw new Error(`Tag "${name}" already exists but could not be found.`);
+        newTag = match;
+      } else {
+        throw err;
+      }
+    }
+    setAddedProgramTags((prev) =>
+      prev.some((t) => t._id === newTag._id) ? prev : [...prev, newTag],
+    );
+  };
+
   const requestExit = (action: "close" | "switchToView") => {
     if (activeTab === "edit" && checkIsDirty()) {
       setPendingExitAction(action);
@@ -1038,6 +1078,11 @@ export default function VolunteerProfileModal({
                         });
                         setGroupSearchQuery("");
                       }}
+                      onCreate={(name) => {
+                        void handleCreateGroupTag(name).catch((err: unknown) => {
+                          console.error("Failed to create group tag:", err);
+                        });
+                      }}
                     />
                   </div>
                 </div>
@@ -1149,6 +1194,11 @@ export default function VolunteerProfileModal({
                           return [...prev, tag];
                         });
                         setProgramSearchQuery("");
+                      }}
+                      onCreate={(name) => {
+                        void handleCreateProgramTag(name).catch((err: unknown) => {
+                          console.error("Failed to create program tag:", err);
+                        });
                       }}
                     />
                   </div>

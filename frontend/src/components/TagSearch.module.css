@@ -102,6 +102,18 @@
   color: var(--Text-action, #1d3a6b);
 }
 
+.tagSearchCreateItem {
+  border: 1px solid #1d3a6b !important;
+  color: #1d3a6b;
+  border-radius: 6px;
+  margin: 6px;
+  width: calc(100% - 12px);
+}
+
+.tagSearchCreateItem .tagSearchPlusIcon {
+  color: #1d3a6b;
+}
+
 .dropdownItemText {
   flex: 1;
   text-align: left;

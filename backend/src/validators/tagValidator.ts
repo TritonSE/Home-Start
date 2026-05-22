@@ -32,8 +32,8 @@ const makeTypeValidator = () =>
     .notEmpty()
     .withMessage("type cannot be empty")
     .bail()
-    .isIn(["assignment", "project", "shift", "program"])
-    .withMessage("type must be one of assignment, project, shift, or program")
+    .isIn(["assignment", "project", "shift", "program", "group"])
+    .withMessage("type must be one of assignment, project, shift, program, or group")
     .bail();
 
 export const createTagValidator = [makeNameValidator(), makeColorValidator(), makeTypeValidator()];

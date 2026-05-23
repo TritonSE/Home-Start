@@ -119,17 +119,19 @@ export default function ReviewAndSendPage() {
         }
       }
 
-      const historyResult = await createMessageHistory({
-        recipients: selectedRecipientIds,
-        type: mode,
-        subject: mode === "email" ? subject : null,
-        body: message,
-        status: "sent",
-      });
+      if (mode === "text") {
+        const historyResult = await createMessageHistory({
+          recipients: selectedRecipientIds,
+          type: "text",
+          subject: null,
+          body: message,
+          status: "sent",
+        });
 
-      if (!historyResult.success) {
-        setSendError(historyResult.error);
-        return;
+        if (!historyResult.success) {
+          setSendError(historyResult.error);
+          return;
+        }
       }
 
       setShowSuccess(true);

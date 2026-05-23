@@ -126,3 +126,67 @@ export async function fetchProjectProgramMaps(): Promise<ProjectProgramMapDTO[]>
       : new Error("An unknown error occurred while fetching project-program maps");
   }
 }
+
+export async function searchTags(name?: string, type?: string): Promise<VolunteerTag[]> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const url = new URL(`${API_BASE_URL}/api/tag`);
+    if (name) {
+      url.searchParams.append("name", name);
+    }
+    if (type) {
+      url.searchParams.append("type", type);
+    }
+
+    const response = await fetch(url.toString(), {
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to search tags: ${response.status} ${response.statusText}`);
+    }
+
+    const data: unknown = await response.json();
+    if (!Array.isArray(data)) {
+      throw new TypeError("Unexpected response format: expected an array of tags");
+    }
+
+    return data.map((tag, index) => {
+      if (!isTagDTO(tag)) {
+        throw new TypeError(`Unexpected tag format at index ${index}`);
+      }
+
+      return {
+        _id: tag._id,
+        name: tag.name,
+        color: tag.color,
+        type: tag.type,
+      };
+    });
+  } catch (error) {
+    console.error("Error searching tags:", error);
+    throw error instanceof Error
+      ? error
+      : new Error("An unknown error occurred while searching tags");
+  }
+}
+
+export async function createTag(
+  name: string,
+  type: string,
+  color: string = "#E6F2F3",
+): Promise<VolunteerTag> {
+  const headers = await getAuthHeaders();
+  const response = await fetch(`${API_BASE_URL}/api/tag`, {
+    method: "POST",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({ name, type, color }),
+  });
+  if (!response.ok) {
+    const payload = (await response.json()) as { error?: string };
+    throw new Error(payload.error ?? "Failed to create tag");
+  }
+  const tag = (await response.json()) as TagDTO;
+  return { _id: tag._id, name: tag.name, color: tag.color, type: tag.type };
+}

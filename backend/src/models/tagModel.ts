@@ -7,7 +7,7 @@ const tagSchema = new Schema({
   color: { type: String, required: true, trim: true },
   type: {
     type: String,
-    enum: ["assignment", "project", "shift", "program"],
+    enum: ["assignment", "project", "shift", "program", "group"],
     required: true,
   },
 });

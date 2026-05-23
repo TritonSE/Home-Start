@@ -23,7 +23,9 @@ export const getVolunteer: RequestHandler = async (req, res, next) => {
   const volunteerId = req.params.id;
 
   try {
-    const volunteer = await VolunteerModel.findById(volunteerId);
+    const volunteer = await VolunteerModel.findById(volunteerId)
+      .populate("groupTagIds")
+      .populate("programTagIds");
 
     if (!volunteer) {
       throw createError(404, "Could not find volunteer");
@@ -36,7 +38,9 @@ export const getVolunteer: RequestHandler = async (req, res, next) => {
 };
 export const getVolunteers: RequestHandler = async (req, res, next) => {
   try {
-    const volunteers = await VolunteerModel.find();
+    const volunteers = await VolunteerModel.find()
+      .populate("groupTagIds")
+      .populate("programTagIds");
     res.status(200).json(volunteers);
   } catch (err) {
     next(err);
@@ -89,8 +93,6 @@ type CreateVolunteerBody = {
   address?: VolunteerAddressInfo;
   birthday?: string;
   preferredPronouns?: string;
-  startDate?: string;
-  endDate?: string;
   effectiveDate?: string;
   mediaConsent?: "yes" | "no";
   faceConsent?: "yes" | "no";
@@ -121,8 +123,6 @@ type NormalizedVolunteerCSVFormat = {
 
   birthday: string;
   preferredPronouns: string;
-  startDate: string;
-  endDate: string;
   effectiveDate: string;
 
   mediaConsent: string;
@@ -159,8 +159,6 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
     address,
     birthday,
     preferredPronouns,
-    startDate,
-    endDate,
     effectiveDate,
     mediaConsent,
     faceConsent,
@@ -181,14 +179,114 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
       ...(address && { address }),
       ...(toDate(birthday) && { birthday: toDate(birthday) }),
       ...(preferredPronouns && { preferredPronouns }),
-      ...(toDate(startDate) && { startDate: toDate(startDate) }),
-      ...(toDate(endDate) && { endDate: toDate(endDate) }),
       ...(toDate(effectiveDate) && { effectiveDate: toDate(effectiveDate) }),
       ...(mediaConsent && { mediaConsent }),
       ...(faceConsent && { faceConsent }),
       ...(nameConsent && { nameConsent }),
     });
     res.status(201).json(newVolunteer);
+  } catch (err) {
+    next(err);
+  }
+};
+
+type UpdateVolunteerBody = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  tags?: string[];
+  groupTagIds?: string[] | null;
+  programTagIds?: string[] | null;
+  status?: "returning" | "new";
+  volunteerTypeTags?: string[];
+  events?: string[];
+  additionalNotes?: string;
+  address?: {
+    line1?: string;
+    line2?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+  };
+  birthday?: string | Date;
+  preferredPronouns?: string;
+  hours?: number;
+  mediaConsent?: "yes" | "no";
+  faceConsent?: "yes" | "no";
+  nameConsent?: "no" | "first" | "full";
+};
+
+export const updateVolunteer: RequestHandler = async (req, res, next) => {
+  const errors = validationResult(req);
+  const volunteerId = req.params.id;
+  const {
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    tags,
+    groupTagIds,
+    programTagIds,
+    status,
+    volunteerTypeTags,
+    events,
+    additionalNotes,
+    address,
+    birthday,
+    preferredPronouns,
+    hours,
+    mediaConsent,
+    faceConsent,
+    nameConsent,
+  } = req.body as UpdateVolunteerBody;
+
+  try {
+    validationErrorParser(errors);
+
+    const updatePayload: Record<string, unknown> = {
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      volunteerTypeTags,
+      events,
+      additionalNotes,
+      address,
+      birthday,
+      preferredPronouns,
+      hours,
+      mediaConsent,
+      faceConsent,
+      nameConsent,
+      effectiveDate: new Date(),
+    };
+
+    if (Array.isArray(tags)) {
+      updatePayload.tags = tags;
+    }
+    if (groupTagIds !== undefined) {
+      updatePayload.groupTagIds = groupTagIds;
+    }
+    if (programTagIds !== undefined) {
+      updatePayload.programTagIds = programTagIds;
+    }
+    if (status === "new" || status === "returning") {
+      updatePayload.status = status;
+    }
+
+    const volunteer = await VolunteerModel.findByIdAndUpdate(volunteerId, updatePayload, {
+      returnDocument: "after",
+      runValidators: true,
+    })
+      .populate("groupTagIds")
+      .populate("programTagIds");
+
+    if (!volunteer) {
+      return res.status(404).json({ error: "Could not find volunteer" });
+    }
+
+    res.status(200).json(volunteer);
   } catch (err) {
     next(err);
   }
@@ -252,8 +350,6 @@ const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
     address,
     birthday,
     preferredPronouns,
-    startDate,
-    endDate,
     effectiveDate,
     mediaConsent,
     faceConsent,
@@ -261,8 +357,6 @@ const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
   } = body;
 
   const birthdayDate = toDate(birthday);
-  const startDateDate = toDate(startDate);
-  const endDateDate = toDate(endDate);
   const effectiveDateDate = toDate(effectiveDate);
 
   return {
@@ -274,8 +368,6 @@ const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
     ...(address && { address }),
     ...(birthdayDate && { birthday: birthdayDate }),
     ...(preferredPronouns && { preferredPronouns }),
-    ...(startDateDate && { startDate: startDateDate }),
-    ...(endDateDate && { endDate: endDateDate }),
     ...(effectiveDateDate && { effectiveDate: effectiveDateDate }),
     ...(mediaConsent && { mediaConsent }),
     ...(faceConsent && { faceConsent }),
@@ -507,8 +599,6 @@ const normalizeCSVData = (data: Record<string, string>): NormalizedVolunteerCSVF
     },
     birthday: normalizeCsvText(data.Birthday),
     preferredPronouns: normalizeCsvText(data["NEW Pronouns"]),
-    startDate: normalizeCsvText(data["Start Date"]),
-    endDate: normalizeCsvText(data["End Date"]),
     effectiveDate: normalizeCsvText(data["Effective Date (date record was updated)"]),
     mediaConsent: normalizeCsvText(data["NEW Media Consent"]),
     faceConsent: normalizeCsvText(data["NEW Face"]),
@@ -549,8 +639,6 @@ const parseCreationBody = (data: NormalizedVolunteerCSVFormat): VolunteerCreatio
     address: data.address,
     birthday: data.birthday || undefined,
     preferredPronouns: data.preferredPronouns || undefined,
-    startDate: data.startDate || undefined,
-    endDate: data.endDate || undefined,
     effectiveDate: data.effectiveDate || undefined,
     mediaConsent: toConsentYesNo(data.mediaConsent),
     faceConsent: toConsentYesNo(data.faceConsent),
@@ -655,14 +743,14 @@ export const getSelectedVolunteers: RequestHandler = async (req, res, next) => {
   const { events, statuses } = req.body as { events: string[]; statuses: string[] };
   try {
     const volunteerFilter: {
-      tags?: { $in: Types.ObjectId[] };
-      status?: { $in: string[] };
+      programTagIds?: { $in: Types.ObjectId[] };
+      status?: { $in: Array<"new" | "returning"> };
     } = {};
 
     if (events.length > 0) {
       const tagEventsMap = await TagModel.find({
         name: { $in: events },
-        type: "Event",
+        type: "project" as const,
       }).select("_id");
 
       const tagEvents = tagEventsMap.map((tag) => tag._id);
@@ -671,11 +759,15 @@ export const getSelectedVolunteers: RequestHandler = async (req, res, next) => {
         return res.status(400).json({ error: "One or more event tags not found" });
       }
 
-      volunteerFilter.tags = { $in: tagEvents };
+      volunteerFilter.programTagIds = { $in: tagEvents };
     }
 
-    if (statuses.length > 0) {
-      volunteerFilter.status = { $in: statuses };
+    const selectedStatuses = statuses.filter(
+      (status): status is "new" | "returning" => status === "new" || status === "returning",
+    );
+
+    if (selectedStatuses.length > 0) {
+      volunteerFilter.status = { $in: selectedStatuses };
     }
 
     const volunteersMap = await VolunteerModel.find(volunteerFilter).select(
@@ -731,8 +823,6 @@ const CSV_COLUMNS: CsvColumn[] = [
   { header: "NEW Media Consent", toCell: (v) => v.mediaConsent ?? "" },
   { header: "NEW Name Consent", toCell: (v) => v.nameConsent ?? "" },
   { header: "NEW Face", toCell: (v) => v.faceConsent ?? "" },
-  { header: "Start Date", toCell: (v) => fmtDate(v.startDate) },
-  { header: "End Date", toCell: (v) => fmtDate(v.endDate) },
   { header: "Effective Date (date record was updated)", toCell: (v) => fmtDate(v.effectiveDate) },
 ];
 

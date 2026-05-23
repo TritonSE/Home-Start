@@ -81,7 +81,7 @@ export default function RecipientsPanel({ mode }: RecipientsPanelProps) {
           <RecipientRow
             key={r._id + r.firstName}
             name={`${r.firstName} ${r.lastName}`}
-            tags={r.tags}
+            tags={[]}
             selected={mounted ? selectedSet.has(r._id) : false}
             onToggle={() => toggleRecipient(r._id)}
             checkboxPosition="left"

@@ -80,13 +80,20 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
     lastName: String(source.lastName ?? ""),
     email: String(source.email ?? ""),
     phoneNumber: String(source.phoneNumber ?? ""),
-    tags: [],
     status: normalizeVolunteerStatus(source.status),
-    startDate: source.startDate ?? undefined,
-    endDate: source.endDate ?? undefined,
+    dateCreated: source.dateCreated ?? undefined,
     effectiveDate: source.effectiveDate ?? undefined,
     hours: typeof source.hours === "number" ? source.hours : undefined,
     wageRate: typeof source.wageRate === "number" ? source.wageRate : undefined,
+    groupTagIds: Array.isArray(source.groupTagIds) ? source.groupTagIds : undefined,
+    programTagIds: Array.isArray(source.programTagIds) ? source.programTagIds : undefined,
+    address: source.address ?? undefined,
+    birthday: source.birthday ?? undefined,
+    preferredPronouns: source.preferredPronouns ?? undefined,
+    additionalNotes: source.additionalNotes ?? undefined,
+    mediaConsent: source.mediaConsent ?? undefined,
+    faceConsent: source.faceConsent ?? undefined,
+    nameConsent: source.nameConsent ?? undefined,
   };
 };
 
@@ -135,6 +142,22 @@ export async function fetchVolunteerAssignments(): Promise<VolunteerAssignment[]
   const headers = await getAuthHeaders();
 
   const res = await fetch(`${API_BASE_URL}/api/volunteerAssignment`, {
+    headers,
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch volunteer assignments");
+  }
+
+  return (await res.json()) as VolunteerAssignment[];
+}
+
+export async function fetchVolunteerAssignmentsByVolunteerId(
+  volunteerId: string,
+): Promise<VolunteerAssignment[]> {
+  const headers = await getAuthHeaders();
+
+  const res = await fetch(`${API_BASE_URL}/api/volunteerAssignment/${volunteerId}`, {
     headers,
   });
 

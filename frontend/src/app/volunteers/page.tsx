@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
-import type { Volunteer, VolunteerTag } from "@/types/volunteer";
+import type { Volunteer, VolunteerTag, VolunteerWithTags } from "@/types/volunteer";
 
 import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
@@ -12,6 +12,7 @@ import PageBar from "@/components/PageBar";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
+import VolunteerProfileModal from "@/components/VolunteerProfileModal";
 import VolunteerTable from "@/components/VolunteerTable";
 
 type PopulatedAssignment = {
@@ -28,7 +29,7 @@ type ProjectProgramMap = {
 
 export default function Page() {
   // Data state
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [volunteers, setVolunteers] = useState<VolunteerWithTags[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
 
   // Filter states
@@ -41,6 +42,8 @@ export default function Page() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [showImportSuccess, setShowImportSuccess] = useState(false);
+  const [selectedVolunteer, setSelectedVolunteer] = useState<VolunteerWithTags | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedCount, setSelectedCount] = useState(0);
   const [sortOption, setSortOption] = useState<
     "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A"
@@ -76,6 +79,7 @@ export default function Page() {
           volunteerTags.push(tag);
         };
 
+        // Add assignment and project tags
         for (const assignment of volunteerAssignments) {
           pushTag(assignment.assignmentTagId);
           pushTag(assignment.projectTagId);
@@ -86,7 +90,28 @@ export default function Page() {
           }
         }
 
-        return { ...volunteer, tags: volunteerTags };
+        // Add directly saved group/program tags so filters use the latest edits.
+        if (Array.isArray(volunteer.groupTagIds) && volunteer.groupTagIds.length > 0) {
+          for (const groupTag of volunteer.groupTagIds) {
+            if (typeof groupTag === "string") {
+              pushTag(tagData.find((tag) => tag._id === groupTag));
+            } else {
+              pushTag(groupTag);
+            }
+          }
+        }
+
+        if (Array.isArray(volunteer.programTagIds) && volunteer.programTagIds.length > 0) {
+          for (const programTag of volunteer.programTagIds) {
+            if (typeof programTag === "string") {
+              pushTag(tagData.find((tag) => tag._id === programTag));
+            } else {
+              pushTag(programTag);
+            }
+          }
+        }
+
+        return { ...volunteer, tags: volunteerTags } satisfies VolunteerWithTags;
       });
 
       setVolunteers(volunteersWithTags);
@@ -224,9 +249,9 @@ export default function Page() {
 
     switch (sortOption) {
       case "Newest":
-        return sorted.sort((a, b) => toTime(b.startDate) - toTime(a.startDate));
+        return sorted.sort((a, b) => toTime(b.dateCreated) - toTime(a.dateCreated));
       case "Oldest":
-        return sorted.sort((a, b) => toTime(a.startDate) - toTime(b.startDate));
+        return sorted.sort((a, b) => toTime(a.dateCreated) - toTime(b.dateCreated));
       case "First Name A-Z":
         return sorted.sort((a, b) => a.firstName.localeCompare(b.firstName));
       case "First Name Z-A":
@@ -248,6 +273,10 @@ export default function Page() {
   const handleImportComplete = () => {
     void loadVolunteers();
     setShowImportSuccess(true);
+  };
+
+  const handleSheetClose = () => {
+    setIsSheetOpen(false);
   };
 
   return (
@@ -297,6 +326,10 @@ export default function Page() {
               volunteers={displayedVolunteers}
               selectableVolunteers={filteredVolunteers}
               onSelectedCountChange={setSelectedCount}
+              onVolunteerSelect={(v) => {
+                setSelectedVolunteer(v);
+                setIsSheetOpen(true);
+              }}
             />
             <div className={styles.tableSummaryRow}>
               <span className={styles.tableSummaryLeft}>
@@ -314,6 +347,15 @@ export default function Page() {
             onPageChange={setCurrentPage}
           />
         </main>
+        <VolunteerProfileModal
+          volunteer={selectedVolunteer}
+          isOpen={isSheetOpen}
+          onClose={handleSheetClose}
+          onVolunteerUpdated={(updatedVolunteer) => {
+            setSelectedVolunteer({ ...updatedVolunteer, tags: selectedVolunteer?.tags ?? [] });
+            void loadVolunteers();
+          }}
+        />
       </div>
     </Sidebar>
   );

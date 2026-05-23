@@ -91,7 +91,7 @@ export const updateVolunteerAssignment: RequestHandler = async (req, res, next) 
     }
 
     const assignment = await VolunteerAssignmentModel.findByIdAndUpdate(assignmentId, update, {
-      new: true,
+      returnDocument: "after",
     })
       .populate("assignmentTagId")
       .populate("projectTagId")

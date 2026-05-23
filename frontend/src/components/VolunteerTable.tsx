@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import styles from "./VolunteerTable.module.css";
 
-import type { Volunteer, VolunteerTag } from "@/types/volunteer";
+import type { VolunteerTag, VolunteerWithTags } from "@/types/volunteer";
 
 const TAG_COLOR_PALETTE = [
   { backgroundColor: "#F6E6E9", color: "#A40026" },
@@ -35,15 +35,17 @@ const getVisibleTags = (tags: VolunteerTag[], type: string, maxVisible: number) 
 };
 
 type VolunteerTableProps = {
-  volunteers: Volunteer[];
-  selectableVolunteers?: Volunteer[];
+  volunteers: VolunteerWithTags[];
+  selectableVolunteers?: VolunteerWithTags[];
   onSelectedCountChange?: (count: number) => void;
+  onVolunteerSelect?: (volunteer: VolunteerWithTags) => void;
 };
 
 export default function VolunteerTable({
   volunteers,
   selectableVolunteers,
   onSelectedCountChange,
+  onVolunteerSelect,
 }: VolunteerTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const selectionScope = selectableVolunteers ?? volunteers;
@@ -160,6 +162,8 @@ export default function VolunteerTable({
             <tr
               key={volunteer._id}
               className={selectedIds.has(volunteer._id) ? styles.selectedRow : ""}
+              onClick={() => onVolunteerSelect?.(volunteer)}
+              style={{ cursor: onVolunteerSelect ? "pointer" : "default" }}
             >
               <td className={styles.checkboxCell}>
                 <input
@@ -167,6 +171,7 @@ export default function VolunteerTable({
                   className={styles.checkbox}
                   checked={selectedIds.has(volunteer._id)}
                   onChange={() => toggleOne(volunteer._id)}
+                  onClick={(event) => event.stopPropagation()}
                   aria-label={`Select ${volunteer.firstName} ${volunteer.lastName}`}
                 />
               </td>
@@ -179,7 +184,8 @@ export default function VolunteerTable({
                       volunteer.status === "new" ? styles.pillTagNew : styles.pillTagReturning
                     }
                   >
-                    {volunteer.status.charAt(0).toUpperCase() + volunteer.status.slice(1)}
+                    {(volunteer.status ?? "new").charAt(0).toUpperCase() +
+                      (volunteer.status ?? "new").slice(1)}
                   </span>
                 </div>
               </td>
@@ -188,7 +194,11 @@ export default function VolunteerTable({
                 <div className={styles.tagsContainerNoWrap}>
                   {(() => {
                     const { visibleTags, hiddenCount } = getVisibleTags(
-                      volunteer.tags ?? [],
+                      Array.isArray(volunteer.programTagIds) && volunteer.programTagIds.length > 0
+                        ? volunteer.programTagIds.filter(
+                            (tag): tag is VolunteerTag => typeof tag === "object" && tag !== null,
+                          )
+                        : (volunteer.tags ?? []),
                       "program",
                       1,
                     );

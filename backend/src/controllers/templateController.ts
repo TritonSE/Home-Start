@@ -32,7 +32,7 @@ export const getTemplates: RequestHandler = async (req, res, next) => {
 type TemplateCreationBody = {
   title: string;
   message: string;
-  type: string;
+  type: "text" | "email";
   subject?: string;
 };
 

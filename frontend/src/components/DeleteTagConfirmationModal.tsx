@@ -19,7 +19,7 @@ export default function DeleteTagConfirmationModal({ tagName, onClose, onConfirm
       titleFontSize="16px"
       titleLineHeight={24}
       padding="16px"
-      zIndex={1010}
+      zIndex={1301}
     >
       <div className={styles.actions}>
         <button className={styles.secondary} onClick={onClose}>

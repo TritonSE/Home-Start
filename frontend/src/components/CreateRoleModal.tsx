@@ -36,9 +36,10 @@ function CheckIcon({ color }: CheckIconProps) {
 type Props = {
   onClose: () => void;
   volunteer?: Volunteer | null;
+  onCreated?: () => void;
 };
 
-export default function CreateRoleModal({ onClose, volunteer }: Props) {
+export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props) {
   const [step, setStep] = useState(1);
   const [assignmentName, setAssignmentName] = useState("");
   const [projectName, setProjectName] = useState("");
@@ -154,6 +155,7 @@ export default function CreateRoleModal({ onClose, volunteer }: Props) {
           shiftTagIds: [],
         });
 
+        onCreated?.();
         setStep(1);
         onClose();
       } catch (err) {

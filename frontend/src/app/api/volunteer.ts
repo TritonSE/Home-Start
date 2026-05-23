@@ -186,6 +186,7 @@ export async function updateVolunteerAssignment(
   id: string,
   body: {
     shiftTagIds?: string[];
+    removeShiftTagIds?: string[];
   },
 ): Promise<VolunteerAssignment> {
   try {

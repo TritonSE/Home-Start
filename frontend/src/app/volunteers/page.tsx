@@ -8,9 +8,6 @@ import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
 import styles from "@/app/page.module.css";
-import CreateRoleModal from "@/components/CreateRoleModal";
-import CreateShiftModal from "@/components/CreateShiftModal";
-import EditTagModal from "@/components/EditTagModal";
 import PageBar from "@/components/PageBar";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
@@ -33,10 +30,6 @@ type ProjectProgramMap = {
 export default function Page() {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
-  const [assignments, setAssignments] = useState<any[]>([]);
-  const [showCreateTagModal, setShowCreateTagModal] = useState(false);
-  const [showCreateShiftModal, setShowCreateShiftModal] = useState(false);
-  const [showEditTagModal, setShowEditTagModal] = useState(false);
 
   const [search, setSearch] = useState("");
   const [selectedProject, setSelectedProject] = useState<Set<string>>(new Set());
@@ -138,7 +131,6 @@ export default function Page() {
 
       setVolunteers(volunteersWithTags);
       setTags(tagData);
-      setAssignments(assignmentData);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -300,69 +292,10 @@ export default function Page() {
     setIsSheetOpen(false);
   };
 
-  const renderCreateTagModal = () => {
-    if (!showCreateTagModal) return null;
-
-    // For testing, the renderCreateTagModal will pass the first volunteer on the currently displayed page.
-    const volunteerToPass = displayedVolunteers.length > 0 ? displayedVolunteers[0] : undefined;
-    return (
-      <CreateRoleModal onClose={() => setShowCreateTagModal(false)} volunteer={volunteerToPass} />
-    );
-  };
-
-  const renderCreateShiftModal = () => {
-    if (!showCreateShiftModal) return null;
-    // For testing: find assignment with id 69f98cb6e9e25f2173e429ff
-    const testAssignment = assignments.find((a) => a._id === "69fd099efc2344329a5745c0") || null;
-    return (
-      <CreateShiftModal
-        onClose={() => setShowCreateShiftModal(false)}
-        assignment={testAssignment}
-      />
-    );
-  };
-
-  const renderEditTagModal = () => {
-    if (!showEditTagModal) return null;
-
-    // For testing: find tag with id 69fd0ae113eaf3c469fb4341
-    const testTag = tags.find((tag) => tag._id === "69fd0ae113eaf3c469fb4341");
-    if (!testTag) return null;
-
-    return <EditTagModal onClose={() => setShowEditTagModal(false)} tag={testTag} />;
-  };
-
   return (
     <Sidebar>
       <div className={styles.page}>
         <main className={styles.main}>
-          {renderCreateTagModal()}
-          {renderCreateShiftModal()}
-          {renderEditTagModal()}
-
-          <div style={{ display: "flex", gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => setShowCreateTagModal(true)}
-              disabled={filteredVolunteers.length === 0}
-            >
-              Create VolunteerAssignment Modal
-            </button>
-
-            <button type="button" onClick={() => setShowCreateShiftModal(true)}>
-              Create Shift Tag Modal
-            </button>
-
-            <button type="button" onClick={() => setShowEditTagModal(true)}>
-              Edit Tag Modal
-            </button>
-          </div>
-
-          <p>
-            Above testing button creates the VolunteerAssignment modal for the first volunteer in
-            the list.
-          </p>
-
           {showImportSuccess && (
             <div className={styles.importSuccessBanner}>
               <div className={styles.importSuccessContent}>

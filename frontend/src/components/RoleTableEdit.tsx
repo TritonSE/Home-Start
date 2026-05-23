@@ -10,6 +10,10 @@ import icPlusAsset from "@/assets/ic_plus.svg";
 
 type RoleTableProps = {
   volunteerAssignments: VolunteerAssignment[];
+  onRemoveShiftTag?: (assignmentId: string, shiftTagId: string) => void;
+  onAddShiftTag?: (assignment: VolunteerAssignment) => void;
+  onCreateRole?: () => void;
+  onEditTag?: (tag: VolunteerTag) => void;
 };
 
 const TAG_COLOR_PALETTE = [
@@ -40,11 +44,84 @@ const resolveTags = (tags: (string | VolunteerTag)[] | undefined): VolunteerTag[
   return tags.map(resolveTag).filter((tag): tag is VolunteerTag => tag !== null);
 };
 
-const PillTag = ({ tag, borderRadius = "100px" }: { tag: VolunteerTag; borderRadius?: string }) => {
+const PillTag = ({
+  tag,
+  borderRadius = "100px",
+  onRemove,
+  onTagClick,
+}: {
+  tag: VolunteerTag;
+  borderRadius?: string;
+  onRemove?: () => void;
+  onTagClick?: () => void;
+}) => {
   const backgroundColor =
     tag.color.startsWith("#") || tag.color.startsWith("rgb") ? tag.color : `#${tag.color}`;
 
   const textColor = getTextColorForBackground(backgroundColor);
+
+  if (onRemove) {
+    return (
+      <span
+        className={styles.pillTagWithClose}
+        style={{
+          backgroundColor,
+          color: textColor,
+          borderRadius,
+        }}
+      >
+        {onTagClick ? (
+          <button type="button" className={styles.tagNameButton} onClick={onTagClick}>
+            {tag.name}
+          </button>
+        ) : (
+          tag.name
+        )}
+        <button
+          type="button"
+          className={styles.tagCloseButton}
+          onClick={(event) => {
+            event.stopPropagation();
+            onRemove();
+          }}
+          aria-label={`Remove ${tag.name} shift`}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 4L4 12M4 4L12 12"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      </span>
+    );
+  }
+
+  if (onTagClick) {
+    return (
+      <button
+        type="button"
+        className={`${styles.pillTag} ${styles.pillTagButton}`}
+        style={{
+          backgroundColor,
+          color: textColor,
+          borderRadius,
+        }}
+        onClick={onTagClick}
+      >
+        {tag.name}
+      </button>
+    );
+  }
 
   return (
     <span
@@ -62,7 +139,13 @@ const PillTag = ({ tag, borderRadius = "100px" }: { tag: VolunteerTag; borderRad
 
 const PlusIcon = () => <Image src={icPlusAsset as string} alt="" width={12} height={12} />;
 
-export default function RoleTableEdit({ volunteerAssignments }: RoleTableProps) {
+export default function RoleTableEdit({
+  volunteerAssignments,
+  onRemoveShiftTag,
+  onAddShiftTag,
+  onCreateRole,
+  onEditTag,
+}: RoleTableProps) {
   return (
     <div className={styles.table}>
       <div className={styles.scrollContainer}>
@@ -91,12 +174,28 @@ export default function RoleTableEdit({ volunteerAssignments }: RoleTableProps) 
                   <tr key={assignment._id} className={styles.row}>
                     <td className={styles.cell}>
                       <div className={styles.tagCell}>
-                        {assignmentTag ? <PillTag tag={assignmentTag} borderRadius="8px" /> : <span>—</span>}
+                        {assignmentTag ? (
+                          <PillTag
+                            tag={assignmentTag}
+                            borderRadius="8px"
+                            onTagClick={() => onEditTag?.(assignmentTag)}
+                          />
+                        ) : (
+                          <span>—</span>
+                        )}
                       </div>
                     </td>
                     <td className={styles.cell}>
                       <div className={styles.tagCell}>
-                        {projectTag ? <PillTag tag={projectTag} borderRadius="8px" /> : <span>—</span>}
+                        {projectTag ? (
+                          <PillTag
+                            tag={projectTag}
+                            borderRadius="8px"
+                            onTagClick={() => onEditTag?.(projectTag)}
+                          />
+                        ) : (
+                          <span>—</span>
+                        )}
                       </div>
                     </td>
                     <td className={styles.cell}>
@@ -109,13 +208,19 @@ export default function RoleTableEdit({ volunteerAssignments }: RoleTableProps) 
 
                             return (
                               <div key={tag._id} className={styles.shiftTagRow}>
-                                <PillTag tag={tag} />
+                                <PillTag
+                                  tag={tag}
+                                  onTagClick={() => onEditTag?.(tag)}
+                                  onRemove={() => {
+                                    onRemoveShiftTag?.(assignment._id, tag._id);
+                                  }}
+                                />
                                 {isLastShiftTag ? (
                                   <button
                                     type="button"
                                     className={`${styles.shiftAddButton} ${styles.shiftAddButtonInline}`}
                                     onClick={() => {
-                                      console.debug("Add shift clicked", assignment._id);
+                                      onAddShiftTag?.(assignment);
                                     }}
                                     aria-label="Add shift"
                                   >
@@ -130,7 +235,7 @@ export default function RoleTableEdit({ volunteerAssignments }: RoleTableProps) 
                             type="button"
                             className={styles.shiftAddButton}
                             onClick={() => {
-                              console.debug("Add shift clicked", assignment._id);
+                              onAddShiftTag?.(assignment);
                             }}
                             aria-label="Add shift"
                           >
@@ -151,7 +256,7 @@ export default function RoleTableEdit({ volunteerAssignments }: RoleTableProps) 
           type="button"
           className={styles.createRoleButton}
           onClick={() => {
-            console.debug("Create Role clicked");
+            onCreateRole?.();
           }}
         >
           <span className={styles.createRoleText}>Create Role</span>

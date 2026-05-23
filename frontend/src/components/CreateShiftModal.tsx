@@ -16,6 +16,12 @@ const icCloseLarge = icCloseLargeAsset as string;
 type Props = {
   onClose: () => void;
   assignment: VolunteerAssignment | null;
+  onSaved?: (result: "linked-existing" | "created-and-linked") => void;
+};
+
+type ResolvedShiftTag = {
+  tag: VolunteerTag;
+  wasCreated: boolean;
 };
 
 function CheckIcon({ color }: { color: string }) {
@@ -31,7 +37,7 @@ function CheckIcon({ color }: { color: string }) {
   );
 }
 
-export default function CreateShiftModal({ onClose, assignment }: Props) {
+export default function CreateShiftModal({ onClose, assignment, onSaved }: Props) {
   const [tagName, setTagName] = useState("");
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
   const [shiftTags, setShiftTags] = useState<VolunteerTag[]>([]);
@@ -51,6 +57,40 @@ export default function CreateShiftModal({ onClose, assignment }: Props) {
     void fetchAllShiftTags();
   }, []);
 
+  async function getShiftTag(): Promise<ResolvedShiftTag | undefined> {
+    const query = tagName.trim();
+    if (!query) return undefined;
+
+    // Search for existing shift tag matching the name (case-insensitive)
+    const existing = shiftTags.find((t) => t.name.trim().toLowerCase() === query.toLowerCase());
+    if (existing) {
+      return { tag: existing, wasCreated: false };
+    }
+
+    // Create a new shift tag with the selected color
+    try {
+      const color = COLOR_OPTIONS[selectedColorIndex]?.backgroundColor ?? "#FFFFFF";
+      const newTag = await createTag({ name: query, color, type: "shift" });
+      setShiftTags((prev) => [...prev, newTag]);
+      return { tag: newTag, wasCreated: true };
+    } catch (err) {
+      // On conflict, re-fetch and try to find the tag again
+      const latest = await fetchTags().catch(() => [] as VolunteerTag[]);
+      if (latest.length > 0) {
+        const shifted = latest.filter((tag) => tag.type === "shift");
+        setShiftTags(shifted);
+        const existingAfterRefresh = shifted.find(
+          (t) => t.name.trim().toLowerCase() === query.toLowerCase(),
+        );
+        if (existingAfterRefresh) {
+          return { tag: existingAfterRefresh, wasCreated: false };
+        }
+      }
+      console.error("Failed to create shift tag:", err);
+      return undefined;
+    }
+  }
+
   const handleSubmit = async () => {
     if (!assignment) {
       console.warn("No assignment provided for CreateShiftModal.handleSubmit");
@@ -58,13 +98,13 @@ export default function CreateShiftModal({ onClose, assignment }: Props) {
     }
 
     try {
-      const shiftTag = await getShiftTag();
-      if (!shiftTag) {
+      const resolvedShiftTag = await getShiftTag();
+      if (!resolvedShiftTag) {
         console.error("Failed to get or create shift tag");
         return;
       }
 
-      const tagId = shiftTag._id;
+      const tagId = resolvedShiftTag.tag._id;
       const currentShiftTagIds = assignment.shiftTagIds.map((tag) =>
         typeof tag === "string" ? tag : tag._id,
       );
@@ -77,39 +117,10 @@ export default function CreateShiftModal({ onClose, assignment }: Props) {
         shiftTagIds: currentShiftTagIds,
       });
 
+      onSaved?.(resolvedShiftTag.wasCreated ? "created-and-linked" : "linked-existing");
       onClose();
     } catch (err) {
       console.error("Failed to add shift tag to assignment:", err);
-    }
-  };
-
-  const getShiftTag = async (): Promise<VolunteerTag | undefined> => {
-    const query = tagName.trim();
-    if (!query) return undefined;
-
-    // Search for existing shift tag matching the name (case-insensitive)
-    const existing = shiftTags.find((t) => t.name.trim().toLowerCase() === query.toLowerCase());
-    if (existing) return existing;
-
-    // Create a new shift tag with the selected color
-    try {
-      const color = COLOR_OPTIONS[selectedColorIndex]?.backgroundColor ?? "#FFFFFF";
-      const newTag = await createTag({ name: query, color, type: "shift" });
-      setShiftTags((prev) => [...prev, newTag]);
-      return newTag;
-    } catch (err) {
-      // On conflict, re-fetch and try to find the tag again
-      const latest = await fetchTags().catch(() => [] as VolunteerTag[]);
-      if (latest.length > 0) {
-        const shifted = latest.filter((tag) => tag.type === "shift");
-        setShiftTags(shifted);
-        const existingAfterRefresh = shifted.find(
-          (t) => t.name.trim().toLowerCase() === query.toLowerCase(),
-        );
-        if (existingAfterRefresh) return existingAfterRefresh;
-      }
-      console.error("Failed to create shift tag:", err);
-      return undefined;
     }
   };
 
@@ -167,7 +178,9 @@ export default function CreateShiftModal({ onClose, assignment }: Props) {
           </button>
           <button
             className={styles.primary}
-            onClick={handleSubmit}
+            onClick={() => {
+              void handleSubmit();
+            }}
             type="button"
             disabled={isTagNameEmpty}
           >

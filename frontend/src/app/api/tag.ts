@@ -179,11 +179,7 @@ export async function createTag(body: {
   color: string;
   type: string;
 }): Promise<VolunteerTag>;
-export async function createTag(
-  name: string,
-  type: string,
-  color?: string,
-): Promise<VolunteerTag>;
+export async function createTag(name: string, type: string, color?: string): Promise<VolunteerTag>;
 export async function createTag(
   bodyOrName: { name: string; color: string; type: string } | string,
   type?: string,

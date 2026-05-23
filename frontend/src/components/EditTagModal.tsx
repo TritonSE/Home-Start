@@ -16,6 +16,7 @@ const icCloseLarge = icCloseLargeAsset as string;
 type Props = {
   onClose: () => void;
   tag: VolunteerTag;
+  onChanged?: (action: "updated" | "deleted") => void;
 };
 
 function CheckIcon({ color }: { color: string }) {
@@ -31,14 +32,16 @@ function CheckIcon({ color }: { color: string }) {
   );
 }
 
-export default function EditTagModal({ onClose, tag }: Props) {
+export default function EditTagModal({ onClose, tag, onChanged }: Props) {
   const [tagName, setTagName] = useState(tag.name);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isNameTakenError, setIsNameTakenError] = useState(false);
   const isTagNameEmpty = tagName.trim().length === 0;
 
   useEffect(() => {
     setTagName(tag.name);
+    setIsNameTakenError(false);
 
     const matchingColorIndex = COLOR_OPTIONS.findIndex(
       (option) => option.backgroundColor.toLowerCase() === tag.color.toLowerCase(),
@@ -46,16 +49,24 @@ export default function EditTagModal({ onClose, tag }: Props) {
     setSelectedColorIndex(matchingColorIndex >= 0 ? matchingColorIndex : 0);
   }, [tag]);
 
+  const handleTagNameChange = (value: string) => {
+    if (isNameTakenError) {
+      setIsNameTakenError(false);
+    }
+    setTagName(value);
+  };
+
   const handleSave = async () => {
     try {
       const newName = tagName.trim();
       const color = COLOR_OPTIONS[selectedColorIndex]?.backgroundColor ?? tag.color;
       await updateTag(tag._id, { name: newName, color });
+      onChanged?.("updated");
       onClose();
     } catch (err) {
       console.error("Failed to update tag:", err);
-      const msg = err instanceof Error ? err.message : "Failed to update tag";
-      alert(msg);
+      setTagName(tag.name);
+      setIsNameTakenError(true);
     }
   };
 
@@ -66,12 +77,15 @@ export default function EditTagModal({ onClose, tag }: Props) {
   const handleConfirmDelete = async () => {
     try {
       await deleteTag(tag._id);
+      onChanged?.("deleted");
       onClose();
-      window.location.reload();
+      if (!onChanged) {
+        window.location.reload();
+      }
     } catch (err) {
       console.error("Failed to delete tag:", err);
       const msg = err instanceof Error ? err.message : "Failed to delete tag";
-      alert(msg);
+      console.error(msg);
       setShowDeleteConfirmation(false);
     }
   };
@@ -82,7 +96,9 @@ export default function EditTagModal({ onClose, tag }: Props) {
         <DeleteTagConfirmationModal
           tagName={tag.name}
           onClose={() => setShowDeleteConfirmation(false)}
-          onConfirm={handleConfirmDelete}
+          onConfirm={() => {
+            void handleConfirmDelete();
+          }}
         />
       )}
       <div className={styles.overlay} onClick={onClose} />
@@ -101,7 +117,7 @@ export default function EditTagModal({ onClose, tag }: Props) {
             <input
               type="text"
               value={tagName}
-              onChange={(e) => setTagName(e.target.value)}
+              onChange={(e) => handleTagNameChange(e.target.value)}
               placeholder="Input Tag Name"
             />
           </div>
@@ -142,12 +158,14 @@ export default function EditTagModal({ onClose, tag }: Props) {
           </button>
           <button
             className={styles.primary}
-            onClick={handleSave}
+            onClick={() => {
+              void handleSave();
+            }}
             type="button"
-            disabled={isTagNameEmpty}
+            disabled={isTagNameEmpty || isNameTakenError}
             style={{ width: 102 }}
           >
-            Save Changes
+            {isNameTakenError ? "Name Taken" : "Save Changes"}
           </button>
         </div>
       </div>

@@ -86,32 +86,40 @@ export default function RecipientsPanel({ mode }: RecipientsPanelProps) {
           <button
             type="button"
             className={styles.selectAllLink}
-            onClick={() => toggleSelectAll(filteredVolunteers)}
+            onClick={() => {
+              toggleSelectAll(filteredVolunteers);
+            }}
           >
             {allFilteredSelected ? "Deselect All" : "Select All"}
           </button>
         )}
       </div>
 
-      <div className={styles.list}>
-        {displayedVolunteers.map((r) => (
-          <RecipientRow
-            key={r._id + r.firstName}
-            name={`${r.firstName} ${r.lastName}`}
-            tags={r.tags}
-            selected={mounted ? selectedSet.has(r._id) : false}
-            onToggle={() => toggleRecipient(r._id)}
-            checkboxPosition="left"
-            disableSelectedStyle
-          />
-        ))}
-      </div>
-      <Pagination
-        totalItems={filteredVolunteers.length}
-        currentPage={currentPage}
-        itemsPerPage={itemsPerPage}
-        setPageIndex={setCurrentPage}
-      ></Pagination>
+      {displayedVolunteers.length === 0 ? (
+        <div className={styles.noRecipients}>No recipients match the current filters.</div>
+      ) : (
+        <div className={styles.list}>
+          {displayedVolunteers.map((r) => (
+            <RecipientRow
+              key={r._id + r.firstName}
+              name={`${r.firstName} ${r.lastName}`}
+              tags={r.tags}
+              selected={mounted ? selectedSet.has(r._id) : false}
+              onToggle={() => toggleRecipient(r._id)}
+              checkboxPosition="left"
+              disableSelectedStyle
+            />
+          ))}
+        </div>
+      )}
+      {displayedVolunteers.length > 0 && (
+        <Pagination
+          totalItems={filteredVolunteers.length}
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          setPageIndex={setCurrentPage}
+        />
+      )}
     </div>
   );
 }

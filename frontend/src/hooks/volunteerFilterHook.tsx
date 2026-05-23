@@ -6,7 +6,6 @@ import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 
 import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
-import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
 
 type volunteerFilterHookProps = {
   itemsPerPage: number;
@@ -35,8 +34,6 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
 
   // Filter states
   const [search, setSearch] = useState("");
-  const setRecipients = useTextingFlowStore((s) => s.setRecipients);
-  const setSelectedRecipients = useTextingFlowStore((s) => s.setSelectedRecipients);
 
   const [selectedProject, setSelectedProject] = useState<Set<string>>(new Set());
   const [selectedProgram, setSelectedProgram] = useState<Set<string>>(new Set());
@@ -135,7 +132,6 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
   const filteredVolunteers = useMemo(() => {
     return volunteers.filter((volunteer) => {
       const volunteerTags = volunteer.tags ?? [];
-      console.log("volunteer tags:", volunteerTags);
 
       // Assignment filter
       if (selectedAssignment.size > 0) {

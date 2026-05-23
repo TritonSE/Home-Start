@@ -28,10 +28,6 @@ type APIErrorBody = {
   error?: string;
 };
 
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === "object" && value !== null;
-};
-
 type VolunteerParseCsvDTO = {
   wouldCreateCount: number;
   wouldUpdateCount: number;

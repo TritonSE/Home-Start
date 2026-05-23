@@ -51,65 +51,7 @@ type SearchBarProps = {
   setSelectedStatus?: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
 };
 
-function SidePanel({
-  showSidePanel,
-  setShowSidePanel,
-  toggleTag,
-  getSelectedSet,
-  getTags,
-}: {
-  showSidePanel: boolean;
-  setShowSidePanel: (value: boolean) => void;
-  toggleTag: (item: string, cat: "project" | "program" | "assignment" | "status") => void;
-  getSelectedSet: (cat: "project" | "program" | "assignment" | "status") => Set<string>;
-  getTags: (cat: "project" | "program" | "assignment" | "status") => string[];
-}) {
-  console.log(getTags("program"));
-  return (
-    <div className={styles.overlay}>
-      <div className={styles.sidePanel}>
-        <div className={styles.titleBox}>
-          <p className={styles.title}>Select Filters</p>
-          <button className={styles.closeButton} onClick={() => setShowSidePanel(!showSidePanel)}>
-            <Image src={icClose} alt="Close button" width={24} height={24} />
-          </button>
-        </div>
-        <TagFilter
-          toggleTag={toggleTag}
-          selected={getSelectedSet("project")}
-          hasSearch={true}
-          items={getTags("project")}
-          cat="project"
-          filterType="Projects"
-        />
-        <TagFilter
-          toggleTag={toggleTag}
-          selected={getSelectedSet("status")}
-          hasSearch={false}
-          items={["returning", "new"]}
-          cat="status"
-          filterType="Status"
-        />
-        <TagFilter
-          toggleTag={toggleTag}
-          selected={getSelectedSet("program")}
-          hasSearch={true}
-          items={getTags("program")}
-          cat="program"
-          filterType="Programs"
-        />
-        <TagFilter
-          toggleTag={toggleTag}
-          selected={getSelectedSet("assignment")}
-          hasSearch={true}
-          items={getTags("assignment")}
-          cat="assignment"
-          filterType="Assignments"
-        />
-      </div>
-    </div>
-  );
-}
+const DESKTOP_MQ = 1024;
 
 function TagFilter({
   toggleTag,
@@ -143,28 +85,32 @@ function TagFilter({
       }
     >
       <div className={styles.pillWrapper}>
-        <span className={styles.pillTagText}>{filterType}</span>
         <div className={styles.dropdown} role="menu">
-          {hasSearch && (
-            <div className={styles.sidePanelInputField}>
-              <span className={styles.ic_search}>
-                <Image
-                  src={unionIcon}
-                  alt="Union logo"
-                  className={styles.union}
-                  width={24}
-                  height={24}
-                />
-              </span>
-              <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
-                <input
-                  type="text"
-                  value={tagSearch}
-                  onChange={(e) => setTagSearch(e.target.value)}
-                  placeholder="Search"
-                />
-              </form>
+          {hasSearch ? (
+            <div className={styles.searchContainer}>
+              <span className={styles.pillTagText}>{filterType}</span>
+              <div className={styles.sidePanelInputField}>
+                <span className={styles.ic_search}>
+                  <Image
+                    src={unionIcon}
+                    alt="Union logo"
+                    className={styles.union}
+                    width={24}
+                    height={24}
+                  />
+                </span>
+                <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
+                  <input
+                    type="text"
+                    value={tagSearch}
+                    onChange={(e) => setTagSearch(e.target.value)}
+                    placeholder="Search"
+                  />
+                </form>
+              </div>
             </div>
+          ) : (
+            <span className={styles.pillTagText}>{filterType}</span>
           )}
 
           <div className={styles.dropdownItemContainer}>
@@ -201,12 +147,112 @@ function TagFilter({
   );
 }
 
-function FilterPill({ label, selectedCount }: { label: string; selectedCount: number }) {
+function SidePanel({
+  showSidePanel,
+  setShowSidePanel,
+  toggleTag,
+  getSelectedSet,
+  getTags,
+}: {
+  showSidePanel: boolean;
+  setShowSidePanel: (value: boolean) => void;
+  toggleTag: (item: string, cat: "project" | "program" | "assignment" | "status") => void;
+  getSelectedSet: (cat: "project" | "program" | "assignment" | "status") => Set<string>;
+  getTags: (cat: "project" | "program" | "assignment" | "status") => string[];
+}) {
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (panelRef && panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setShowSidePanel(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const [coverPage, setCoverPage] = useState(false);
+
+  const bottomSheetClass = coverPage
+    ? `${styles.bottomSheet} ${styles.bottomSheetCover}`
+    : styles.bottomSheet;
+
+  return (
+    <div className={styles.overlay}>
+      <div
+        className={window.innerWidth >= DESKTOP_MQ ? styles.sidePanel : bottomSheetClass}
+        ref={panelRef}
+      >
+        {window.innerWidth < DESKTOP_MQ && (
+          <button className={styles.topButtonContainer} onClick={() => setCoverPage(!coverPage)}>
+            <div className={styles.line}></div>
+          </button>
+        )}
+        <div className={styles.titleBox}>
+          <p className={styles.title}>Select Filters</p>
+          <button className={styles.closeButton} onClick={() => setShowSidePanel(!showSidePanel)}>
+            <Image src={icClose} alt="Close button" width={24} height={24} />
+          </button>
+        </div>
+        <TagFilter
+          toggleTag={toggleTag}
+          selected={getSelectedSet("status")}
+          hasSearch={false}
+          items={["returning", "new"]}
+          cat="status"
+          filterType="Status"
+        />
+        <TagFilter
+          toggleTag={toggleTag}
+          selected={getSelectedSet("project")}
+          hasSearch={true}
+          items={getTags("project")}
+          cat="project"
+          filterType="Projects"
+        />
+        <TagFilter
+          toggleTag={toggleTag}
+          selected={getSelectedSet("program")}
+          hasSearch={true}
+          items={getTags("program")}
+          cat="program"
+          filterType="Programs"
+        />
+        <TagFilter
+          toggleTag={toggleTag}
+          selected={getSelectedSet("assignment")}
+          hasSearch={true}
+          items={getTags("assignment")}
+          cat="assignment"
+          filterType="Assignments"
+        />
+      </div>
+    </div>
+  );
+}
+
+function FilterPill({
+  label,
+  selectedCount,
+  cat,
+  unselectTags,
+}: {
+  label: string;
+  selectedCount: number;
+  cat: "project" | "program" | "assignment" | "status";
+  unselectTags: (cat: "project" | "program" | "assignment" | "status") => void;
+}) {
   return (
     <div className={styles.selectedFiltersContainer}>
       <p className={styles.label}>{label}</p>
       <div className={styles.count}>{String(selectedCount)}</div>
-      <Image src={icCloseWhite} alt="Close button" width={16} height={16} />
+      <button onClick={() => unselectTags(cat)} className={styles.removeBtn}>
+        <Image src={icCloseWhite} alt="Close button" width={16} height={16} />
+      </button>
     </div>
   );
 }
@@ -226,24 +272,8 @@ export default function SearchBarPanel({
   setSelectedAssignment,
   selectedStatus,
   setSelectedStatus,
-  sortType,
-  onSortOptionChange,
 }: SearchBarProps) {
-  const [tagSearch, setTagSearch] = useState("");
-  const [open, setOpen] = useState<"project" | "status" | "assignment" | "program" | null>(null);
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
   const [showSidePanel, setShowSidePanel] = useState(false);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (!wrapperRef.current) return;
-      if (e.target instanceof Node && !wrapperRef.current.contains(e.target)) {
-        setOpen(null);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   function getTags(cat: "project" | "program" | "assignment" | "status") {
     if (cat === "project") return projectTags;
@@ -300,16 +330,27 @@ export default function SearchBarPanel({
     }
   }
 
+  function unselectTags(cat: "project" | "program" | "assignment" | "status") {
+    if (cat === "project") {
+      if (!setSelectedProject) return;
+      setSelectedProject(new Set());
+    } else if (cat === "program") {
+      if (!setSelectedProgram) return;
+      setSelectedProgram(new Set());
+    } else if (cat === "assignment") {
+      if (!setSelectedAssignment) return;
+      setSelectedAssignment(new Set());
+    } else {
+      if (!setSelectedStatus) return;
+      setSelectedStatus(new Set());
+    }
+  }
+
   function getSelectedSet(cat: "project" | "program" | "assignment" | "status") {
     if (cat === "project") return selectedProject || new Set();
     if (cat === "program") return selectedProgram || new Set();
     if (cat === "assignment") return selectedAssignment || new Set();
     return selectedStatus || new Set();
-  }
-
-  function formatOptionLabel(item: string, cat: "project" | "status" | "assignment" | "program") {
-    if (cat !== "status") return item;
-    return item.charAt(0).toUpperCase() + item.slice(1);
   }
 
   return (
@@ -356,16 +397,36 @@ export default function SearchBarPanel({
       )}
       <div className={styles.filterPillsContainer}>
         {selectedProject && selectedProject.size > 0 && (
-          <FilterPill label="Projects" selectedCount={selectedProject.size} />
+          <FilterPill
+            label="Projects"
+            selectedCount={selectedProject.size}
+            cat="project"
+            unselectTags={unselectTags}
+          />
         )}
         {selectedStatus && selectedStatus.size > 0 && (
-          <FilterPill label="Status" selectedCount={selectedStatus.size} />
+          <FilterPill
+            label="Status"
+            selectedCount={selectedStatus.size}
+            cat="status"
+            unselectTags={unselectTags}
+          />
         )}
         {selectedProgram && selectedProgram.size > 0 && (
-          <FilterPill label="Programs" selectedCount={selectedProgram.size} />
+          <FilterPill
+            label="Programs"
+            selectedCount={selectedProgram.size}
+            cat="program"
+            unselectTags={unselectTags}
+          />
         )}
         {selectedAssignment && selectedAssignment.size > 0 && (
-          <FilterPill label="Assignments" selectedCount={selectedAssignment.size} />
+          <FilterPill
+            label="Assignments"
+            selectedCount={selectedAssignment.size}
+            cat="assignment"
+            unselectTags={unselectTags}
+          />
         )}
       </div>
     </div>

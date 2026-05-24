@@ -9,7 +9,12 @@ import SuccessNotification from "./SuccessNotification";
 import TagSearch from "./TagSearch";
 import styles from "./VolunteerProfileModal.module.css";
 
-import type { Volunteer, VolunteerAssignment, VolunteerTag, VolunteerWithTags } from "../types/volunteer";
+import type {
+  Volunteer,
+  VolunteerAssignment,
+  VolunteerTag,
+  VolunteerWithTags,
+} from "../types/volunteer";
 
 import { createTag, searchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignmentsByVolunteerId } from "@/app/api/volunteer";
@@ -193,7 +198,7 @@ function ViewContent({
           Created on{" "}
           <strong>
             {volunteer.dateCreated
-              ? new Date(volunteer.dateCreated as string | Date).toLocaleDateString("en-US", {
+              ? new Date(volunteer.dateCreated).toLocaleDateString("en-US", {
                   month: "2-digit",
                   day: "2-digit",
                   year: "2-digit",
@@ -717,10 +722,11 @@ export default function VolunteerProfileModal({
                   Created on{" "}
                   <strong>
                     {volunteer.dateCreated
-                      ? new Date(volunteer.dateCreated as string | Date).toLocaleDateString(
-                          "en-US",
-                          { month: "2-digit", day: "2-digit", year: "2-digit" },
-                        )
+                      ? new Date(volunteer.dateCreated).toLocaleDateString("en-US", {
+                          month: "2-digit",
+                          day: "2-digit",
+                          year: "2-digit",
+                        })
                       : "N/A"}
                   </strong>
                 </span>
@@ -1182,7 +1188,6 @@ export default function VolunteerProfileModal({
                   onChange={(event) => setAdditionalNotes(event.target.value)}
                 />
               </div>
-
             </div>
           )}
         </div>

@@ -12,22 +12,31 @@ import icCloseAsset from "@/assets/ic_close.svg";
 const icClose = icCloseAsset as string;
 
 type ExportCsvModalProps = {
+  volunteers: Volunteer[];
   onClose: () => void;
 };
 
-export default function ExportCsvModal({ onClose }: ExportCsvModalProps) {
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function ExportCsvModal({
+  volunteers: selectedVolunteers,
+  onClose,
+}: ExportCsvModalProps) {
+  const exportAll = selectedVolunteers.length === 0;
+
+  const [allVolunteers, setAllVolunteers] = useState<Volunteer[]>([]);
+  const [loading, setLoading] = useState(exportAll);
 
   useEffect(() => {
+    if (!exportAll) return;
     fetchVolunteers()
-      .then(setVolunteers)
+      .then(setAllVolunteers)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [exportAll]);
+
+  const displayVolunteers = exportAll ? allVolunteers : selectedVolunteers;
 
   const handleExport = async () => {
-    await exportVolunteersCsv();
+    await exportVolunteersCsv(exportAll ? [] : selectedVolunteers.map((v) => v._id));
     onClose();
   };
 
@@ -51,11 +60,13 @@ export default function ExportCsvModal({ onClose }: ExportCsvModalProps) {
           <div className={styles.scrollContainer}>
             <div className={styles.tableHeader}>
               <span className={styles.tableHeaderText}>
-                {loading ? "Loading..." : `Exporting ${volunteers.length} Volunteers`}
+                {loading
+                  ? "Loading..."
+                  : `Exporting ${displayVolunteers.length} Volunteer${displayVolunteers.length !== 1 ? "s" : ""}`}
               </span>
             </div>
             <div className={styles.scrollContent}>
-              {volunteers.map((v) => (
+              {displayVolunteers.map((v) => (
                 <div key={v._id} className={styles.volunteerRow}>
                   <span className={styles.volunteerName}>
                     {v.lastName}, {v.firstName}

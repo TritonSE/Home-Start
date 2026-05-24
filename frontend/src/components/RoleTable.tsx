@@ -85,12 +85,20 @@ export default function RoleTable({ volunteerAssignments }: RoleTableProps) {
                 <tr key={assignment._id} className={styles.row}>
                   <td className={styles.cell}>
                     <div className={styles.tagCell}>
-                      {assignmentTag ? <PillTag tag={assignmentTag} borderRadius="8px" /> : <span>—</span>}
+                      {assignmentTag ? (
+                        <PillTag tag={assignmentTag} borderRadius="8px" />
+                      ) : (
+                        <span>—</span>
+                      )}
                     </div>
                   </td>
                   <td className={styles.cell}>
                     <div className={styles.tagCell}>
-                      {projectTag ? <PillTag tag={projectTag} borderRadius="8px" /> : <span>—</span>}
+                      {projectTag ? (
+                        <PillTag tag={projectTag} borderRadius="8px" />
+                      ) : (
+                        <span>—</span>
+                      )}
                     </div>
                   </td>
                   <td className={styles.cell}>

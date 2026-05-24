@@ -57,7 +57,7 @@ export default function TagSearch({
               key="create-option"
               className={`${styles.tagSearchDropdownItem} ${styles.tagSearchCreateItem}`}
               onClick={() => {
-                onCreate!(trimmed);
+                onCreate(trimmed);
                 onQueryChange("");
               }}
               type="button"
@@ -79,9 +79,7 @@ export default function TagSearch({
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className={styles.dropdownItemText}>
-                Create &ldquo;{trimmed}&rdquo;
-              </span>
+              <span className={styles.dropdownItemText}>Create &ldquo;{trimmed}&rdquo;</span>
             </button>
           )}
           {results.map((tag) => (

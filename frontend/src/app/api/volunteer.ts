@@ -274,7 +274,8 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
           status: typeof item.status === "string" ? item.status : undefined,
           address: item.address ?? undefined,
           birthday: typeof item.birthday === "string" ? item.birthday : undefined,
-          preferredPronouns: typeof item.preferredPronouns === "string" ? item.preferredPronouns : undefined,
+          preferredPronouns:
+            typeof item.preferredPronouns === "string" ? item.preferredPronouns : undefined,
           startDate: typeof item.startDate === "string" ? item.startDate : undefined,
           endDate: typeof item.endDate === "string" ? item.endDate : undefined,
           effectiveDate: typeof item.effectiveDate === "string" ? item.effectiveDate : undefined,
@@ -459,10 +460,14 @@ export async function getSelectedVolunteers({
   }
 }
 
-export async function exportVolunteersCsv(): Promise<void> {
+export async function exportVolunteersCsv(ids?: string[]): Promise<void> {
   const headers = await getAuthHeaders();
 
-  const response = await fetch(`${API_BASE_URL}/api/volunteer/export-csv`, { headers });
+  const response = await fetch(`${API_BASE_URL}/api/volunteer/export-csv`, {
+    method: "POST",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({ ids: ids ?? [] }),
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to export volunteers: ${response.status} ${response.statusText}`);

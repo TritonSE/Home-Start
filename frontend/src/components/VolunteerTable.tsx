@@ -38,6 +38,7 @@ type VolunteerTableProps = {
   volunteers: VolunteerWithTags[];
   selectableVolunteers?: VolunteerWithTags[];
   onSelectedCountChange?: (count: number) => void;
+  onSelectionChange?: (ids: Set<string>) => void;
   onVolunteerSelect?: (volunteer: VolunteerWithTags) => void;
 };
 
@@ -45,6 +46,7 @@ export default function VolunteerTable({
   volunteers,
   selectableVolunteers,
   onSelectedCountChange,
+  onSelectionChange,
   onVolunteerSelect,
 }: VolunteerTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -69,7 +71,8 @@ export default function VolunteerTable({
 
   useEffect(() => {
     onSelectedCountChange?.(selectedIds.size);
-  }, [selectedIds, onSelectedCountChange]);
+    onSelectionChange?.(selectedIds);
+  }, [selectedIds, onSelectedCountChange, onSelectionChange]);
 
   useEffect(() => {
     deselectAll();

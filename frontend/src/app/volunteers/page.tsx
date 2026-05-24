@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
-import type { Volunteer, VolunteerTag, VolunteerWithTags } from "@/types/volunteer";
+import type { VolunteerTag, VolunteerWithTags } from "@/types/volunteer";
 
 import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
@@ -45,6 +45,7 @@ export default function Page() {
   const [selectedVolunteer, setSelectedVolunteer] = useState<VolunteerWithTags | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedCount, setSelectedCount] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sortOption, setSortOption] = useState<
     "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A"
   >("Newest");
@@ -270,6 +271,8 @@ export default function Page() {
   const endIndex = startIndex + itemsPerPage;
   const displayedVolunteers = sortedFilteredVolunteers.slice(startIndex, endIndex);
 
+  const selectedVolunteers = filteredVolunteers.filter((v) => selectedIds.has(v._id));
+
   const handleImportComplete = () => {
     void loadVolunteers();
     setShowImportSuccess(true);
@@ -303,7 +306,10 @@ export default function Page() {
               ></button>
             </div>
           )}
-          <TitleBar onImportComplete={handleImportComplete} />
+          <TitleBar
+            onImportComplete={handleImportComplete}
+            selectedVolunteers={selectedVolunteers}
+          />
           <SearchBar
             search={search}
             setSearch={handleSearchChange}
@@ -326,6 +332,7 @@ export default function Page() {
               volunteers={displayedVolunteers}
               selectableVolunteers={filteredVolunteers}
               onSelectedCountChange={setSelectedCount}
+              onSelectionChange={setSelectedIds}
               onVolunteerSelect={(v) => {
                 setSelectedVolunteer(v);
                 setIsSheetOpen(true);

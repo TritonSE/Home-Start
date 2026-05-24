@@ -176,6 +176,7 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
       email,
       phoneNumber,
       status,
+      dateCreated: new Date(),
       ...(address && { address }),
       ...(toDate(birthday) && { birthday: toDate(birthday) }),
       ...(preferredPronouns && { preferredPronouns }),
@@ -408,9 +409,8 @@ export const uploadVolunteerBatch: RequestHandler<
           $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
         },
         update: {
-          $set: normalizeVolunteerForBulkWrite(body),
-          // Mongo operator to set a field to the current date
-          $currentDate: { updated: true as const },
+          $set: { ...normalizeVolunteerForBulkWrite(body), effectiveDate: new Date() },
+          $setOnInsert: { dateCreated: new Date() },
         },
         upsert: true,
       },
@@ -837,8 +837,11 @@ const buildCsv = (rows: string[][]): string =>
 
 export const exportVolunteersCsv: RequestHandler = async (req, res, next) => {
   try {
+    const { ids } = req.body as { ids?: string[] };
+    const volunteerFilter = Array.isArray(ids) && ids.length > 0 ? { _id: { $in: ids } } : {};
+
     const [volunteers, assignments] = await Promise.all([
-      VolunteerModel.find(),
+      VolunteerModel.find(volunteerFilter),
       VolunteerAssignmentModel.find()
         .populate("assignmentTagId")
         .populate("projectTagId")

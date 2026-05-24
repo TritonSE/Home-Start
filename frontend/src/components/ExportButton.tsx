@@ -2,14 +2,20 @@
 import Image from "next/image";
 import { useState } from "react";
 
-import ExportCsvModal from "./ExportCsvModal";
 import styles from "./CSVButton.module.css";
+import ExportCsvModal from "./ExportCsvModal";
+
+import type { VolunteerWithTags } from "@/types/volunteer";
 
 import uploadBlueAsset from "@/assets/upload_blue.svg";
 
 const uploadBlue = uploadBlueAsset as string;
 
-export default function ExportButton() {
+type ExportButtonProps = {
+  selectedVolunteers: VolunteerWithTags[];
+};
+
+export default function ExportButton({ selectedVolunteers }: ExportButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -26,7 +32,9 @@ export default function ExportButton() {
         </span>
         <div className={styles.exportText}>Export CSV</div>
       </button>
-      {isOpen && <ExportCsvModal onClose={() => setIsOpen(false)} />}
+      {isOpen && (
+        <ExportCsvModal volunteers={selectedVolunteers} onClose={() => setIsOpen(false)} />
+      )}
     </>
   );
 }

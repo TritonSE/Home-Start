@@ -36,6 +36,20 @@
   letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
 }
 
+.btnWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  appearance: none;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: -1;
+
+  cursor: pointer;
+}
+
 .arrowPaddingLeft {
   display: flex;
   align-items: center;
@@ -65,10 +79,10 @@
   color: var(--Content-contentPrimary, #000);
 
   /* Label / Small */
-  font-family: "Uber Move Text";
+  font-family: var(--Font-family-Body, "Open Sans");
   font-size: 14px;
   font-style: normal;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 16px; /* 114.286% */
 }
 

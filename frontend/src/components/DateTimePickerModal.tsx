@@ -64,11 +64,13 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
   const handleSelectMonth = (month: number) => {
     setCurrentDate(new Date(currYear, month, 1));
     setMonthDropDown(false);
+    setYearDropDown(false);
   };
 
   const handleSelectYear = (yearIndex: number) => {
     setCurrentDate(new Date(yearList[yearIndex], currMonth, 1));
     setYearDropDown(false);
+    setMonthDropDown(false);
   };
 
   const handleSelectDay = (day: number) => {
@@ -122,17 +124,19 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
         <div className={styles.calendar}>
           <div className={styles.calendarHeader}>
             <div className={styles.arrowPaddingLeft}>
-              <Image
-                src={chevronLeft}
-                alt="Previous Month"
-                width={16}
-                height={16}
-                onClick={handlePrevMonth}
-                style={{ cursor: "pointer" }}
-              />
+              <button className={styles.btnWrapper} onClick={handlePrevMonth}>
+                <Image
+                  src={chevronLeft}
+                  alt="Previous Month"
+                  width={16}
+                  height={16}
+                  style={{ cursor: "pointer" }}
+                />
+              </button>
             </div>
             <DropDown
               onClick={() => {
+                setTimePeriodDropDown(false);
                 setMonthDropDown(!monthDropDown);
               }}
               selectedDisplay={currentDate.toLocaleString("default", { month: "long" })}
@@ -144,6 +148,7 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
             />
             <DropDown
               onClick={() => {
+                setTimePeriodDropDown(false);
                 setYearDropDown(!yearDropDown);
               }}
               selectedDisplay={currentDate.getFullYear().toString()}
@@ -154,14 +159,15 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
               }}
             />
             <div className={styles.arrowPaddingRight}>
-              <Image
-                src={chevronRight}
-                alt="Next Month"
-                width={16}
-                height={16}
-                onClick={handleNextMonth}
-                style={{ cursor: "pointer" }}
-              />
+              <button className={styles.btnWrapper} onClick={handleNextMonth}>
+                <Image
+                  src={chevronRight}
+                  alt="Next Month"
+                  width={16}
+                  height={16}
+                  style={{ cursor: "pointer" }}
+                />
+              </button>
             </div>
           </div>
           <DatePicker
@@ -222,6 +228,8 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
             </div>
             <DropDown
               onClick={() => {
+                setMonthDropDown(false);
+                setYearDropDown(false);
                 setTimePeriodDropDown(!timePeriodDropDown);
               }}
               selectedDisplay={timePeriod}

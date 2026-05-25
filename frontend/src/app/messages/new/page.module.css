@@ -517,3 +517,17 @@
   border: 1px solid var(--Icons-ic-information, #007a8a);
   background: var(--foundation-off-white, #ecf3f3);
 }
+
+.btnWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  appearance: none;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: -1;
+
+  cursor: pointer;
+}

@@ -43,7 +43,7 @@
 
 .display {
   display: flex;
-  padding: 8px 12px;
+  /* padding: 8px 12px; */
   justify-content: center;
   align-items: center;
   gap: 8px;
@@ -54,4 +54,10 @@
 
   border-radius: 8px;
   background: #ecf3f3;
+}
+
+.btnWrapper {
+  all: unset;
+  width: 100%;
+  padding: 8px 12px;
 }

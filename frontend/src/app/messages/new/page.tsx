@@ -334,14 +334,15 @@ function Composer({
           <span>
             Scheduled:<b>&nbsp;{formatDate(sendDate)}</b>
           </span>
-          <Image
-            className={styles.removeScheduleBtn}
-            src={icClose}
-            alt="Remove Schedule"
-            width={20}
-            height={20}
-            onClick={() => setSendDate(undefined)}
-          />
+          <button className={styles.btnWrapper} onClick={() => setSendDate(undefined)}>
+            <Image
+              className={styles.removeScheduleBtn}
+              src={icClose}
+              alt="Remove Schedule"
+              width={20}
+              height={20}
+            />
+          </button>
         </div>
       )}
 
@@ -488,16 +489,20 @@ export default function NewMessagePage() {
                     >
                       <span className={styles.reviewBtnText}>Review and Send</span>
                     </button>
-                    <Image
-                      src={icSchedule}
-                      alt="Schedule"
-                      width={56}
-                      height={56}
-                      className={styles.scheduleBtn}
+                    <button
+                      className={styles.btnWrapper}
                       onClick={() => {
                         setDateTimePickerOpen(true);
                       }}
-                    />
+                    >
+                      <Image
+                        src={icSchedule}
+                        alt="Schedule"
+                        width={56}
+                        height={56}
+                        className={styles.scheduleBtn}
+                      />
+                    </button>
                   </div>
                 </div>
               </section>

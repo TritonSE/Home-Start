@@ -16,22 +16,29 @@ export function DropDown({
   onSelect,
 }: DropDownProps) {
   return (
-    <div
-      className={styles.display}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-    >
-      <div>{selectedDisplay}</div>
+    <div className={styles.display}>
+      <button
+        className={styles.btnWrapper}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        aria-expanded={dropdownOpen}
+        aria-haspopup="listbox"
+      >
+        {selectedDisplay}
+      </button>
       {dropdownOpen && (
-        <div className={styles.dropDown}>
+        <div className={styles.dropDown} role="listbox">
           <div className={styles.dropdownScroll}>
             {items.map((item, i) => (
               <div
                 className={styles.dropdownItem}
                 key={item}
-                onClick={() => {
+                role="option"
+                aria-selected={String(item) === selectedDisplay}
+                onClick={(e) => {
+                  e.stopPropagation();
                   onSelect(i);
                 }}
               >

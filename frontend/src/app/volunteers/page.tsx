@@ -39,6 +39,7 @@ export default function Page() {
   const setRecipientsPool = useTextingFlowStore((s) => s.setRecipientsPool);
   const toggleRecipient = useTextingFlowStore((s) => s.toggleRecipient);
   const toggleSelectAll = useTextingFlowStore((s) => s.toggleSelectAll);
+  const clearSelectedRecipients = useTextingFlowStore((s) => s.clearSelectedRecipients);
   const storeSelectedIds = useTextingFlowStore((s) => s.selectedRecipientIds);
   const storeSelectedRecipients = useTextingFlowStore((s) => s.selectedRecipients);
 
@@ -55,6 +56,18 @@ export default function Page() {
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedAssignment, setSelectedAssignment] = useState<Set<string>>(new Set());
   const [selectedProgram, setSelectedProgram] = useState<Set<string>>(new Set());
+
+  // Clear selection whenever any filter changes to avoid invisibly selected volunteers
+  useEffect(() => {
+    clearSelectedRecipients();
+  }, [
+    search,
+    selectedProject,
+    selectedStatus,
+    selectedAssignment,
+    selectedProgram,
+    clearSelectedRecipients,
+  ]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);

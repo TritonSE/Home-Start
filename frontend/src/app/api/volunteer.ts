@@ -46,6 +46,7 @@ type VolunteerParseCsvDTO = {
   wouldCreate: string[];
   wouldUpdate: string[];
   total: number;
+  missingTags?: { name: string; type: string }[];
   volunteerInfo: {
     firstName: string;
     lastName: string;
@@ -174,6 +175,7 @@ export type VolunteerCsvParseResult = {
   wouldCreate: string[];
   wouldUpdate: string[];
   totalCount: number;
+  missingTags: { name: string; type: "assignment" | "project" | "shift" }[];
 
   volunteerInfo: {
     firstName: string;
@@ -247,12 +249,26 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
     }
 
     const volunteerInfo = Array.isArray(parsed.volunteerInfo) ? parsed.volunteerInfo : [];
+    const rawMissingTags = Array.isArray(parsed.missingTags) ? parsed.missingTags : [];
+    const missingTags = rawMissingTags
+      .filter((t): t is { name: string; type: string } => {
+        if (!t || typeof t !== "object") return false;
+        const tag = t as { name?: unknown; type?: unknown };
+        return typeof tag.name === "string" && typeof tag.type === "string";
+      })
+      .map((t) => ({
+        name: t.name,
+        type: (["assignment", "project", "shift"].includes(t.type)
+          ? t.type
+          : "assignment") as "assignment" | "project" | "shift",
+      }));
     const result: VolunteerCsvParseResult = {
       wouldCreateCount: parsed.wouldCreateCount,
       wouldUpdateCount: parsed.wouldUpdateCount,
       wouldCreate: parsed.wouldCreate.filter((value): value is string => typeof value === "string"),
       wouldUpdate: parsed.wouldUpdate.filter((value): value is string => typeof value === "string"),
       totalCount: parsed.total,
+      missingTags,
       volunteerInfo: volunteerInfo
         .filter((item): item is VolunteerParseCsvDTO["volunteerInfo"][number] => {
           if (!item || typeof item !== "object") {
@@ -324,6 +340,7 @@ const BATCH_CHUNK_SIZE = 200;
 
 export async function uploadVolunteerBatch(
   data: VolunteerCreationBody[],
+  tagsToCreate: { name: string; type: string; color: string }[] = [],
 ): Promise<UploadVolunteerBatchResponse> {
   try {
     const headers = await getAuthHeaders();
@@ -334,11 +351,11 @@ export async function uploadVolunteerBatch(
     }
 
     const responses = await Promise.all(
-      chunks.map(async (chunk) =>
+      chunks.map(async (chunk, index) =>
         fetch(`${API_BASE_URL}/api/volunteer/batch`, {
           method: "POST",
           headers: { ...headers, "Content-Type": "application/json" },
-          body: JSON.stringify({ volunteers: chunk }),
+          body: JSON.stringify({ volunteers: chunk, ...(index === 0 ? { tagsToCreate } : {}) }),
         }),
       ),
     );

@@ -5,6 +5,7 @@
   height: 40px;
   gap: 24px;
   justify-content: center;
+  padding-bottom: 64px;
 }
 
 .pagination {
@@ -18,14 +19,11 @@
 
 .previous {
   display: flex;
-  flex-direction: row;
-  width: 48px;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
   height: 40px;
   border-radius: 4px;
-  padding-top: 8px;
-  padding-left: 12px;
-  padding-bottom: 8px;
-  padding-right: 12px;
 }
 
 .caretIcon {
@@ -46,40 +44,35 @@
 
 .previous:hover,
 .next:hover {
-  background-color: #ecf3f3;
+  background-color: #e8e8e8;
   cursor: pointer;
 }
 
 .next {
   composes: previous;
-  gap: 16px;
 }
 
 .paginationPages {
   display: flex;
   flex-direction: row;
-  width: 184px;
+  width: fit-content;
   height: 40px;
   gap: 8px;
 }
 
 .pageButton {
   display: flex;
-  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   width: 40px;
   height: 40px;
   border-radius: 4px;
-  padding-top: 8px;
-  padding-left: 12px;
-  padding-bottom: 8px;
-  padding-right: 12px;
-  gap: 16px;
   border: none;
   background-color: transparent;
 }
 
 .pageButton:hover {
-  background-color: #ecf3f3;
+  background-color: #e8e8e8;
   cursor: pointer;
 }
 

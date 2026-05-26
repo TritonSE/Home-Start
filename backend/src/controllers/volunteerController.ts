@@ -384,17 +384,36 @@ const normalizeCsvText = (value: unknown) => {
   return value.trim();
 };
 
+type TagToCreate = {
+  name: string;
+  type: "assignment" | "project" | "shift";
+  color: string;
+};
+
 export const uploadVolunteerBatch: RequestHandler<
   object,
   object,
-  { volunteers: CreateVolunteerBody[] }
+  { volunteers: CreateVolunteerBody[]; tagsToCreate?: TagToCreate[] }
 > = async (req, res, next) => {
   const errors = validationResult(req);
 
   try {
     validationErrorParser(errors);
 
-    const { volunteers } = req.body;
+    const { volunteers, tagsToCreate = [] } = req.body;
+
+    if (tagsToCreate.length > 0) {
+      await TagModel.bulkWrite(
+        tagsToCreate.map((t) => ({
+          updateOne: {
+            filter: { name: t.name, type: t.type },
+            update: { $setOnInsert: { name: t.name, color: t.color, type: t.type } },
+            upsert: true,
+          },
+        })),
+        { ordered: false },
+      );
+    }
 
     const volunteersByKey = new Map<VolunteerImportKey, CreateVolunteerBody>();
     for (const body of volunteers) {
@@ -442,7 +461,7 @@ export const uploadVolunteerBatch: RequestHandler<
         }),
       ]);
 
-      const tagByName = new Map(allTags.map((tag) => [tag.name, tag]));
+      const tagByKey = new Map(allTags.map((tag) => [`${tag.type}:${tag.name}`, tag]));
       const volunteerByKey = new Map<string, (typeof savedVolunteers)[number]>();
       for (const volunteer of savedVolunteers) {
         volunteerByKey.set(volunteer.email, volunteer);
@@ -488,25 +507,19 @@ export const uploadVolunteerBatch: RequestHandler<
           throw createError(400, `Could not resolve volunteer for ${entry.volunteer.email}`);
         }
 
-        const assignmentTag = tagByName.get(entry.assignmentTag);
-        const projectTag = tagByName.get(entry.projectTag);
+        const assignmentTag = tagByKey.get(`assignment:${entry.assignmentTag}`);
+        const projectTag = tagByKey.get(`project:${entry.projectTag}`);
 
         if (!assignmentTag || assignmentTag.type !== "assignment") {
-          // TEMP
-          console.info(
-            `Assignment "${entry.assignmentTag}" does not exist and needs to be created.`,
-          );
           return [];
         }
 
         if (!projectTag || projectTag.type !== "project") {
-          // TEMP
-          console.info(`Project "${entry.projectTag}" does not exist and needs to be created.`);
           return [];
         }
 
         const shiftTagIds = [...entry.shiftNames]
-          .map((shiftName) => tagByName.get(shiftName))
+          .map((shiftName) => tagByKey.get(`shift:${shiftName}`))
           .filter((tag): tag is NonNullable<typeof tag> => Boolean(tag))
           .filter((tag) => tag.type === "shift")
           .map((tag) => tag._id);
@@ -696,18 +709,13 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const seenEmails = new Set<string>();
-    for (const v of parsedVolunteers) {
-      if (seenEmails.has(v.email)) {
-        throw createError(400, `Duplicate email in CSV: ${v.email}`);
-      }
-      seenEmails.add(v.email);
-    }
+    const uniqueVolunteers = [
+      ...new Map(parsedVolunteers.map((v) => [makeVolunteerImportKey(v), v])).values(),
+    ];
 
-    const emails = parsedVolunteers.map((v) => v.email);
-    const phoneNumbers = parsedVolunteers.map((v) => v.phoneNumber);
+    const emails = uniqueVolunteers.map((v) => v.email);
+    const phoneNumbers = uniqueVolunteers.map((v) => v.phoneNumber);
     const existing = await VolunteerModel.find({
-      // Find all in one await
       $or: [{ email: { $in: emails } }, { phoneNumber: { $in: phoneNumbers } }],
     });
 
@@ -717,13 +725,35 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
       existingSet.add(volunteer.phoneNumber);
     });
 
-    const wouldCreate = parsedVolunteers
+    const wouldCreate = uniqueVolunteers
       .filter((v) => !existingSet.has(v.email) && !existingSet.has(v.phoneNumber))
       .map((v) => v.email);
 
-    const wouldUpdate = parsedVolunteers
+    const wouldUpdate = uniqueVolunteers
       .filter((v) => existingSet.has(v.email) || existingSet.has(v.phoneNumber))
       .map((v) => v.email);
+
+    const referencedTags: { name: string; type: "assignment" | "project" | "shift" }[] = [];
+    for (const v of parsedVolunteers) {
+      if (v.assignmentName) referencedTags.push({ name: v.assignmentName, type: "assignment" });
+      if (v.projectName) referencedTags.push({ name: v.projectName, type: "project" });
+      for (const shiftName of v.shiftNames ?? []) {
+        referencedTags.push({ name: shiftName, type: "shift" });
+      }
+    }
+
+    const uniqueReferenced = [
+      ...new Map(referencedTags.map((t) => [`${t.type}:${t.name}`, t])).values(),
+    ];
+
+    const allTagNames = uniqueReferenced.map((t) => t.name);
+    const existingTags = await TagModel.find({ name: { $in: allTagNames } });
+    const existingTagKeys = new Set(existingTags.map((t) => `${t.type}:${t.name}`));
+
+    const missingTags = uniqueReferenced.filter((t) => !existingTagKeys.has(`${t.type}:${t.name}`));
+    for (const tag of missingTags) {
+      console.info(`[parse-csv] missing tag: ${tag.type} "${tag.name}"`); // TEMP LOG
+    }
 
     res.status(200).json({
       message: "CSV parsed successfully",
@@ -733,6 +763,7 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
       wouldUpdateCount: wouldUpdate.length,
       wouldCreate,
       wouldUpdate,
+      missingTags,
     });
   } catch (err) {
     next(err);

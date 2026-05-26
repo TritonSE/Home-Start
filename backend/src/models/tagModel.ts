@@ -3,7 +3,7 @@ import { model, Schema } from "mongoose";
 import type { InferSchemaType } from "mongoose";
 
 const tagSchema = new Schema({
-  name: { type: String, required: true, trim: true, unique: true },
+  name: { type: String, required: true, trim: true },
   color: { type: String, required: true, trim: true },
   type: {
     type: String,
@@ -11,6 +11,8 @@ const tagSchema = new Schema({
     required: true,
   },
 });
+
+tagSchema.index({ name: 1, type: 1 }, { unique: true });
 
 type Tag = InferSchemaType<typeof tagSchema>;
 

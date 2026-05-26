@@ -56,7 +56,6 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
             alt="Home Start"
             className={styles.logo}
             width={115}
-            height={140}
             style={{ height: "auto" }}
             priority
           />

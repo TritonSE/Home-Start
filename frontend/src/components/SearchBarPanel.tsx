@@ -5,10 +5,12 @@ import { useEffect, useRef, useState } from "react";
 
 import styles from "./SearchBarPanel.module.css";
 
+import bluePlusAltAsset from "@/assets/blue_plus_alt.svg";
 import checkboxIconAsset from "@/assets/checkbox.svg";
 import icCloseWhiteAsset from "@/assets/ic_close_white.svg";
 import icCloseAsset from "@/assets/ic_close.svg";
 import icFilterAsset from "@/assets/ic_filter.svg";
+import plusIconAsset from "@/assets/plus.svg";
 import unionIconAsset from "@/assets/union.svg";
 
 const checkboxIcon = checkboxIconAsset as string;
@@ -16,6 +18,8 @@ const unionIcon = unionIconAsset as string;
 const filterIcon = icFilterAsset as string;
 const icClose = icCloseAsset as string;
 const icCloseWhite = icCloseWhiteAsset as string;
+const bluePlusAltIcon = bluePlusAltAsset as string;
+const plusIcon = plusIconAsset as string;
 
 type SearchBarProps = {
   search: string;
@@ -113,13 +117,47 @@ function TagFilter({
             <span className={styles.pillTagText}>{filterType}</span>
           )}
 
-          <div className={styles.dropdownItemContainer}>
-            {items
+          {tagSearch.length > 0 && cat !== "status" && (
+            <div className={styles.dropdownItemContainer}>
+              {items
+                .filter((item) => item.toLowerCase().includes(tagSearch.toLowerCase()))
+                .slice(0, 6)
+                .map((item) => {
+                  const isSelected: boolean = selected.has(item);
+                  return (
+                    <button
+                      key={item}
+                      className={`${styles.dropdownItem} ${isSelected ? styles.dropdownItemSelected : ""}`}
+                      role="menuitem"
+                      type="button"
+                      onClick={() => toggleTag(item, cat)}
+                    >
+                      <Image
+                        src={isSelected ? bluePlusAltIcon : plusIcon}
+                        alt="Blue plus icon"
+                        width={16}
+                        height={16}
+                      />
+                      <div
+                        className={
+                          isSelected ? styles.filterLabelSelected : styles.filterLabelNotSelected
+                        }
+                      >
+                        {formatOptionLabel(item, cat)}
+                      </div>
+                    </button>
+                  );
+                })}
+            </div>
+          )}
+
+          {cat === "status" &&
+            items
               .filter((item) => item.toLowerCase().includes(tagSearch.toLowerCase()))
               .map((item) => (
                 <div
                   key={item}
-                  className={`${styles.dropdownItem} ${selected.has(item) ? styles.dropdownItemSelected : ""}`}
+                  className={`${styles.dropdownStatusItem} ${selected.has(item) ? styles.dropdownStatusItemSelected : ""}`}
                   role="menuitem"
                 >
                   <button
@@ -137,10 +175,9 @@ function TagFilter({
                       />
                     )}
                   </button>
-                  <div className={styles.filterLabel}>{formatOptionLabel(item, cat)}</div>
+                  <div className={styles.filterLabelStatus}>{formatOptionLabel(item, cat)}</div>
                 </div>
               ))}
-          </div>
         </div>
       </div>
     </div>

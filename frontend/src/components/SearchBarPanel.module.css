@@ -37,7 +37,6 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  z-index: 20;
 }
 
 .searchField {
@@ -118,7 +117,7 @@
   align-items: flex-start;
   gap: 10px;
   align-self: stretch;
-  height: 270px;
+  height: 100px;
 }
 
 .status {
@@ -136,7 +135,6 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  z-index: 21;
   width: 100%;
   gap: 15px;
 }
@@ -226,7 +224,8 @@
   gap: 12px;
   width: 100%;
   background: white;
-  z-index: 50;
+  position: relative;
+  z-index: auto;
 }
 
 .pillTagText {
@@ -274,12 +273,46 @@
 
 .dropdownItemContainer {
   display: flex;
+  width: 462px;
   flex-direction: column;
   align-items: flex-start;
+
+  border-radius: 8px;
+  border: 1px solid var(--Lofi-Gray-1, #e8e8e8);
+  /* Level 3 */
+  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 40;
+}
+
+.dropdownStatusItem {
+  display: flex;
+  flex-direction: row;
+  width: fit-content;
+  height: 20px;
   gap: 12px;
-  align-self: stretch;
-  height: 160px;
-  overflow-y: auto;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.filterLabelStatus {
+  height: 20px;
+  font-family: var(--font-open-sans);
+  font-weight: 400;
+  font-style: regular;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.8px;
+  vertical-align: middle;
+  color: #000000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownStatusItemSelected .filterLabelStatus {
+  font-weight: 700;
 }
 
 .dropdownFooter {
@@ -310,13 +343,13 @@
 
 .dropdownItem {
   display: flex;
-  flex-direction: row;
-  width: fit-content;
-  height: 20px;
-  gap: 12px;
-  padding: 4px;
-  border-radius: 4px;
-  cursor: pointer;
+  padding: 12px 16px;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+
+  border: 1px solid var(--Lofi-Gray-1, #e8e8e8);
+  background: #fff;
 }
 
 .checkBox {
@@ -345,23 +378,28 @@
   height: 16px;
 }
 
-.filterLabel {
-  height: 20px;
-  font-family: var(--font-open-sans);
+.filterLabelSelected {
+  color: var(--Text-action, #1d3a6b);
+  /* Body/xsm */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-xsm-font-size, 12px);
+  font-style: normal;
   font-weight: 400;
-  font-style: regular;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: 0.8px;
-  vertical-align: middle;
-  color: #000000;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: var(--paragraph-xsm-line-height, 16px); /* 133.333% */
 }
 
-.dropdownItemSelected .filterLabel {
-  font-weight: 700;
+.filterLabelNotSelected {
+  color: var(--Text-headings, #141414);
+  /* Body/xsm */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-xsm-font-size, 12px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-xsm-line-height, 16px); /* 133.333% */
+}
+
+.dropdownItemSelected {
+  background: var(--Surface-default, #ecf3f3);
 }
 
 .clearFilterButtonCotainer,

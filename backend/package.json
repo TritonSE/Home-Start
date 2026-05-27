@@ -9,7 +9,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon src/server.ts",
-    "build": "npm ci && tsc && tsc-alias",
+    "build": "npm ci && tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "check-git-hooks": "cd .. && node .secret-scan/secret-scan.js -- --check-git-hooks",
     "format": "npm run check-git-hooks && prettier --write .",

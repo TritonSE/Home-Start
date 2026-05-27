@@ -118,7 +118,9 @@ function TagFilter({
           )}
 
           {tagSearch.length > 0 && cat !== "status" && (
-            <div className={styles.dropdownItemContainer}>
+            <div
+              className={`${styles.dropdownItemContainer} ${window.innerWidth < DESKTOP_MQ ? styles.dropdownItemContainerMobile : ""}`}
+            >
               {items
                 .filter((item) => item.toLowerCase().includes(tagSearch.toLowerCase()))
                 .slice(0, 6)

@@ -2,17 +2,16 @@
 import { signOut } from "firebase/auth";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { type MouseEvent, useState } from "react";
 
 import styles from "./page.module.css";
 
+import { handleEmailClick } from "@/app/communication/page";
 import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
 import icCaretRightAsset from "@/assets/chevron_backward.svg";
 import icMessageAsset from "@/assets/ic_message.svg";
 import importExportAsset from "@/assets/ion_document.svg";
 import mailAsset from "@/assets/mail.svg";
-import { initMsal, signInWithOutlook } from "@/auth/msal";
 import LogoutButton from "@/components/LogoutButton";
 import LogoutModal from "@/components/LogoutModal";
 import Sidebar from "@/components/Sidebar";
@@ -24,23 +23,12 @@ const importExport = importExportAsset as string;
 const mail = mailAsset as string;
 
 export default function Dashboard() {
-  const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const setMode = useTextingFlowStore((s) => s.setMode);
 
-  const sendEmails = async () => {
-    setMode("email");
-    if (await initMsal()) {
-      void router.push("/communication");
-      return;
-    }
-
-    await signInWithOutlook();
-  };
-
   const handleSendEmailCardClick = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
-    void sendEmails();
+    void handleEmailClick();
   };
 
   const CARDS = [

@@ -46,7 +46,6 @@ jobs:
             echo "FIREBASE_SERVICE_ACCOUNT_HOME_START is not set."
             exit 1
           fi
-          cd backend
           npx -y vercel@latest link --yes --scope "$VERCEL_ORG_ID" --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN"
           BACKEND_PREVIEW_URL=$(npx -y vercel@latest deploy --yes --scope "$VERCEL_ORG_ID" --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN" --env DATABASE_URL="$DATABASE_URL" --env FIREBASE_SERVICE_ACCOUNT="$FIREBASE_SERVICE" --env FRONTEND_ORIGIN="*" --env PORT=4000)
           echo "BACKEND_PREVIEW_URL=$BACKEND_PREVIEW_URL" >> "$GITHUB_ENV"

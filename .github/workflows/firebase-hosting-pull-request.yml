@@ -24,6 +24,7 @@ jobs:
           FIREBASE_SERVICE: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HOME_START }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         run: |
           if [ -z "$VERCEL_TOKEN" ]; then
             echo "VERCEL_TOKEN is not set."
@@ -31,6 +32,10 @@ jobs:
           fi
           if [ -z "$VERCEL_PROJECT_ID" ]; then
             echo "VERCEL_PROJECT_ID is not set."
+            exit 1
+          fi
+          if [ -z "$VERCEL_ORG_ID" ]; then
+            echo "VERCEL_ORG_ID is not set."
             exit 1
           fi
           if [ -z "$DATABASE_URL" ]; then
@@ -42,8 +47,8 @@ jobs:
             exit 1
           fi
           cd backend
-          npx -y vercel@latest link --yes --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN"
-          BACKEND_PREVIEW_URL=$(npx -y vercel@latest deploy --yes --token "$VERCEL_TOKEN" --env DATABASE_URL="$DATABASE_URL" --env FIREBASE_SERVICE_ACCOUNT="$FIREBASE_SERVICE" --env FRONTEND_ORIGIN="*" --env PORT=4000)
+          npx -y vercel@latest link --yes --org "$VERCEL_ORG_ID" --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN"
+          BACKEND_PREVIEW_URL=$(npx -y vercel@latest deploy --yes --org "$VERCEL_ORG_ID" --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN" --env DATABASE_URL="$DATABASE_URL" --env FIREBASE_SERVICE_ACCOUNT="$FIREBASE_SERVICE" --env FRONTEND_ORIGIN="*" --env PORT=4000)
           echo "BACKEND_PREVIEW_URL=$BACKEND_PREVIEW_URL" >> "$GITHUB_ENV"
       - name: Install frontend dependencies
         env:

@@ -142,7 +142,7 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
       }
 
       // Status filter
-      if (selectedStatus && selectedStatus.size > 0 && !selectedStatus.has(volunteer.status))
+      if (selectedStatus && selectedStatus.size > 0 && !selectedStatus.has(volunteer.status ?? ""))
         return false;
 
       // Program filter

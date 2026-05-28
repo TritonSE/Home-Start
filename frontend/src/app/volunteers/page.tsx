@@ -402,6 +402,22 @@ export default function Page() {
             itemsPerPage={itemsPerPage}
             setPageIndex={setCurrentPage}
           ></Pagination>
+
+          <button
+            type="button"
+            className={styles.sendMessageBtn}
+            onClick={handleSendMessage}
+            onMouseEnter={() => setSendMessageHovered(true)}
+            onMouseLeave={() => setSendMessageHovered(false)}
+            aria-label={`Send message${storeSelectedIds.length > 0 ? ` to ${storeSelectedIds.length} selected volunteer${storeSelectedIds.length === 1 ? "" : "s"}` : ""}`}
+          >
+            <Image
+              src={sendMessageHovered ? sendMessageHoverButton : sendMessageButton}
+              alt="Send Message"
+              width={sendMessageHovered ? 185 : 56}
+              height={56}
+            />
+          </button>
         </main>
         <VolunteerProfileModal
           volunteer={selectedVolunteer}

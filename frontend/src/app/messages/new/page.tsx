@@ -9,7 +9,6 @@ import styles from "./page.module.css";
 
 import type { MouseEvent } from "react";
 
-import { handleEmailClick } from "@/app/communication/page";
 import addPersonIconAsset from "@/assets/add_person_icon.svg";
 import blueChevronLeftAsset from "@/assets/blue_chevron_left.svg";
 import bluePlusAsset from "@/assets/blue_plus_alt.svg";
@@ -95,9 +94,18 @@ function Composer({
 
   const [, setDraftText] = useState(message);
 
+  const sendEmails = async () => {
+    setMode("email");
+    if (await initMsal()) {
+      return;
+    }
+
+    await signInWithOutlook();
+  };
+
   const switchToEmailTab = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    void handleEmailClick();
+    void sendEmails();
   };
 
   useEffect(() => {

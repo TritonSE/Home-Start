@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import styles from "./TemplateCreate.module.css";
 
@@ -21,12 +21,45 @@ type TemplateCreateProps = {
 const MAX_TITLE_LEN = 50;
 const MAX_SUBJECT_LEN = 50;
 const MAX_MESSAGE_LEN = 1000;
+const FIRST_NAME_TOKEN = "{{First Name}}";
+
+function tokenTextToHtml(text: string, pillClass: string) {
+  const escaped = text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+
+  const withPill = escaped.replaceAll(
+    FIRST_NAME_TOKEN,
+    `<span class="${pillClass}" contenteditable="false">First Name</span>`,
+  );
+
+  if (withPill.length === 0) {
+    return "";
+  }
+
+  const lines = withPill.split("\n");
+  const [firstLine, ...restLines] = lines;
+
+  let html = firstLine.length > 0 ? firstLine : "<br/>";
+
+  restLines.forEach((line) => {
+    html += line.length === 0 ? "<div><br/></div>" : `<div>${line}</div>`;
+  });
+
+  return html;
+}
 
 export function TemplateCreate({ onSave, title, message, subject, type }: TemplateCreateProps) {
+  const editorRef = useRef<HTMLDivElement | null>(null);
+  const isComposingRef = useRef(false);
+  const lastSyncedMessageRef = useRef(message);
+  const initializedRef = useRef(false);
+
   const [currTitle, setCurrTitle] = useState<string>(title);
   const [currMessage, setCurrMessage] = useState<string>(message);
   const [currSubject, setCurrSubject] = useState<string>(subject ?? "");
-  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setCurrTitle(title);
@@ -42,38 +75,106 @@ export function TemplateCreate({ onSave, title, message, subject, type }: Templa
     }
   }, [subject, type]);
 
-  const insertText = (text: string) => {
-    const textarea = inputRef.current;
-    if (!textarea || text.length + currMessage.length > MAX_MESSAGE_LEN) return;
+  useEffect(() => {
+    const el = editorRef.current;
+    if (!el) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
+    if (!initializedRef.current) {
+      el.innerHTML = tokenTextToHtml(currMessage, styles.pill);
+      initializedRef.current = true;
+      lastSyncedMessageRef.current = currMessage;
+      return;
+    }
 
-    const newValue = currMessage.substring(0, start) + text + currMessage.substring(end);
+    if (isComposingRef.current) return;
+    if (lastSyncedMessageRef.current === currMessage) return;
 
-    setCurrMessage(newValue);
-
-    // restore cursor
-    setTimeout(() => {
-      const newPos = start + text.length;
-      textarea.selectionStart = newPos;
-      textarea.selectionEnd = newPos;
-    }, 0);
-  };
+    el.innerHTML = tokenTextToHtml(currMessage, styles.pill);
+    lastSyncedMessageRef.current = currMessage;
+  }, [currMessage]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // const finalMessage = currMessage.replaceAll(FIRST_NAME_TOKEN, "[First name]");
     onSave(currTitle, currMessage, type, currSubject);
+  };
+
+  const readPlainTextFromEditor = useCallback(() => {
+    const el = editorRef.current;
+    if (!el) return "";
+    const clone = el.cloneNode(true) as HTMLElement;
+
+    clone.querySelectorAll(`.${styles.pill}`).forEach((node) => {
+      node.replaceWith(document.createTextNode(FIRST_NAME_TOKEN));
+    });
+
+    const htmlWithBreaks = clone.innerHTML.replace(/<div>/gi, "\n").replace(/<\/?p>/gi, "\n");
+
+    const textOnly = htmlWithBreaks.replace(/<[^>]+>/g, "");
+    const decoder = document.createElement("textarea");
+    decoder.innerHTML = textOnly;
+
+    const res = decoder.value.replace(/\u00A0/g, " ").replace(/\r\n/g, "\n");
+    return res;
+  }, []);
+
+  const insertFirstName = () => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    editor.focus();
+
+    const pill = document.createElement("span");
+    pill.className = styles.pill;
+    pill.setAttribute("contenteditable", "false");
+    pill.textContent = "First Name";
+
+    const space = document.createTextNode(" ");
+
+    const sel = window.getSelection();
+    if (!sel) return;
+
+    if (sel.rangeCount === 0) {
+      editor.appendChild(pill);
+      editor.appendChild(space);
+
+      const next = readPlainTextFromEditor();
+      lastSyncedMessageRef.current = next;
+      setCurrMessage(next);
+      return;
+    }
+
+    const range = sel.getRangeAt(0);
+
+    if (!editor.contains(range.commonAncestorContainer)) {
+      const end = document.createRange();
+      end.selectNodeContents(editor);
+      end.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(end);
+    }
+
+    const r = sel.getRangeAt(0);
+    r.deleteContents();
+    r.insertNode(space);
+    r.insertNode(pill);
+    r.setStartAfter(space);
+    r.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(r);
+
+    const next = readPlainTextFromEditor();
+    lastSyncedMessageRef.current = next;
+    setCurrMessage(next);
   };
 
   return (
     <div className={styles.content}>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.inputGroup}>
-          <p className={styles.label}>Enter Title of Template</p>
           <input
             className={styles.titleTextBox}
-            placeholder="Template title"
+            placeholder="Enter template title"
             value={currTitle}
             onChange={(e) => {
               setCurrTitle(e.target.value);
@@ -88,7 +189,7 @@ export function TemplateCreate({ onSave, title, message, subject, type }: Templa
             <>
               <input
                 className={styles.titleTextBox}
-                placeholder="Subject Line"
+                placeholder="Enter email Line"
                 value={currSubject}
                 onChange={(e) => {
                   setCurrSubject(e.target.value);
@@ -104,30 +205,38 @@ export function TemplateCreate({ onSave, title, message, subject, type }: Templa
         </div>
 
         <div className={styles.inputGroup}>
-          <p className={styles.label}>Message</p>
-          <textarea
-            className={styles.messageTextBox}
-            ref={inputRef}
-            placeholder="Compose your message..."
-            value={currMessage}
-            onChange={(e) => {
-              setCurrMessage(e.target.value);
+          <div
+            ref={editorRef}
+            className={styles.richEditor}
+            contentEditable
+            role="textbox"
+            aria-multiline="true"
+            data-placeholder="Compose your message..."
+            onInput={() => {
+              const next = readPlainTextFromEditor();
+              isComposingRef.current = true;
+              lastSyncedMessageRef.current = next;
+              setCurrMessage(next);
             }}
-            maxLength={MAX_MESSAGE_LEN}
-            required
+            onBlur={() => {
+              isComposingRef.current = false;
+            }}
+            onCompositionStart={() => {
+              isComposingRef.current = true;
+            }}
+            onCompositionEnd={() => {
+              isComposingRef.current = false;
+              const next = readPlainTextFromEditor();
+              lastSyncedMessageRef.current = next;
+              setCurrMessage(next);
+            }}
           />
           <p className={styles.characterLimit}>
             {currMessage.length}/{MAX_MESSAGE_LEN} Characters
           </p>
         </div>
         <div className={styles.insertSectionNew}>
-          <button
-            type="button"
-            className={styles.insertBtnNew}
-            onClick={() => {
-              insertText("[First Name]");
-            }}
-          >
+          <button type="button" className={styles.insertBtnNew} onClick={insertFirstName}>
             <Image src={bluePlus} alt="" width={20} height={20} />
             Insert First Name
           </button>

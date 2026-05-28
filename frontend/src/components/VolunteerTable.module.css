@@ -233,3 +233,7 @@
 .selectedRow td:nth-child(-n + 3) {
   background-color: #eef4fb !important;
 }
+
+.clickableRow {
+  cursor: pointer;
+}

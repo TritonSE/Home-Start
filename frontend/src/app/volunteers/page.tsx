@@ -1,19 +1,26 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 
 import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
+import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
 import styles from "@/app/page.module.css";
+import sendMessageButtonAsset from "@/assets/send_message_button.svg";
+import sendMessageHoverButtonAsset from "@/assets/send_message_hover_button.svg";
 import PageBar from "@/components/PageBar";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
 import VolunteerProfileModal from "@/components/VolunteerProfileModal";
 import VolunteerTable from "@/components/VolunteerTable";
+
+const sendMessageButton = sendMessageButtonAsset as string;
+const sendMessageHoverButton = sendMessageHoverButtonAsset as string;
 
 type PopulatedAssignment = {
   volunteerId: string;
@@ -28,6 +35,18 @@ type ProjectProgramMap = {
 };
 
 export default function Page() {
+  const router = useRouter();
+  const setMode = useTextingFlowStore((s) => s.setMode);
+  const setRecipientsPool = useTextingFlowStore((s) => s.setRecipientsPool);
+  const toggleRecipient = useTextingFlowStore((s) => s.toggleRecipient);
+  const toggleSelectAll = useTextingFlowStore((s) => s.toggleSelectAll);
+  const clearSelectedRecipients = useTextingFlowStore((s) => s.clearSelectedRecipients);
+  const storeSelectedIds = useTextingFlowStore((s) => s.selectedRecipientIds);
+
+  // Derive a Set from the store ids for efficient lookup in the table
+  const controlledSelectedIds = useMemo(() => new Set(storeSelectedIds), [storeSelectedIds]);
+
+  // Data state
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
 
@@ -37,11 +56,24 @@ export default function Page() {
   const [selectedAssignment, setSelectedAssignment] = useState<Set<string>>(new Set());
   const [selectedProgram, setSelectedProgram] = useState<Set<string>>(new Set());
 
+  // Clear selection whenever any filter changes to avoid invisibly selected volunteers
+  useEffect(() => {
+    clearSelectedRecipients();
+  }, [
+    search,
+    selectedProject,
+    selectedStatus,
+    selectedAssignment,
+    selectedProgram,
+    clearSelectedRecipients,
+  ]);
+
+  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [showImportSuccess, setShowImportSuccess] = useState(false);
+  const [sendMessageHovered, setSendMessageHovered] = useState(false);
   const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [selectedCount, setSelectedCount] = useState(0);
   const [sortOption, setSortOption] = useState<
     "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A"
   >("Newest");
@@ -131,6 +163,8 @@ export default function Page() {
 
       setVolunteers(volunteersWithTags);
       setTags(tagData);
+      // Keep the store's recipient pool in sync without wiping the current selection
+      setRecipientsPool(volunteersWithTags);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -288,6 +322,10 @@ export default function Page() {
     setShowImportSuccess(true);
   };
 
+  const handleSendMessage = useCallback(() => {
+    setMode("text");
+    void router.push("/communication");
+  }, [setMode, router]);
   const handleSheetClose = () => {
     setIsSheetOpen(false);
   };
@@ -341,7 +379,9 @@ export default function Page() {
             <VolunteerTable
               volunteers={displayedVolunteers}
               selectableVolunteers={filteredVolunteers}
-              onSelectedCountChange={setSelectedCount}
+              controlledSelectedIds={controlledSelectedIds}
+              onControlledToggleOne={toggleRecipient}
+              onControlledToggleAll={(scope) => toggleSelectAll(scope)}
               onVolunteerSelect={(v) => {
                 setSelectedVolunteer(v);
                 setIsSheetOpen(true);
@@ -349,7 +389,7 @@ export default function Page() {
             />
             <div className={styles.tableSummaryRow}>
               <span className={styles.tableSummaryLeft}>
-                {selectedCount > 0 ? `${selectedCount} selected` : ""}
+                {storeSelectedIds.length > 0 ? `${storeSelectedIds.length} selected` : ""}
               </span>
               <span className={styles.tableSummaryRight}>
                 Total volunteers: {filteredVolunteers.length}
@@ -363,6 +403,21 @@ export default function Page() {
             itemsPerPage={itemsPerPage}
             onPageChange={setCurrentPage}
           />
+          <button
+            type="button"
+            className={styles.sendMessageBtn}
+            onClick={handleSendMessage}
+            onMouseEnter={() => setSendMessageHovered(true)}
+            onMouseLeave={() => setSendMessageHovered(false)}
+            aria-label={`Send message${storeSelectedIds.length > 0 ? ` to ${storeSelectedIds.length} selected volunteer${storeSelectedIds.length === 1 ? "" : "s"}` : ""}`}
+          >
+            <Image
+              src={sendMessageHovered ? sendMessageHoverButton : sendMessageButton}
+              alt="Send Message"
+              width={sendMessageHovered ? 185 : 56}
+              height={56}
+            />
+          </button>
         </main>
         <VolunteerProfileModal
           volunteer={selectedVolunteer}

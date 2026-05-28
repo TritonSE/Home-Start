@@ -26,15 +26,12 @@ const volunteerSchema = new Schema({
   address: { type: addressSchema, default: undefined },
   birthday: { type: Date },
   preferredPronouns: { type: String },
-  startDate: { type: Date },
-  endDate: { type: Date },
+  dateCreated: { type: Date },
   effectiveDate: { type: Date },
   hours: { type: Number },
   wageRate: { type: Number },
-  groupIds: {
-    type: [{ type: Schema.Types.ObjectId, ref: "Group" }],
-    default: [],
-  },
+  groupTagIds: [{ type: Schema.Types.ObjectId, ref: "Tag" }],
+  programTagIds: [{ type: Schema.Types.ObjectId, ref: "Tag" }],
   additionalNotes: { type: String },
   mediaConsent: {
     type: String,

@@ -44,9 +44,14 @@ const makePhoneValidator = (path = "phoneNumber") =>
   body(path)
     .exists()
     .withMessage("phone is required")
-    .bail() // What kind of phone number do we want to enforce?
-    .isMobilePhone("any")
-    .withMessage("phoneNumber must be a valid mobile phone number")
+    .bail()
+    .custom((value: string) => {
+      const digitsOnly = value.replace(/\D/g, "");
+      if (digitsOnly.length !== 10) {
+        throw new Error("phoneNumber must be a valid phone number");
+      }
+      return true;
+    })
     .customSanitizer((value: string) => value.replace(/\D/g, ""));
 /*
  * makeStatusValidator is not currently used, but we may want to add a route in the future
@@ -61,6 +66,10 @@ const makeStatusValidator = (path = "status") =>
 */
 
 const tagsValidator = () => body("tags").optional().isArray();
+const statusValidator = () => body("status").optional().isIn(["new", "returning"]);
+const volunteerTypeTagsValidator = () => body("volunteerTypeTags").optional().isArray();
+const eventsValidator = () => body("events").optional().isArray();
+const additionalNotesValidator = () => body("additionalNotes").optional().isString();
 
 const batchUploadVolunteersValidator = () =>
   body("volunteers")
@@ -85,6 +94,23 @@ export const createVolunteerValidator = [
   makeEmailValidator(),
   makePhoneValidator(),
   tagsValidator(),
+  statusValidator(),
+  volunteerTypeTagsValidator(),
+  eventsValidator(),
+  additionalNotesValidator(),
+];
+
+export const updateVolunteerValidator = [
+  makeParamIDValidator(),
+  makeFirstNameValidator(),
+  makeLastNameValidator(),
+  makeEmailValidator(),
+  makePhoneValidator(),
+  tagsValidator(),
+  statusValidator(),
+  volunteerTypeTagsValidator(),
+  eventsValidator(),
+  additionalNotesValidator(),
 ];
 
 export const updateVolunteerContactValidator = [

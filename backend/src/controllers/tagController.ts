@@ -124,7 +124,8 @@ export const updateTag: RequestHandler = async (req, res, next) => {
 };
 
 export const deleteTag: RequestHandler = async (req, res, next) => {
-  const tagId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const rawTagId = req.params.id as string | string[];
+  const tagId = Array.isArray(rawTagId) ? rawTagId[0] : rawTagId;
 
   try {
     const tagObjectId = new Types.ObjectId(tagId);

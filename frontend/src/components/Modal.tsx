@@ -10,9 +10,11 @@ const icCloseLarge = icCloseLargeAsset as string;
 
 type ModalProps = {
   onClose: () => void;
+  onClick?: () => void;
   width: string;
   radius: string;
   title: string;
+  subtitle?: string;
   titleLineHeight: number;
   titleFontSize: string;
   padding: string;
@@ -22,9 +24,11 @@ type ModalProps = {
 
 export default function Modal({
   onClose,
+  onClick,
   width,
   radius,
   title,
+  subtitle,
   titleLineHeight,
   titleFontSize,
   padding,
@@ -35,14 +39,25 @@ export default function Modal({
     <div className={styles.overlay} onClick={onClose} style={{ zIndex: zIndex - 1 }}>
       <div
         className={styles.modal}
-        style={{ padding, width, borderRadius: radius, zIndex }}
-        onClick={(e) => e.stopPropagation()}
+        style={{ padding, width, borderRadius: radius }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick?.();
+        }}
       >
         <div className={styles.header} style={{ lineHeight: `${titleLineHeight}px` }}>
-          <p className={styles.title} style={{ fontSize: titleFontSize }}>
-            {title}
-          </p>
-          <button className={styles.close} onClick={onClose} aria-label="Close">
+          <div className={styles.titles} style={{ fontSize: titleFontSize }}>
+            <p className={styles.title}>{title}</p>
+            {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+          </div>
+          <button
+            className={styles.close}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            aria-label="Close"
+          >
             <Image
               src={icCloseLarge}
               alt="Close"

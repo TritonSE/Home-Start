@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useState } from "react";
 
 import styles from "./pagination.module.css";
 
@@ -23,6 +24,20 @@ export default function Pagination({
   const numOfPages = Math.ceil(totalItems / itemsPerPage);
   const isFirstPage = currentPage === 1;
   const isLastPage = currentPage === numOfPages;
+  const [text, setText] = useState("");
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      const target = e.target as HTMLInputElement;
+      const pageIndex = Math.max(1, Math.min(Number(target.value), numOfPages));
+      if (Number.isNaN(pageIndex)) {
+        setText("");
+        return;
+      }
+      setPageIndex(pageIndex);
+      setText("");
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -49,9 +64,16 @@ export default function Pagination({
           </button>
         </div>
         <div className={styles.middlePagination}>
-          <div className={styles.leftNumber}>{currentPage}</div>
+          <input
+            className={`${styles.number} ${styles.border}`}
+            type="text"
+            value={text}
+            onKeyDown={handleKeyDown}
+            onChange={(browserText) => setText(browserText.target.value)}
+            placeholder={String(currentPage)}
+          />
           <div className={styles.tripleDots}>...</div>
-          <div className={styles.rightNumber}>{numOfPages}</div>
+          <div className={styles.number}>{numOfPages}</div>
         </div>
         <div className={styles.rightPagination}>
           <button

@@ -9,12 +9,12 @@ import styles from "./page.module.css";
 
 import type { MouseEvent } from "react";
 
+import handleEmailClick from "@/app/communication/page";
 import addPersonIconAsset from "@/assets/add_person_icon.svg";
 import blueChevronLeftAsset from "@/assets/blue_chevron_left.svg";
 import bluePlusAsset from "@/assets/blue_plus_alt.svg";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
 import mdiInformationAsset from "@/assets/mdi_information.svg";
-import { initMsal, signInWithOutlook } from "@/auth/msal";
 import RecipientsPanel from "@/components/messages/RecipientsPanel";
 import Sidebar from "@/components/Sidebar";
 
@@ -91,18 +91,9 @@ function Composer({
 
   const [, setDraftText] = useState(message);
 
-  const sendEmails = async () => {
-    setMode("email");
-    if (await initMsal()) {
-      return;
-    }
-
-    await signInWithOutlook();
-  };
-
   const switchToEmailTab = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    void sendEmails();
+    void handleEmailClick();
   };
 
   useEffect(() => {

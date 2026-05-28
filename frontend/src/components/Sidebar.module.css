@@ -14,6 +14,9 @@
   border-radius: 16px 16px 0 0;
   border-top: 1px solid var(--Lofi-Gray-1, #e8e8e8);
   background: var(--Surface-page, #fbffff);
+
+  border-right: 1px solid var(--Lofi-Gray-3, #979797);
+  background: var(--Surface-page, #fbffff);
 }
 
 .logoWrap {
@@ -42,7 +45,7 @@
     justify-content: start;
     align-items: flex-start;
     gap: 0px;
-    padding: 0 20px;
+    padding: 0 30px;
 
     box-sizing: border-box;
   }
@@ -51,10 +54,10 @@
 .item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 
   padding: 16px 16px;
-  border-radius: 10px;
+  border-radius: 8px;
 
   color: #1a1a1a;
   text-decoration: none;
@@ -68,12 +71,40 @@
     transform 120ms ease;
 }
 
+.icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.label {
+  text-align: center;
+  font-family: "Open Sans";
+  font-size: var(--paragraph-md-font-size, 16px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-md-line-height, 20px); /* 125% */
+  letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
+}
+
 .item:hover {
-  background: rgba(161, 172, 193, 0.35);
+  background: none;
+}
+
+.item:hover .label {
+  color: var(--Text-headings, #141414);
+}
+
+.item:hover .icon {
+  filter: brightness(0);
 }
 
 .item:active {
   transform: scale(0.99);
+}
+
+.item:active .label {
+  color: var(--Text-txt-white, #fbffff);
 }
 
 .item:focus-visible {
@@ -82,13 +113,15 @@
 }
 
 .active {
-  background: #a1acc1;
+  background: none;
 }
 
-.icon {
-  width: 24px;
-  height: 24px;
-  display: block;
+.active .label {
+  color: var(--Text-txt-white, #fbffff);
+}
+
+.active .icon {
+  filter: invert(13%) sepia(24%) saturate(1312%) hue-rotate(186deg) brightness(40%) contrast(130%);
 }
 
 .label {
@@ -112,12 +145,28 @@
     border-radius: 0 0 0 0;
   }
 
+  .label {
+    display: inline;
+  }
+
   .logoWrap {
     display: flex;
     justify-content: center;
 
     margin-top: 4px;
     margin-bottom: 34px;
+  }
+
+  .item:hover {
+    background: var(--Surface-default, #ecf3f3);
+  }
+
+  .active {
+    background: var(--Surface-action, #1d3a6b);
+  }
+
+  .active .icon {
+    filter: invert(100%) sepia(100%) grayscale(100%) brightness(200%);
   }
 
   .logo {

@@ -12,7 +12,7 @@ import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore"
 import styles from "@/app/page.module.css";
 import sendMessageButtonAsset from "@/assets/send_message_button.svg";
 import sendMessageHoverButtonAsset from "@/assets/send_message_hover_button.svg";
-import PageBar from "@/components/PageBar";
+import Pagination from "@/components/messages/pagination";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
@@ -396,13 +396,13 @@ export default function Page() {
               </span>
             </div>
           </div>
-
-          <PageBar
+          <Pagination
             totalItems={filteredVolunteers.length}
             currentPage={currentPage}
             itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-          />
+            setPageIndex={setCurrentPage}
+          ></Pagination>
+
           <button
             type="button"
             className={styles.sendMessageBtn}

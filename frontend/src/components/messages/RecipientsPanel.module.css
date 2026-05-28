@@ -74,6 +74,19 @@
   white-space: normal;
 }
 
+.noRecipients {
+  top: 0;
+  padding: 20px 16px;
+  color: var(--Text-gray, #676767);
+  text-align: center;
+  font-family: "Open Sans";
+  font-size: var(--paragraph-md-font-size, 16px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--paragraph-md-line-height, 20px); /* 125% */
+  letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
+}
+
 .desktopFilterGroup {
   position: relative;
   flex: 0 1 auto;

@@ -16,6 +16,7 @@ import PageBar from "@/components/PageBar";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
+import VolunteerProfileModal from "@/components/VolunteerProfileModal";
 import VolunteerTable from "@/components/VolunteerTable";
 
 const sendMessageButton = sendMessageButtonAsset as string;
@@ -50,7 +51,6 @@ export default function Page() {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
 
-  // Filter states
   const [search, setSearch] = useState("");
   const [selectedProject, setSelectedProject] = useState<Set<string>>(new Set());
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
@@ -73,6 +73,9 @@ export default function Page() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showImportSuccess, setShowImportSuccess] = useState(false);
   const [sendMessageHovered, setSendMessageHovered] = useState(false);
+  const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedCount, setSelectedCount] = useState(0);
   const [sortOption, setSortOption] = useState<
     "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A"
   >("Newest");
@@ -86,34 +89,74 @@ export default function Page() {
         fetchVolunteerAssignments(),
         fetchProjectProgramMaps(),
       ]);
+
+      const tagById = new Map<string, VolunteerTag>();
+      for (const t of tagData) tagById.set(t._id, t);
+
       const programByProjectId = new Map<string, VolunteerTag>();
-      for (const map of projectProgramMapData as ProjectProgramMap[]) {
-        programByProjectId.set(map.projectTagId._id, map.programTagId);
+      for (const map of projectProgramMapData) {
+        const projectId =
+          typeof map.projectTagId === "string" ? map.projectTagId : map.projectTagId._id;
+        const programTag =
+          typeof map.programTagId === "string" ? tagById.get(map.programTagId) : map.programTagId;
+        if (projectId && programTag) programByProjectId.set(projectId, programTag);
       }
 
+      const resolveTag = (t?: string | VolunteerTag | null) => {
+        if (!t) return undefined;
+        return typeof t === "string" ? tagById.get(t) : t;
+      };
+
       const volunteersWithTags = volunteerData.map((volunteer) => {
-        const volunteerAssignments = (assignmentData as PopulatedAssignment[]).filter(
+        const volunteerAssignments = assignmentData.filter(
           (assignment) => assignment.volunteerId === volunteer._id,
         );
         const seenTagIds = new Set<string>();
         const volunteerTags: VolunteerTag[] = [];
 
         const pushTag = (tag: VolunteerTag | undefined) => {
-          if (!tag || seenTagIds.has(tag._id)) {
-            return;
-          }
-
+          if (!tag || seenTagIds.has(tag._id)) return;
           seenTagIds.add(tag._id);
           volunteerTags.push(tag);
         };
 
+        // Add assignment and project tags
         for (const assignment of volunteerAssignments) {
-          pushTag(assignment.assignmentTagId);
-          pushTag(assignment.projectTagId);
-          pushTag(programByProjectId.get(assignment.projectTagId._id));
+          pushTag(resolveTag(assignment.assignmentTagId));
+          pushTag(resolveTag(assignment.projectTagId));
 
-          for (const shiftTag of assignment.shiftTagIds ?? []) {
-            pushTag(shiftTag);
+          const projTag = resolveTag(assignment.projectTagId);
+          pushTag(projTag ? programByProjectId.get(projTag._id) : undefined);
+
+          for (const shiftTag of assignment.shiftTagIds ?? []) pushTag(resolveTag(shiftTag));
+        }
+
+        // Add group tags from groupIds
+        if (Array.isArray(volunteer.groupIds) && volunteer.groupIds.length > 0) {
+          for (const groupId of volunteer.groupIds) {
+            const groupTag = tagData.find((tag) => tag._id === groupId);
+            pushTag(groupTag);
+          }
+        }
+
+        // Add directly saved group/program tags so filters use the latest edits.
+        if (Array.isArray(volunteer.groupTagIds) && volunteer.groupTagIds.length > 0) {
+          for (const groupTag of volunteer.groupTagIds) {
+            if (typeof groupTag === "string") {
+              pushTag(tagData.find((tag) => tag._id === groupTag));
+            } else {
+              pushTag(groupTag);
+            }
+          }
+        }
+
+        if (Array.isArray(volunteer.programTagIds) && volunteer.programTagIds.length > 0) {
+          for (const programTag of volunteer.programTagIds) {
+            if (typeof programTag === "string") {
+              pushTag(tagData.find((tag) => tag._id === programTag));
+            } else {
+              pushTag(programTag);
+            }
           }
         }
 
@@ -176,17 +219,16 @@ export default function Page() {
     void loadVolunteers();
   }, []);
 
-  // Project dropdown should only include projects currently assigned to volunteers.
   const projectTags = [
     ...new Set(
       volunteers
-        .flatMap((volunteer) => volunteer.tags ?? [])
-        .filter((tag) => tag.type === "project")
-        .map((tag) => tag.name),
+        .flatMap((v) => v.tags ?? [])
+        .filter((t) => t.type === "project")
+        .map((t) => t.name),
     ),
   ];
-  const assignmentTags = tags.filter((tag) => tag.type === "assignment").map((tag) => tag.name);
-  const programTags = tags.filter((tag) => tag.type === "program").map((tag) => tag.name);
+  const assignmentTags = tags.filter((t) => t.type === "assignment").map((t) => t.name);
+  const programTags = tags.filter((t) => t.type === "program").map((t) => t.name);
 
   // Apply ALL filters here (search + tags)
   const filteredVolunteers = useMemo(() => {
@@ -217,7 +259,6 @@ export default function Page() {
         if (!hasMatchingProgram) return false;
       }
 
-      // Status filter
       if (selectedStatus && volunteer.status !== selectedStatus) return false;
 
       // Search filter (includes first/last/full name, phone, email)
@@ -230,14 +271,14 @@ export default function Page() {
         const phoneNumber = (volunteer.phoneNumber ?? "").toLowerCase();
         const email = (volunteer.email ?? "").toLowerCase();
 
-        const matchesSearch =
+        const matches =
           firstName.includes(query) ||
           lastName.includes(query) ||
           fullName.includes(query) ||
           reverseFullName.includes(query) ||
-          phoneNumber.includes(query) ||
-          email.includes(query);
-        if (!matchesSearch) return false;
+          email.includes(query) ||
+          phoneNumber?.includes(query);
+        if (!matches) return false;
       }
 
       return true;
@@ -257,9 +298,9 @@ export default function Page() {
 
     switch (sortOption) {
       case "Newest":
-        return sorted.sort((a, b) => toTime(b.startDate) - toTime(a.startDate));
+        return sorted.sort((a, b) => toTime(b.dateCreated) - toTime(a.dateCreated));
       case "Oldest":
-        return sorted.sort((a, b) => toTime(a.startDate) - toTime(b.startDate));
+        return sorted.sort((a, b) => toTime(a.dateCreated) - toTime(b.dateCreated));
       case "First Name A-Z":
         return sorted.sort((a, b) => a.firstName.localeCompare(b.firstName));
       case "First Name Z-A":
@@ -287,6 +328,9 @@ export default function Page() {
     setMode("text");
     void router.push("/communication");
   }, [setMode, router]);
+  const handleSheetClose = () => {
+    setIsSheetOpen(false);
+  };
 
   return (
     <Sidebar>
@@ -312,13 +356,16 @@ export default function Page() {
               ></button>
             </div>
           )}
+
           <TitleBar onImportComplete={handleImportComplete} />
+
           <SearchBar
             search={search}
             setSearch={handleSearchChange}
             projectTags={projectTags}
             assignmentTags={assignmentTags}
             programTags={programTags}
+            sortType={sortOption}
             selectedProject={selectedProject}
             setSelectedProject={handleSelectedProjectChange}
             selectedStatus={selectedStatus}
@@ -327,9 +374,9 @@ export default function Page() {
             setSelectedAssignment={handleSelectedAssignmentChange}
             selectedProgram={selectedProgram}
             setSelectedProgram={handleSelectedProgramChange}
-            sortType={sortOption}
             onSortOptionChange={handleSortOptionChange}
           />
+
           <div className={styles.tableSection}>
             <VolunteerTable
               volunteers={displayedVolunteers}
@@ -337,6 +384,11 @@ export default function Page() {
               controlledSelectedIds={controlledSelectedIds}
               onControlledToggleOne={toggleRecipient}
               onControlledToggleAll={(scope) => toggleSelectAll(scope)}
+              onSelectedCountChange={setSelectedCount}
+              onVolunteerSelect={(v) => {
+                setSelectedVolunteer(v);
+                setIsSheetOpen(true);
+              }}
             />
             <div className={styles.tableSummaryRow}>
               <span className={styles.tableSummaryLeft}>
@@ -347,6 +399,7 @@ export default function Page() {
               </span>
             </div>
           </div>
+
           <PageBar
             totalItems={filteredVolunteers.length}
             currentPage={currentPage}
@@ -369,6 +422,15 @@ export default function Page() {
             />
           </button>
         </main>
+        <VolunteerProfileModal
+          volunteer={selectedVolunteer}
+          isOpen={isSheetOpen}
+          onClose={handleSheetClose}
+          onVolunteerUpdated={(updatedVolunteer) => {
+            setSelectedVolunteer(updatedVolunteer);
+            void loadVolunteers();
+          }}
+        />
       </div>
     </Sidebar>
   );

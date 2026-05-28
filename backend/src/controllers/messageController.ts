@@ -109,7 +109,18 @@ export const sendEmails = async (req: Request, res: Response, next: NextFunction
       return;
     }
 
-    res.status(200).json({ sent: recipients.length });
+    const newMessage = await MessageModel.create({
+      recipients: recipients.map((recipient) => recipient._id),
+      type: "email",
+      subject,
+      body: message,
+      status: "sent",
+    });
+
+    res.status(200).json({
+      sent: recipients.length,
+      message: newMessage,
+    });
   } catch (error) {
     next(error);
   }

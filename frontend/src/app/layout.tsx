@@ -45,6 +45,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${openSans.variable} ${viga.variable} ${styles.body}`}
+        suppressHydrationWarning
       >
         <AuthProvider>
           <AuthGate>{children}</AuthGate>

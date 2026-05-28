@@ -51,6 +51,7 @@
   border-radius: 8px;
   border: 1px solid #e8e8e8;
   height: 216px;
+  overflow-y: auto;
 }
 
 .useFixed {
@@ -58,7 +59,6 @@
   background: transparent;
   box-shadow: none;
   border-top: none;
-  max-width: 720px;
   margin: 24px 0px 0px;
   width: 100%;
 }
@@ -84,6 +84,23 @@
   font-size: var(--paragraph-md-font-size, 16px);
   font-style: normal;
   font-weight: 400;
+  line-height: var(--paragraph-md-line-height, 20px); /* 125% */
+  letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
+}
+
+.pill {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #b0c7d0;
+  line-height: 1;
+
+  color: #000;
+  /* Body/md-semibold */
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-md-font-size, 16px);
+  font-style: normal;
+  font-weight: 700;
   line-height: var(--paragraph-md-line-height, 20px); /* 125% */
   letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
 }

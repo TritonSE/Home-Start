@@ -32,14 +32,14 @@ export default function Modal({
   titleLineHeight,
   titleFontSize,
   padding,
-  zIndex = 3,
+  zIndex = 1000,
   children,
 }: ModalProps) {
   return (
     <div className={styles.overlay} onClick={onClose} style={{ zIndex: zIndex - 1 }}>
       <div
         className={styles.modal}
-        style={{ padding, width, borderRadius: radius }}
+        style={{ padding, width, borderRadius: radius, zIndex }}
         onClick={(e) => {
           e.stopPropagation();
           onClick?.();

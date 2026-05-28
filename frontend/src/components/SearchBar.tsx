@@ -198,28 +198,30 @@ export default function SearchBar({
           {items
             .filter((item) => item.toLowerCase().includes(tagSearch.toLowerCase()))
             .map((item) => (
-              <div
+              <button
                 key={item}
+                type="button"
                 className={`${styles.dropdownItem} ${selected.has(item) ? styles.dropdownItemSelected : ""}`}
-                role="menuitem"
+                role="menuitemcheckbox"
+                aria-checked={selected.has(item)}
+                onClick={() => toggleTag(item, cat)}
               >
-                <button
+                <span
                   className={`${styles.checkBox} ${selected.has(item) ? styles.checkBoxChecked : ""}`}
-                  onClick={() => toggleTag(item, cat)}
-                  type="button"
+                  aria-hidden="true"
                 >
                   {selected.has(item) && (
                     <Image
                       src={checkboxIcon}
-                      alt="checked"
+                      alt=""
                       className={styles.checkIcon}
                       width={16}
                       height={16}
                     />
                   )}
-                </button>
+                </span>
                 <div className={styles.filterLabel}>{formatOptionLabel(item, cat)}</div>
-              </div>
+              </button>
             ))}
         </div>
 
@@ -266,9 +268,7 @@ export default function SearchBar({
                 <Image
                   src={open === "status" ? caretUpIcon : caretDownIcon}
                   alt="Caret down"
-                  className={styles.pillTagIcon}
-                  width={16}
-                  height={16}
+                  className={`${styles.pillTagIcon} ${open === "status" ? "" : styles.pillTagIconSmall}`}
                 ></Image>
               </span>
             </span>
@@ -285,13 +285,14 @@ export default function SearchBar({
             >
               <span className={styles.pillTagContent}>
                 <span className={styles.pillTagText}>Assignment</span>
-                <span className={styles.pillTagIconBox} aria-hidden="true">
+                <span
+                  className={`${styles.pillTagIconBox} ${open === "assignment" ? "" : styles.pillTagIconBoxSmall}`}
+                  aria-hidden="true"
+                >
                   <Image
                     src={open === "assignment" ? caretUpIcon : caretDownIcon}
                     alt="Caret down"
-                    className={styles.pillTagIcon}
-                    width={16}
-                    height={16}
+                    className={`${styles.pillTagIcon} ${open === "assignment" ? "" : styles.pillTagIconSmall}`}
                   />
                 </span>
               </span>
@@ -309,13 +310,14 @@ export default function SearchBar({
             >
               <span className={styles.pillTagContent}>
                 <span className={styles.pillTagText}>Project</span>
-                <span className={styles.pillTagIconBox} aria-hidden="true">
+                <span
+                  className={`${styles.pillTagIconBox} ${open === "project" ? "" : styles.pillTagIconBoxSmall}`}
+                  aria-hidden="true"
+                >
                   <Image
                     src={open === "project" ? caretUpIcon : caretDownIcon}
                     alt="Caret down"
-                    className={styles.pillTagIcon}
-                    width={16}
-                    height={16}
+                    className={`${styles.pillTagIcon} ${open === "project" ? "" : styles.pillTagIconSmall}`}
                   />
                 </span>
               </span>
@@ -333,13 +335,14 @@ export default function SearchBar({
             >
               <span className={styles.pillTagContent}>
                 <span className={styles.pillTagText}>Program</span>
-                <span className={styles.pillTagIconBox} aria-hidden="true">
+                <span
+                  className={`${styles.pillTagIconBox} ${open === "program" ? "" : styles.pillTagIconBoxSmall}`}
+                  aria-hidden="true"
+                >
                   <Image
                     src={open === "program" ? caretUpIcon : caretDownIcon}
                     alt="Caret down"
-                    className={styles.pillTagIcon}
-                    width={16}
-                    height={16}
+                    className={`${styles.pillTagIcon} ${open === "program" ? "" : styles.pillTagIconSmall}`}
                   />
                 </span>
               </span>

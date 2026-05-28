@@ -18,6 +18,7 @@ type ModalProps = {
   titleLineHeight: number;
   titleFontSize: string;
   padding: string;
+  zIndex?: number;
   children?: ReactNode;
 };
 
@@ -31,10 +32,11 @@ export default function Modal({
   titleLineHeight,
   titleFontSize,
   padding,
+  zIndex = 3,
   children,
 }: ModalProps) {
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay} onClick={onClose} style={{ zIndex: zIndex - 1 }}>
       <div
         className={styles.modal}
         style={{ padding, width, borderRadius: radius }}

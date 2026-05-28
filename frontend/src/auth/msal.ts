@@ -28,6 +28,7 @@ export async function initMsal(): Promise<AccountInfo | undefined> {
       });
       account = result?.account;
     } catch (e) {
+      sessionStorage.removeItem("success-toast");
       console.error("MSAL Redirect Error:", e);
     }
 

@@ -10,7 +10,6 @@ import type { CreateTemplateRequest, Template } from "@/app/api/template";
 
 import { getTemplate, TemplateType, updateTemplate } from "@/app/api/template";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
-import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 import { TemplateCreate } from "@/components/TemplateCreate";
 
@@ -20,7 +19,6 @@ function EditTemplateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const templateId = searchParams.get("templateId") ?? "";
-  const [showSuccess, setShowSuccess] = useState(false);
   const [template, setTemplate] = useState<Template | undefined>(undefined);
 
   useEffect(() => {
@@ -49,7 +47,8 @@ function EditTemplateContent() {
     updateTemplate(templateId, createTemplateRequest)
       .then((result) => {
         if (result.success) {
-          setShowSuccess(true);
+          sessionStorage.setItem("success-toast", "Your template was saved.");
+          void router.push("/messages/templates");
         } else {
           console.error(result.error);
         }
@@ -59,20 +58,9 @@ function EditTemplateContent() {
       });
   };
 
-  const onToastDone = () => {
-    setShowSuccess(false);
-    void router.push("/messages/templates");
-  };
-
   return (
     <Sidebar>
       <div className={styles.page}>
-        <SuccessToast
-          open={showSuccess}
-          message="Your template was saved."
-          durationMs={2600}
-          onDone={onToastDone}
-        />
         <header className={styles.header}>
           <Image src={icCaretLeft} alt="" width={40} height={40} onClick={() => router.back()} />
           <h1 className={styles.headerTitle}>Edit</h1>

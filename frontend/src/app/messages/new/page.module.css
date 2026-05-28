@@ -59,6 +59,42 @@
   -webkit-appearance: none;
 }
 
+.templateBtn {
+  width: 40px;
+  height: 40px;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 100px;
+  border: 1px solid var(--Icons-ic-action, #1d3a6b);
+}
+
+.templateBtnDesktop {
+  width: 56px;
+  height: 56px;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+
+  border-radius: 8px;
+  border: 1px solid #1d3a6b;
+  background: var(--Surface-page, #fbffff);
+}
+
 .content {
   display: flex;
   justify-content: center;
@@ -446,6 +482,7 @@
     justify-content: center;
     flex: 0 0 auto;
     max-width: 760px;
+    gap: 12px;
   }
 
   .desktopReview .reviewBtn,

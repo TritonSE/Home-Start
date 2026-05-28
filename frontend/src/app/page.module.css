@@ -78,6 +78,29 @@
   color: #1f6b3a;
 }
 
+.sendMessageBtn {
+  position: sticky;
+  bottom: 40px;
+  align-self: flex-end;
+  z-index: 100;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  transition: transform 120ms ease;
+}
+
+.sendMessageBtn:active {
+  transform: scale(0.95);
+}
+
+.sendMessageBtn img {
+  transition: width 150ms ease;
+}
+
 .tableSummaryRow {
   width: 100%;
   display: flex;

@@ -1,18 +1,26 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 
 import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
+import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
 import styles from "@/app/page.module.css";
+import sendMessageButtonAsset from "@/assets/send_message_button.svg";
+import sendMessageHoverButtonAsset from "@/assets/send_message_hover_button.svg";
 import Pagination from "@/components/messages/pagination";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
+import VolunteerProfileModal from "@/components/VolunteerProfileModal";
 import VolunteerTable from "@/components/VolunteerTable";
+
+const sendMessageButton = sendMessageButtonAsset as string;
+const sendMessageHoverButton = sendMessageHoverButtonAsset as string;
 
 type PopulatedAssignment = {
   volunteerId: string;
@@ -27,21 +35,45 @@ type ProjectProgramMap = {
 };
 
 export default function Page() {
+  const router = useRouter();
+  const setMode = useTextingFlowStore((s) => s.setMode);
+  const setRecipientsPool = useTextingFlowStore((s) => s.setRecipientsPool);
+  const toggleRecipient = useTextingFlowStore((s) => s.toggleRecipient);
+  const toggleSelectAll = useTextingFlowStore((s) => s.toggleSelectAll);
+  const clearSelectedRecipients = useTextingFlowStore((s) => s.clearSelectedRecipients);
+  const storeSelectedIds = useTextingFlowStore((s) => s.selectedRecipientIds);
+
+  // Derive a Set from the store ids for efficient lookup in the table
+  const controlledSelectedIds = useMemo(() => new Set(storeSelectedIds), [storeSelectedIds]);
+
   // Data state
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
 
-  // Filter states
   const [search, setSearch] = useState("");
   const [selectedProject, setSelectedProject] = useState<Set<string>>(new Set());
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedAssignment, setSelectedAssignment] = useState<Set<string>>(new Set());
   const [selectedProgram, setSelectedProgram] = useState<Set<string>>(new Set());
 
+  // Clear selection whenever any filter changes to avoid invisibly selected volunteers
+  useEffect(() => {
+    clearSelectedRecipients();
+  }, [
+    search,
+    selectedProject,
+    selectedStatus,
+    selectedAssignment,
+    selectedProgram,
+    clearSelectedRecipients,
+  ]);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [showImportSuccess, setShowImportSuccess] = useState(false);
-  const [selectedCount, setSelectedCount] = useState(0);
+  const [sendMessageHovered, setSendMessageHovered] = useState(false);
+  const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [sortOption, setSortOption] = useState<
     "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A"
   >("Newest");
@@ -55,34 +87,74 @@ export default function Page() {
         fetchVolunteerAssignments(),
         fetchProjectProgramMaps(),
       ]);
+
+      const tagById = new Map<string, VolunteerTag>();
+      for (const t of tagData) tagById.set(t._id, t);
+
       const programByProjectId = new Map<string, VolunteerTag>();
-      for (const map of projectProgramMapData as ProjectProgramMap[]) {
-        programByProjectId.set(map.projectTagId._id, map.programTagId);
+      for (const map of projectProgramMapData) {
+        const projectId =
+          typeof map.projectTagId === "string" ? map.projectTagId : map.projectTagId._id;
+        const programTag =
+          typeof map.programTagId === "string" ? tagById.get(map.programTagId) : map.programTagId;
+        if (projectId && programTag) programByProjectId.set(projectId, programTag);
       }
 
+      const resolveTag = (t?: string | VolunteerTag | null) => {
+        if (!t) return undefined;
+        return typeof t === "string" ? tagById.get(t) : t;
+      };
+
       const volunteersWithTags = volunteerData.map((volunteer) => {
-        const volunteerAssignments = (assignmentData as PopulatedAssignment[]).filter(
+        const volunteerAssignments = assignmentData.filter(
           (assignment) => assignment.volunteerId === volunteer._id,
         );
         const seenTagIds = new Set<string>();
         const volunteerTags: VolunteerTag[] = [];
 
         const pushTag = (tag: VolunteerTag | undefined) => {
-          if (!tag || seenTagIds.has(tag._id)) {
-            return;
-          }
-
+          if (!tag || seenTagIds.has(tag._id)) return;
           seenTagIds.add(tag._id);
           volunteerTags.push(tag);
         };
 
+        // Add assignment and project tags
         for (const assignment of volunteerAssignments) {
-          pushTag(assignment.assignmentTagId);
-          pushTag(assignment.projectTagId);
-          pushTag(programByProjectId.get(assignment.projectTagId._id));
+          pushTag(resolveTag(assignment.assignmentTagId));
+          pushTag(resolveTag(assignment.projectTagId));
 
-          for (const shiftTag of assignment.shiftTagIds ?? []) {
-            pushTag(shiftTag);
+          const projTag = resolveTag(assignment.projectTagId);
+          pushTag(projTag ? programByProjectId.get(projTag._id) : undefined);
+
+          for (const shiftTag of assignment.shiftTagIds ?? []) pushTag(resolveTag(shiftTag));
+        }
+
+        // Add group tags from groupIds
+        if (Array.isArray(volunteer.groupIds) && volunteer.groupIds.length > 0) {
+          for (const groupId of volunteer.groupIds) {
+            const groupTag = tagData.find((tag) => tag._id === groupId);
+            pushTag(groupTag);
+          }
+        }
+
+        // Add directly saved group/program tags so filters use the latest edits.
+        if (Array.isArray(volunteer.groupTagIds) && volunteer.groupTagIds.length > 0) {
+          for (const groupTag of volunteer.groupTagIds) {
+            if (typeof groupTag === "string") {
+              pushTag(tagData.find((tag) => tag._id === groupTag));
+            } else {
+              pushTag(groupTag);
+            }
+          }
+        }
+
+        if (Array.isArray(volunteer.programTagIds) && volunteer.programTagIds.length > 0) {
+          for (const programTag of volunteer.programTagIds) {
+            if (typeof programTag === "string") {
+              pushTag(tagData.find((tag) => tag._id === programTag));
+            } else {
+              pushTag(programTag);
+            }
           }
         }
 
@@ -91,6 +163,8 @@ export default function Page() {
 
       setVolunteers(volunteersWithTags);
       setTags(tagData);
+      // Keep the store's recipient pool in sync without wiping the current selection
+      setRecipientsPool(volunteersWithTags);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -143,17 +217,16 @@ export default function Page() {
     void loadVolunteers();
   }, []);
 
-  // Project dropdown should only include projects currently assigned to volunteers.
   const projectTags = [
     ...new Set(
       volunteers
-        .flatMap((volunteer) => volunteer.tags ?? [])
-        .filter((tag) => tag.type === "project")
-        .map((tag) => tag.name),
+        .flatMap((v) => v.tags ?? [])
+        .filter((t) => t.type === "project")
+        .map((t) => t.name),
     ),
   ];
-  const assignmentTags = tags.filter((tag) => tag.type === "assignment").map((tag) => tag.name);
-  const programTags = tags.filter((tag) => tag.type === "program").map((tag) => tag.name);
+  const assignmentTags = tags.filter((t) => t.type === "assignment").map((t) => t.name);
+  const programTags = tags.filter((t) => t.type === "program").map((t) => t.name);
 
   // Apply ALL filters here (search + tags)
   const filteredVolunteers = useMemo(() => {
@@ -184,7 +257,6 @@ export default function Page() {
         if (!hasMatchingProgram) return false;
       }
 
-      // Status filter
       if (selectedStatus && volunteer.status !== selectedStatus) return false;
 
       // Search filter (includes first/last/full name, phone, email)
@@ -197,14 +269,14 @@ export default function Page() {
         const phoneNumber = (volunteer.phoneNumber ?? "").toLowerCase();
         const email = (volunteer.email ?? "").toLowerCase();
 
-        const matchesSearch =
+        const matches =
           firstName.includes(query) ||
           lastName.includes(query) ||
           fullName.includes(query) ||
           reverseFullName.includes(query) ||
-          phoneNumber.includes(query) ||
-          email.includes(query);
-        if (!matchesSearch) return false;
+          email.includes(query) ||
+          phoneNumber?.includes(query);
+        if (!matches) return false;
       }
 
       return true;
@@ -224,9 +296,9 @@ export default function Page() {
 
     switch (sortOption) {
       case "Newest":
-        return sorted.sort((a, b) => toTime(b.startDate) - toTime(a.startDate));
+        return sorted.sort((a, b) => toTime(b.dateCreated) - toTime(a.dateCreated));
       case "Oldest":
-        return sorted.sort((a, b) => toTime(a.startDate) - toTime(b.startDate));
+        return sorted.sort((a, b) => toTime(a.dateCreated) - toTime(b.dateCreated));
       case "First Name A-Z":
         return sorted.sort((a, b) => a.firstName.localeCompare(b.firstName));
       case "First Name Z-A":
@@ -248,6 +320,14 @@ export default function Page() {
   const handleImportComplete = () => {
     void loadVolunteers();
     setShowImportSuccess(true);
+  };
+
+  const handleSendMessage = useCallback(() => {
+    setMode("text");
+    void router.push("/communication");
+  }, [setMode, router]);
+  const handleSheetClose = () => {
+    setIsSheetOpen(false);
   };
 
   return (
@@ -274,13 +354,16 @@ export default function Page() {
               ></button>
             </div>
           )}
+
           <TitleBar onImportComplete={handleImportComplete} />
+
           <SearchBar
             search={search}
             setSearch={handleSearchChange}
             projectTags={projectTags}
             assignmentTags={assignmentTags}
             programTags={programTags}
+            sortType={sortOption}
             selectedProject={selectedProject}
             setSelectedProject={handleSelectedProjectChange}
             selectedStatus={selectedStatus}
@@ -289,18 +372,24 @@ export default function Page() {
             setSelectedAssignment={handleSelectedAssignmentChange}
             selectedProgram={selectedProgram}
             setSelectedProgram={handleSelectedProgramChange}
-            sortType={sortOption}
             onSortOptionChange={handleSortOptionChange}
           />
+
           <div className={styles.tableSection}>
             <VolunteerTable
               volunteers={displayedVolunteers}
               selectableVolunteers={filteredVolunteers}
-              onSelectedCountChange={setSelectedCount}
+              controlledSelectedIds={controlledSelectedIds}
+              onControlledToggleOne={toggleRecipient}
+              onControlledToggleAll={(scope) => toggleSelectAll(scope)}
+              onVolunteerSelect={(v) => {
+                setSelectedVolunteer(v);
+                setIsSheetOpen(true);
+              }}
             />
             <div className={styles.tableSummaryRow}>
               <span className={styles.tableSummaryLeft}>
-                {selectedCount > 0 ? `${selectedCount} selected` : ""}
+                {storeSelectedIds.length > 0 ? `${storeSelectedIds.length} selected` : ""}
               </span>
               <span className={styles.tableSummaryRight}>
                 Total volunteers: {filteredVolunteers.length}
@@ -314,6 +403,15 @@ export default function Page() {
             setPageIndex={setCurrentPage}
           ></Pagination>
         </main>
+        <VolunteerProfileModal
+          volunteer={selectedVolunteer}
+          isOpen={isSheetOpen}
+          onClose={handleSheetClose}
+          onVolunteerUpdated={(updatedVolunteer) => {
+            setSelectedVolunteer(updatedVolunteer);
+            void loadVolunteers();
+          }}
+        />
       </div>
     </Sidebar>
   );

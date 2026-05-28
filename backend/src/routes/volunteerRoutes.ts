@@ -32,6 +32,7 @@ router.get("/", volunteer.getVolunteers);
 router.delete("/:id", volunteer.deleteVolunteer);
 
 router.post("/", VolunteerValidator.createVolunteerValidator, volunteer.createVolunteer);
+router.put("/:id", VolunteerValidator.updateVolunteerValidator, volunteer.updateVolunteer);
 router.put(
   "/contact/:id",
   VolunteerValidator.updateVolunteerContactValidator,

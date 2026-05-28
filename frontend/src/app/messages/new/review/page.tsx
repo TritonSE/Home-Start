@@ -8,12 +8,12 @@ import { useTextingFlowStore } from "../_store/textingFlowStore";
 
 import styles from "./page.module.css";
 
+import { createMessageHistory } from "@/app/api/messages";
 import { fetchVolunteers } from "@/app/api/volunteer";
 import backIconAsset from "@/assets/back.svg";
 import groupsIconAsset from "@/assets/ic_volunteers_alt.svg";
 import { getGraphToken, signInWithOutlook } from "@/auth/msal";
 import RecipientsPanel from "@/components/messages/RecipientsPanel";
-import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 import { auth } from "@/firebase/firebase";
 
@@ -59,11 +59,17 @@ export default function ReviewAndSendPage() {
     return (message || "").includes(FIRST_NAME_TOKEN);
   }, [message]);
 
-  const canSend = recipientsCount > 0 && (message || "").trim().length > 0;
+  const canSend =
+    recipientsCount > 0 &&
+    (message || "").trim().length > 0 &&
+    (mode === "text" || (subject || "").trim().length > 0);
 
   const [sending, setSending] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+
+  const successMessage = useMemo(() => {
+    return `Your message has successfully\nbeen sent to ${recipientsCount} volunteers.`;
+  }, [recipientsCount]);
 
   const handleSend = async () => {
     if (!canSend || sending) return;
@@ -113,23 +119,43 @@ export default function ReviewAndSendPage() {
           setSendError(err.error ?? "Failed to send emails. Please try again.");
           return;
         }
+
+        const historyResult = await createMessageHistory({
+          recipients: selectedRecipientIds,
+          type: "email",
+          subject,
+          body: message,
+          status: "sent",
+        });
+
+        if (!historyResult.success) {
+          setSendError(historyResult.error);
+          return;
+        }
       }
 
-      setShowSuccess(true);
+      if (mode === "text") {
+        const historyResult = await createMessageHistory({
+          recipients: selectedRecipientIds,
+          type: "text",
+          subject: null,
+          body: message,
+          status: "sent",
+        });
+
+        if (!historyResult.success) {
+          setSendError(historyResult.error);
+          return;
+        }
+      }
+
+      sessionStorage.setItem("success-toast", successMessage);
+      resetDraft();
+      router.replace("/communication");
     } finally {
       setSending(false);
     }
   };
-
-  const successMessage = useMemo(() => {
-    return `Your message has successfully\nbeen sent to ${recipientsCount} volunteers.`;
-  }, [recipientsCount]);
-
-  const onToastDone = useCallback(() => {
-    setShowSuccess(false);
-    resetDraft();
-    router.replace("/communication");
-  }, [resetDraft, router]);
 
   const ReviewContent = () => (
     <>
@@ -222,13 +248,6 @@ export default function ReviewAndSendPage() {
   return (
     <Sidebar>
       <div className={styles.page}>
-        <SuccessToast
-          open={showSuccess}
-          message={successMessage}
-          durationMs={2600}
-          onDone={onToastDone}
-        />
-
         {!isDesktop ? (
           <>
             <header className={styles.header}>

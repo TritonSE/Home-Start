@@ -14,6 +14,8 @@ import importExportAsset from "@/assets/ion_document.svg";
 import mailAsset from "@/assets/mail.svg";
 import LogoutButton from "@/components/LogoutButton";
 import LogoutModal from "@/components/LogoutModal";
+// Temp for hardcoded data
+import { MessageHistory } from "@/components/MessageHistorySections";
 import Sidebar from "@/components/Sidebar";
 import { auth } from "@/firebase/firebase";
 
@@ -102,6 +104,7 @@ export default function Dashboard() {
             })}
           </div>
         </div>
+        <MessageHistory />
         <LogoutButton onLogout={() => setShowLogoutModal(true)} />
         {showLogoutModal && (
           <LogoutModal

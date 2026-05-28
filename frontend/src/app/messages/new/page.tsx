@@ -15,13 +15,17 @@ import blueChevronLeftAsset from "@/assets/blue_chevron_left.svg";
 import bluePlusAsset from "@/assets/blue_plus_alt.svg";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
 import mdiInformationAsset from "@/assets/mdi_information.svg";
+import ouiCopyAsset from "@/assets/oui_copy.svg";
+import { initMsal, signInWithOutlook } from "@/auth/msal";
 import RecipientsPanel from "@/components/messages/RecipientsPanel";
+import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 
 const addPersonIcon = addPersonIconAsset as string;
 const blueChevronLeft = blueChevronLeftAsset as string;
 const bluePlus = bluePlusAsset as string;
 const icCaretLeft = icCaretLeftAsset as string;
+const ouiCopy = ouiCopyAsset as string;
 const mdiInformation = mdiInformationAsset as string;
 
 const TOKEN = "{{First Name}}";
@@ -328,6 +332,8 @@ export default function NewMessagePage() {
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
   const recipientsCount = selectedRecipientIds.length;
 
+  const [successToast, setSuccessToast] = useState("");
+
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
@@ -335,6 +341,11 @@ export default function NewMessagePage() {
     const mql = window.matchMedia(DESKTOP_MQ);
     const onChange = () => setIsDesktop(mql.matches);
     onChange();
+    const toastMsg = sessionStorage.getItem("success-toast");
+    if (toastMsg) {
+      setSuccessToast(toastMsg);
+      sessionStorage.removeItem("success-toast");
+    }
     mql.addEventListener?.("change", onChange);
     return () => mql.removeEventListener?.("change", onChange);
   }, []);
@@ -359,6 +370,14 @@ export default function NewMessagePage() {
     void router.push("/messages/new/review");
   }, [router]);
 
+  const goTemplates = useCallback(() => {
+    void router.push("/messages/templates");
+  }, [router]);
+
+  const onToastDone = () => {
+    setSuccessToast("");
+  };
+
   const commonProps = {
     mode,
     setMode,
@@ -375,6 +394,12 @@ export default function NewMessagePage() {
 
   return (
     <Sidebar>
+      <SuccessToast
+        open={!!successToast}
+        message={successToast}
+        durationMs={2600}
+        onDone={onToastDone}
+      />
       <div className={styles.page}>
         <header className={styles.header}>
           <button
@@ -386,7 +411,14 @@ export default function NewMessagePage() {
             <Image src={icCaretLeft} alt="" className={styles.backIcon} width={24} height={24} />
           </button>
           <h1 className={styles.headerTitle}>New Message</h1>
-          <div className={styles.headerRight} />
+          <button
+            type="button"
+            className={styles.templateBtn}
+            aria-label="Go to templates"
+            onClick={goTemplates}
+          >
+            <Image src={ouiCopy} alt="" width={24} height={24} />
+          </button>
         </header>
 
         {!isDesktop ? (
@@ -417,6 +449,9 @@ export default function NewMessagePage() {
                     onClick={goReview}
                   >
                     <span className={styles.reviewBtnText}>Review and Send</span>
+                  </button>
+                  <button onClick={goTemplates} className={styles.templateBtnDesktop}>
+                    <Image src={ouiCopy} alt="Templates" width={20} height={20} />
                   </button>
                 </div>
               </section>

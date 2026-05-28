@@ -109,13 +109,26 @@ export const sendEmails = async (req: Request, res: Response, next: NextFunction
       return;
     }
 
-    res.status(200).json({ sent: recipients.length });
+    const newMessage = await MessageModel.create({
+      recipients: recipients.map((recipient) => recipient._id),
+      type: "email",
+      subject,
+      body: message,
+      status: "sent",
+    });
+
+    res.status(200).json({
+      sent: recipients.length,
+      message: newMessage,
+    });
   } catch (error) {
     next(error);
   }
 };
 
-const defaultPopulateConfig = [{ path: "recipients", select: "firstName lastName" }];
+const defaultPopulateConfig = [
+  { path: "recipients", select: "firstName lastName email phoneNumber" },
+];
 
 export const getMessages: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);

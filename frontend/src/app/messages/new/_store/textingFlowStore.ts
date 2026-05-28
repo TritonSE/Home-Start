@@ -33,6 +33,7 @@ type TextingFlowState = {
   getNumSelectedRecipientIds: () => number;
   getNumRecipientIds: () => number;
   setRecipients: (recipients: Volunteer[]) => void;
+  setRecipientsPool: (recipients: Volunteer[]) => void;
   toggleSelectAll: (filteredVolunteers: Volunteer[]) => void;
 
   resetDraft: () => void;
@@ -106,6 +107,13 @@ export const useTextingFlowStore = create<TextingFlowState>()(
           selectedRecipients: [],
           selectedRecipientIds: [],
           numSelectedRecipientIds: 0,
+          numRecipientIds: recipients.length,
+        });
+      },
+      setRecipientsPool: (recipients) => {
+        set({
+          recipients,
+          recipientIds: recipients.map((recipient) => recipient._id),
           numRecipientIds: recipients.length,
         });
       },

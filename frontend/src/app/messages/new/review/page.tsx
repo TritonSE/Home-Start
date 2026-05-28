@@ -8,6 +8,7 @@ import { useTextingFlowStore } from "../_store/textingFlowStore";
 
 import styles from "./page.module.css";
 
+import { createMessageHistory } from "@/app/api/messages";
 import { fetchVolunteers } from "@/app/api/volunteer";
 import backIconAsset from "@/assets/back.svg";
 import groupsIconAsset from "@/assets/ic_volunteers_alt.svg";
@@ -58,7 +59,10 @@ export default function ReviewAndSendPage() {
     return (message || "").includes(FIRST_NAME_TOKEN);
   }, [message]);
 
-  const canSend = recipientsCount > 0 && (message || "").trim().length > 0;
+  const canSend =
+    recipientsCount > 0 &&
+    (message || "").trim().length > 0 &&
+    (mode === "text" || (subject || "").trim().length > 0);
 
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -113,6 +117,34 @@ export default function ReviewAndSendPage() {
         if (!res.ok) {
           const err = (await res.json()) as { error?: string };
           setSendError(err.error ?? "Failed to send emails. Please try again.");
+          return;
+        }
+
+        const historyResult = await createMessageHistory({
+          recipients: selectedRecipientIds,
+          type: "email",
+          subject,
+          body: message,
+          status: "sent",
+        });
+
+        if (!historyResult.success) {
+          setSendError(historyResult.error);
+          return;
+        }
+      }
+
+      if (mode === "text") {
+        const historyResult = await createMessageHistory({
+          recipients: selectedRecipientIds,
+          type: "text",
+          subject: null,
+          body: message,
+          status: "sent",
+        });
+
+        if (!historyResult.success) {
+          setSendError(historyResult.error);
           return;
         }
       }

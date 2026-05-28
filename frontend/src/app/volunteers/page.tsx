@@ -42,7 +42,6 @@ export default function Page() {
   const toggleSelectAll = useTextingFlowStore((s) => s.toggleSelectAll);
   const clearSelectedRecipients = useTextingFlowStore((s) => s.clearSelectedRecipients);
   const storeSelectedIds = useTextingFlowStore((s) => s.selectedRecipientIds);
-  const storeSelectedRecipients = useTextingFlowStore((s) => s.selectedRecipients);
 
   // Derive a Set from the store ids for efficient lookup in the table
   const controlledSelectedIds = useMemo(() => new Set(storeSelectedIds), [storeSelectedIds]);
@@ -75,7 +74,6 @@ export default function Page() {
   const [sendMessageHovered, setSendMessageHovered] = useState(false);
   const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [selectedCount, setSelectedCount] = useState(0);
   const [sortOption, setSortOption] = useState<
     "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A"
   >("Newest");
@@ -384,7 +382,6 @@ export default function Page() {
               controlledSelectedIds={controlledSelectedIds}
               onControlledToggleOne={toggleRecipient}
               onControlledToggleAll={(scope) => toggleSelectAll(scope)}
-              onSelectedCountChange={setSelectedCount}
               onVolunteerSelect={(v) => {
                 setSelectedVolunteer(v);
                 setIsSheetOpen(true);

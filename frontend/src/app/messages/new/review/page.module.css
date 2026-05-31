@@ -218,6 +218,45 @@
   cursor: not-allowed;
 }
 
+.shortcutCta {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shortcutBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 56px;
+  border-radius: 12px;
+  background: #163c73;
+  color: #fff;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.doneBtn {
+  width: 100%;
+  min-height: 56px;
+  border-radius: 12px;
+  border: 1.5px solid #163c73;
+  background: transparent;
+  color: #163c73;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+
 .desktopMain {
   display: none;
 }

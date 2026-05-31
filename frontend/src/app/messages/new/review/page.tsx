@@ -113,7 +113,6 @@ export default function ReviewAndSendPage() {
             recipients,
             subject,
             message,
-            ...(sendDate && { sendDate: sendDate.toISOString() }),
           }),
         });
 
@@ -123,18 +122,19 @@ export default function ReviewAndSendPage() {
           return;
         }
 
-        const historyResult = await createMessageHistory({
-          recipients: selectedRecipientIds,
-          type: "email",
-          subject,
-          body: message,
-          status: "sent",
-        });
+        // email history is created as part of send email endpoint
+        // const historyResult = await createMessageHistory({
+        //   recipients: selectedRecipientIds,
+        //   type: "email",
+        //   subject,
+        //   body: message,
+        //   status: "sent",
+        // });
 
-        if (!historyResult.success) {
-          setSendError(historyResult.error);
-          return;
-        }
+        // if (!historyResult.success) {
+        //   setSendError(historyResult.error);
+        //   return;
+        // }
       }
 
       if (mode === "text") {

@@ -14,7 +14,6 @@ import blueChevronLeftAsset from "@/assets/blue_chevron_left.svg";
 import bluePlusAsset from "@/assets/blue_plus_alt.svg";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
 import icCloseAsset from "@/assets/ic_close.svg";
-import icScheduleAsset from "@/assets/ic_schedule.svg";
 import mdiInformationAsset from "@/assets/mdi_information.svg";
 import ouiCopyAsset from "@/assets/oui_copy.svg";
 import { initMsal, signInWithOutlook } from "@/auth/msal";
@@ -28,7 +27,6 @@ const blueChevronLeft = blueChevronLeftAsset as string;
 const bluePlus = bluePlusAsset as string;
 const icCaretLeft = icCaretLeftAsset as string;
 const icClose = icCloseAsset as string;
-const icSchedule = icScheduleAsset as string;
 const ouiCopy = ouiCopyAsset as string;
 const mdiInformation = mdiInformationAsset as string;
 
@@ -359,16 +357,6 @@ function Composer({
           >
             <span className={styles.reviewBtnText}>Review and Send</span>
           </button>
-          <Image
-            src={icSchedule}
-            alt="Schedule"
-            width={56}
-            height={56}
-            className={styles.scheduleBtn}
-            onClick={() => {
-              setDateTimePickerOpen(true);
-            }}
-          />
         </div>
       ) : null}
     </>

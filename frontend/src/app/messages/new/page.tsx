@@ -13,9 +13,11 @@ import addPersonIconAsset from "@/assets/add_person_icon.svg";
 import blueChevronLeftAsset from "@/assets/blue_chevron_left.svg";
 import bluePlusAsset from "@/assets/blue_plus_alt.svg";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
+import icCloseAsset from "@/assets/ic_close.svg";
 import mdiInformationAsset from "@/assets/mdi_information.svg";
 import ouiCopyAsset from "@/assets/oui_copy.svg";
 import { initMsal, signInWithOutlook } from "@/auth/msal";
+import DateTimePickerModal from "@/components/DateTimePickerModal";
 import RecipientsPanel from "@/components/messages/RecipientsPanel";
 import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
@@ -24,6 +26,7 @@ const addPersonIcon = addPersonIconAsset as string;
 const blueChevronLeft = blueChevronLeftAsset as string;
 const bluePlus = bluePlusAsset as string;
 const icCaretLeft = icCaretLeftAsset as string;
+const icClose = icCloseAsset as string;
 const ouiCopy = ouiCopyAsset as string;
 const mdiInformation = mdiInformationAsset as string;
 
@@ -37,10 +40,13 @@ type ComposerProps = {
   setSubject: (subject: string) => void;
   message: string;
   setMessage: (message: string) => void;
+  sendDate: Date | undefined;
+  setSendDate: (date: Date | undefined) => void;
   recipientsCount: number;
   canReview: boolean;
   isDesktop: boolean;
   clickableTo: boolean;
+  setDateTimePickerOpen: (open: boolean) => void;
   onGoRecipients: () => void;
   onGoReview: () => void;
 };
@@ -80,10 +86,13 @@ function Composer({
   setSubject,
   message,
   setMessage,
+  sendDate,
+  setSendDate,
   recipientsCount,
   canReview,
   isDesktop,
   clickableTo,
+  setDateTimePickerOpen,
   onGoRecipients,
   onGoReview,
 }: ComposerProps) {
@@ -195,6 +204,17 @@ function Composer({
     lastSyncedMessageRef.current = next;
     setDraftText(next);
     setMessage(next);
+  };
+
+  const dateFormatter = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  const formatDate = (date: Date) => {
+    return dateFormatter.format(new Date(date));
   };
 
   return (
@@ -309,6 +329,24 @@ function Composer({
         </div>
       </section>
 
+      {sendDate && (
+        <div className={styles.scheduledTime}>
+          <span />
+          <span>
+            Scheduled:<b>&nbsp;{formatDate(sendDate)}</b>
+          </span>
+          <button className={styles.btnWrapper} onClick={() => setSendDate(undefined)}>
+            <Image
+              className={styles.removeScheduleBtn}
+              src={icClose}
+              alt="Remove Schedule"
+              width={20}
+              height={20}
+            />
+          </button>
+        </div>
+      )}
+
       {!isDesktop ? (
         <div className={styles.reviewFixed}>
           <button
@@ -337,8 +375,13 @@ export default function NewMessagePage() {
   const message = useTextingFlowStore((s) => s.message);
   const setMessage = useTextingFlowStore((s) => s.setMessage);
 
+  const stringifiedDate = useTextingFlowStore((s) => s.sendDate);
+  const sendDate = stringifiedDate ? new Date(stringifiedDate) : undefined;
+  const setSendDate = useTextingFlowStore((s) => s.setSendDate);
+
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
   const recipientsCount = selectedRecipientIds.length;
+  const [dateTimePickerOpen, setDateTimePickerOpen] = useState<boolean>(false);
 
   const [successToast, setSuccessToast] = useState("");
 
@@ -393,6 +436,8 @@ export default function NewMessagePage() {
     setSubject,
     message: message ?? "",
     setMessage,
+    sendDate: sendDate ?? undefined,
+    setSendDate,
     recipientsCount,
     canReview,
     isDesktop,
@@ -431,7 +476,7 @@ export default function NewMessagePage() {
 
         {!isDesktop ? (
           <main className={styles.content}>
-            <Composer {...commonProps} clickableTo />
+            <Composer {...commonProps} clickableTo setDateTimePickerOpen={setDateTimePickerOpen} />
           </main>
         ) : null}
 
@@ -446,7 +491,11 @@ export default function NewMessagePage() {
 
               <section className={styles.rightPane}>
                 <div className={styles.rightScroll}>
-                  <Composer {...commonProps} clickableTo={false} />
+                  <Composer
+                    {...commonProps}
+                    clickableTo={false}
+                    setDateTimePickerOpen={setDateTimePickerOpen}
+                  />
                 </div>
 
                 <div className={styles.desktopReview}>
@@ -467,6 +516,17 @@ export default function NewMessagePage() {
           </main>
         ) : null}
       </div>
+      {dateTimePickerOpen && (
+        <DateTimePickerModal
+          date={sendDate ?? new Date()}
+          onDone={(date) => {
+            setSendDate(date);
+          }}
+          onClose={() => {
+            setDateTimePickerOpen(false);
+          }}
+        />
+      )}
     </Sidebar>
   );
 }

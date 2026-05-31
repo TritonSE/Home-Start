@@ -22,6 +22,24 @@ type SendEmailBody = {
   recipients: Recipient[];
   subject: string;
   message: string;
+  sendDate?: string;
+};
+
+type GraphRecipient = {
+  emailAddress: {
+    address: string;
+    name: string;
+  };
+};
+
+type GraphEmailMessage = {
+  subject: string;
+  body: {
+    contentType: string;
+    content: string;
+  };
+  toRecipients: GraphRecipient[];
+  singleValueExtendedProperties?: Record<string, string>[];
 };
 
 type MessageCreationBody = {
@@ -46,7 +64,7 @@ type GraphErrorResponse = {
 
 export const sendEmails = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { graphToken, recipients, subject, message } = req.body as SendEmailBody;
+    const { graphToken, recipients, subject, message, sendDate } = req.body as SendEmailBody;
 
     if (
       !graphToken ||
@@ -59,9 +77,45 @@ export const sendEmails = async (req: Request, res: Response, next: NextFunction
       return;
     }
 
+    const date = sendDate ? new Date(sendDate) : undefined;
+    if (date && Number.isNaN(date.getTime())) {
+      res.status(400).json({ error: "sendDate must be a proper date" });
+      return;
+    }
+
     const results = await Promise.allSettled(
       recipients.map(async (recipient) => {
         const personalizedBody = message.replaceAll(FIRST_NAME_TOKEN, recipient.firstName);
+
+        const messageBody: GraphEmailMessage = {
+          subject,
+          body: {
+            contentType: "Text",
+            content: personalizedBody,
+          },
+          toRecipients: [
+            {
+              emailAddress: {
+                address: recipient.email,
+                name: `${recipient.firstName} ${recipient.lastName}`,
+              },
+            },
+          ],
+        };
+
+        const reqBody = {
+          message: messageBody,
+          saveToSentItems: true,
+        };
+
+        if (sendDate) {
+          reqBody.message.singleValueExtendedProperties = [
+            {
+              id: "SystemTime 0x3FEF",
+              value: sendDate,
+            },
+          ];
+        }
 
         const graphRes = await fetch("https://graph.microsoft.com/v1.0/me/sendMail", {
           method: "POST",
@@ -69,24 +123,7 @@ export const sendEmails = async (req: Request, res: Response, next: NextFunction
             Authorization: `Bearer ${graphToken}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            message: {
-              subject,
-              body: {
-                contentType: "Text",
-                content: personalizedBody,
-              },
-              toRecipients: [
-                {
-                  emailAddress: {
-                    address: recipient.email,
-                    name: `${recipient.firstName} ${recipient.lastName}`,
-                  },
-                },
-              ],
-            },
-            saveToSentItems: true,
-          }),
+          body: JSON.stringify(reqBody),
         });
 
         if (!graphRes.ok) {

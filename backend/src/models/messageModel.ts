@@ -26,6 +26,12 @@ const messageSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  scheduled: {
+    type: Date,
+    required: function (this: Message) {
+      return this.status === "pending";
+    },
+  },
   status: {
     type: String,
     enum: ["sent", "pending"],

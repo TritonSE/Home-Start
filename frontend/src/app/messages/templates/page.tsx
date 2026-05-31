@@ -101,13 +101,12 @@ export default function TemplatePage() {
     }
   };
 
-  const onSelectTemplate = async () => {
+  const onSelectTemplate = async (template: Template) => {
     sessionStorage.setItem("success-toast", "Template Successfully Pasted");
-    if (await initMsal()) {
-      void router.push("/communication");
-    } else {
+    if (template.type === TemplateType.EMAIL && !(await initMsal())) {
       await signInWithOutlook();
     }
+    void router.push("/communication");
   };
 
   const onToastDone = () => {
@@ -135,7 +134,10 @@ export default function TemplatePage() {
           )}
         </header>
         {previewTemplate && selectedTemplate ? (
-          <TemplatePreview template={selectedTemplate} onUse={() => void onSelectTemplate()} />
+          <TemplatePreview
+            template={selectedTemplate}
+            onUse={(template: Template) => void onSelectTemplate(template)}
+          />
         ) : (
           <>
             <div className={styles.templateType}>

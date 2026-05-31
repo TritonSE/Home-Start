@@ -7,7 +7,7 @@ import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore"
 
 type TemplatePreviewType = {
   template: Template;
-  onUse: () => void;
+  onUse: (template: Template) => void;
 };
 
 const TOKEN = "{{First Name}}";
@@ -71,7 +71,7 @@ export function TemplatePreview({ template, onUse }: TemplatePreviewType) {
             if (template.subject && template.type === TemplateType.EMAIL) {
               setSubject(template.subject);
             }
-            onUse();
+            onUse(template);
           }}
         >
           <span className={styles.useBtnText}>Use Template</span>

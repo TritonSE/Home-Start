@@ -77,6 +77,7 @@ export const updateVolunteerAssignment: RequestHandler = async (req, res, next) 
   const assignmentTagId = record.assignmentTagId;
   const projectTagId = record.projectTagId;
   const shiftTagIds = record.shiftTagIds;
+  const removeShiftTagIds = record.removeShiftTagIds;
 
   try {
     const update: Record<string, unknown> = {};
@@ -85,13 +86,23 @@ export const updateVolunteerAssignment: RequestHandler = async (req, res, next) 
     if (shiftTagIds === undefined || shiftTagIds === null) {
       // leave untouched
     } else if (isStringArray(shiftTagIds)) {
-      update.shiftTagIds = shiftTagIds;
+      update.$addToSet = { shiftTagIds: { $each: shiftTagIds } };
     } else {
       throw createError(400, "shiftTagIds must be an array of strings");
     }
 
+    if (removeShiftTagIds === undefined || removeShiftTagIds === null) {
+      // leave untouched
+    } else if (isStringArray(removeShiftTagIds)) {
+      if (removeShiftTagIds.length > 0) {
+        update.$pull = { shiftTagIds: { $in: removeShiftTagIds } };
+      }
+    } else {
+      throw createError(400, "removeShiftTagIds must be an array of strings");
+    }
+
     const assignment = await VolunteerAssignmentModel.findByIdAndUpdate(assignmentId, update, {
-      new: true,
+      returnDocument: "after",
     })
       .populate("assignmentTagId")
       .populate("projectTagId")

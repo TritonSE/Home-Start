@@ -59,6 +59,42 @@
   -webkit-appearance: none;
 }
 
+.templateBtn {
+  width: 40px;
+  height: 40px;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 100px;
+  border: 1px solid var(--Icons-ic-action, #1d3a6b);
+}
+
+.templateBtnDesktop {
+  width: 56px;
+  height: 56px;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+
+  border-radius: 8px;
+  border: 1px solid #1d3a6b;
+  background: var(--Surface-page, #fbffff);
+}
+
 .content {
   display: flex;
   justify-content: center;
@@ -403,11 +439,17 @@
     gap: 40px;
     max-width: 1200px;
     margin: 0 auto;
-    height: 100%;
+    height: fit-content;
     min-height: 0;
     align-items: stretch;
     box-sizing: border-box;
     padding-bottom: 0;
+  }
+
+  .desktopMain {
+    display: block;
+    flex: 1;
+    height: fit-content;
   }
 
   .leftPane,
@@ -415,7 +457,7 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
-    height: 100%;
+    height: fit-content;
   }
 
   .leftPane {
@@ -439,6 +481,7 @@
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     padding-right: 8px;
+    height: fit-content;
   }
 
   .rightScroll {
@@ -456,7 +499,7 @@
     justify-content: center;
     flex: 0 0 auto;
     max-width: 760px;
-    gap: 16px;
+    gap: 12px;
   }
 
   .desktopReview .reviewBtn,

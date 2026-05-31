@@ -7,11 +7,13 @@ import styles from "./SearchBar.module.css";
 import SortSelectionButton from "./SortSelectorButton";
 
 import checkboxIconAsset from "@/assets/checkbox.svg";
-import caretIconAsset from "@/assets/ic_caretdown.svg";
+import caretDownIconAsset from "@/assets/ic_caretdown.svg";
+import caretUpIconAsset from "@/assets/ic_caretup.svg";
 import unionIconAsset from "@/assets/union.svg";
 
 const checkboxIcon = checkboxIconAsset as string;
-const caretIcon = caretIconAsset as string;
+const caretUpIcon = caretUpIconAsset as string;
+const caretDownIcon = caretDownIconAsset as string;
 const unionIcon = unionIconAsset as string;
 
 type SearchBarProps = {
@@ -196,28 +198,30 @@ export default function SearchBar({
           {items
             .filter((item) => item.toLowerCase().includes(tagSearch.toLowerCase()))
             .map((item) => (
-              <div
+              <button
                 key={item}
+                type="button"
                 className={`${styles.dropdownItem} ${selected.has(item) ? styles.dropdownItemSelected : ""}`}
-                role="menuitem"
+                role="menuitemcheckbox"
+                aria-checked={selected.has(item)}
+                onClick={() => toggleTag(item, cat)}
               >
-                <button
+                <span
                   className={`${styles.checkBox} ${selected.has(item) ? styles.checkBoxChecked : ""}`}
-                  onClick={() => toggleTag(item, cat)}
-                  type="button"
+                  aria-hidden="true"
                 >
                   {selected.has(item) && (
                     <Image
                       src={checkboxIcon}
-                      alt="checked"
+                      alt=""
                       className={styles.checkIcon}
                       width={16}
                       height={16}
                     />
                   )}
-                </button>
+                </span>
                 <div className={styles.filterLabel}>{formatOptionLabel(item, cat)}</div>
-              </div>
+              </button>
             ))}
         </div>
 
@@ -237,32 +241,24 @@ export default function SearchBar({
 
   return (
     <div className={styles.searchBar}>
-      <div className={styles.searchField}>
-        <div className={styles.inputField}>
-          <span className={styles.ic_search}>
-            <Image
-              src={unionIcon}
-              alt="Union logo"
-              className={styles.union}
-              width={24}
-              height={24}
-            />
-          </span>
-          <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search Volunteer"
-            />
-          </form>
-        </div>
+      <div className={styles.inputField}>
+        <span className={styles.ic_search}>
+          <Image src={unionIcon} alt="Union logo" className={styles.union} width={24} height={24} />
+        </span>
+        <form className={styles.textField} onSubmit={(e) => e.preventDefault()}>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search"
+          />
+        </form>
       </div>
 
       <div className={styles.tagsContainer} ref={wrapperRef}>
         <div className={styles.pillWrapper}>
           <button
-            className={`${styles.pillTagStatus} ${selectedStatus !== null ? styles.pillTagActive : ""}`}
+            className={`${styles.pillTagStatus} ${open === "status" ? styles.pillTagActive : ""}`}
             aria-expanded={open === "status"}
             onClick={() => toggle("status")}
           >
@@ -270,12 +266,10 @@ export default function SearchBar({
               <span className={styles.pillTagText}>Status</span>
               <span className={styles.pillTagIconBox} aria-hidden="true">
                 <Image
-                  src={caretIcon}
+                  src={open === "status" ? caretUpIcon : caretDownIcon}
                   alt="Caret down"
-                  className={styles.pillTagIcon}
-                  width={16}
-                  height={16}
-                />
+                  className={`${styles.pillTagIcon} ${open === "status" ? "" : styles.pillTagIconSmall}`}
+                ></Image>
               </span>
             </span>
           </button>
@@ -285,19 +279,20 @@ export default function SearchBar({
         {assignmentTags && assignmentTags.length > 0 && (
           <div className={styles.pillWrapper}>
             <button
-              className={`${styles.pillTagVolunteerType} ${(selectedAssignment?.size ?? 0) > 0 ? styles.pillTagActive : ""}`}
+              className={`${styles.pillTagVolunteerType} ${open === "assignment" ? styles.pillTagActive : ""}`}
               aria-expanded={open === "assignment"}
               onClick={() => toggle("assignment")}
             >
               <span className={styles.pillTagContent}>
                 <span className={styles.pillTagText}>Assignment</span>
-                <span className={styles.pillTagIconBox} aria-hidden="true">
+                <span
+                  className={`${styles.pillTagIconBox} ${open === "assignment" ? "" : styles.pillTagIconBoxSmall}`}
+                  aria-hidden="true"
+                >
                   <Image
-                    src={caretIcon}
+                    src={open === "assignment" ? caretUpIcon : caretDownIcon}
                     alt="Caret down"
-                    className={styles.pillTagIcon}
-                    width={16}
-                    height={16}
+                    className={`${styles.pillTagIcon} ${open === "assignment" ? "" : styles.pillTagIconSmall}`}
                   />
                 </span>
               </span>
@@ -309,19 +304,20 @@ export default function SearchBar({
         {projectTags && projectTags.length > 0 && (
           <div className={styles.pillWrapper}>
             <button
-              className={`${styles.pillTagEvent} ${(selectedProject?.size ?? 0) > 0 ? styles.pillTagActive : ""}`}
+              className={`${styles.pillTagEvent} ${open === "project" ? styles.pillTagActive : ""}`}
               aria-expanded={open === "project"}
               onClick={() => toggle("project")}
             >
               <span className={styles.pillTagContent}>
                 <span className={styles.pillTagText}>Project</span>
-                <span className={styles.pillTagIconBox} aria-hidden="true">
+                <span
+                  className={`${styles.pillTagIconBox} ${open === "project" ? "" : styles.pillTagIconBoxSmall}`}
+                  aria-hidden="true"
+                >
                   <Image
-                    src={caretIcon}
+                    src={open === "project" ? caretUpIcon : caretDownIcon}
                     alt="Caret down"
-                    className={styles.pillTagIcon}
-                    width={16}
-                    height={16}
+                    className={`${styles.pillTagIcon} ${open === "project" ? "" : styles.pillTagIconSmall}`}
                   />
                 </span>
               </span>
@@ -333,19 +329,20 @@ export default function SearchBar({
         {programTags && programTags.length > 0 && (
           <div className={styles.pillWrapper}>
             <button
-              className={`${styles.pillTagEvent} ${(selectedProgram?.size ?? 0) > 0 ? styles.pillTagActive : ""}`}
+              className={`${styles.pillTagEvent} ${open === "program" ? styles.pillTagActive : ""}`}
               aria-expanded={open === "program"}
               onClick={() => toggle("program")}
             >
               <span className={styles.pillTagContent}>
                 <span className={styles.pillTagText}>Program</span>
-                <span className={styles.pillTagIconBox} aria-hidden="true">
+                <span
+                  className={`${styles.pillTagIconBox} ${open === "program" ? "" : styles.pillTagIconBoxSmall}`}
+                  aria-hidden="true"
+                >
                   <Image
-                    src={caretIcon}
+                    src={open === "program" ? caretUpIcon : caretDownIcon}
                     alt="Caret down"
-                    className={styles.pillTagIcon}
-                    width={16}
-                    height={16}
+                    className={`${styles.pillTagIcon} ${open === "program" ? "" : styles.pillTagIconSmall}`}
                   />
                 </span>
               </span>

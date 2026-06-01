@@ -57,7 +57,7 @@ type ParsedCSVResult = {
   updatedCount: number;
   changes: ParsedVolunteerChange[];
   uniqueVolunteers: ParsedVolunteerChange[];
-  missingTags: { name: string; type: "assignment" | "project" | "shift" }[];
+  missingTags: { name: string; type: "assignment" | "project" | "shift" | "program" | "group" }[];
   projectGroups: ProjectGroup[];
 };
 
@@ -72,7 +72,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
   const [pendingBatch, setPendingBatch] = useState<VolunteerCsvParseResult["volunteerInfo"]>([]);
   const [tagsCollapsed, setTagsCollapsed] = useState(false);
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
-  const [volunteersCollapsed, setVolunteersCollapsed] = useState(true);
+  const [volunteersCollapsed, setVolunteersCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -111,7 +111,10 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
         shiftNames: v.shiftNames,
       }));
 
-      const projectMap = new Map<string, Map<string, { shiftNames: Set<string>; volunteers: ParsedVolunteerChange[] }>>();
+      const projectMap = new Map<
+        string,
+        Map<string, { shiftNames: Set<string>; volunteers: ParsedVolunteerChange[] }>
+      >();
       for (const change of changes) {
         const pk = change.projectName ?? "__none__";
         const ak = change.assignmentName ?? "__none__";
@@ -138,9 +141,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
           return a.projectName.localeCompare(b.projectName);
         });
 
-      const uniqueVolunteers = [
-        ...new Map(changes.map((c) => [c.email, c])).values(),
-      ];
+      const uniqueVolunteers = [...new Map(changes.map((c) => [c.email, c])).values()];
 
       const data: ParsedCSVResult = {
         newCount: result.data.wouldCreateCount,
@@ -153,7 +154,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
 
       setCollapsedProjects(new Set(projectGroups.map((g) => g.projectName ?? "__none__")));
       setCurrentPage(1);
-      setVolunteersCollapsed(true);
+      setVolunteersCollapsed(false);
       setPendingBatch(result.data.volunteerInfo);
       setCSVParsedInfo(data);
       setStatus("success");
@@ -219,6 +220,8 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
           assignmentName: v.assignmentName,
           projectName: v.projectName,
           shiftNames: v.shiftNames,
+          programNames: v.programNames,
+          groupNames: v.groupNames,
         })),
         csvParsedInfo.missingTags.map((t) => ({
           name: t.name,
@@ -355,7 +358,13 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
             <div className={styles.summaryRow}>
               <div className={`${styles.summaryCard} ${styles.summaryCardNew}`}>
                 <div className={styles.summaryHeader}>
-                  <Image src={icSuccess} alt="" className={styles.summaryIcon} width={20} height={20} />
+                  <Image
+                    src={icSuccess}
+                    alt=""
+                    className={styles.summaryIcon}
+                    width={20}
+                    height={20}
+                  />
                   <span>New Volunteers</span>
                 </div>
                 <div className={styles.summaryCount}>{csvParsedInfo?.newCount ?? 0}</div>
@@ -371,11 +380,24 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
 
             {(csvParsedInfo?.missingTags?.length ?? 0) > 0 && (
               <div className={styles.detailSection}>
-                <button className={styles.sectionToggle} onClick={() => { setTagsCollapsed((c) => !c); }}>
+                <button
+                  className={styles.sectionToggle}
+                  onClick={() => {
+                    setTagsCollapsed((c) => !c);
+                  }}
+                >
                   <span className={styles.sectionTitle}>Tags to Create</span>
                   <div className={styles.projectMeta}>
-                    <span className={styles.toggleHint}>{tagsCollapsed ? "Expand" : "Collapse"}</span>
-                    <svg className={`${styles.chevron} ${tagsCollapsed ? styles.chevronCollapsed : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <span className={styles.toggleHint}>
+                      {tagsCollapsed ? "Expand" : "Collapse"}
+                    </span>
+                    <svg
+                      className={`${styles.chevron} ${tagsCollapsed ? styles.chevronCollapsed : ""}`}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <polyline points="6 9 12 15 18 9" />
                     </svg>
                   </div>
@@ -386,7 +408,9 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                       {csvParsedInfo?.missingTags?.map((tag, i, arr) => (
                         <div key={`${tag.type}:${tag.name}`} className={styles.detailItem}>
                           <div className={styles.detailHeader}>
-                            <span className={`${styles.detailBadge} ${styles.detailBadgeTag}`}>{tag.type}</span>
+                            <span className={`${styles.detailBadge} ${styles.detailBadgeTag}`}>
+                              {tag.type}
+                            </span>
                             <span className={styles.detailName}>{tag.name}</span>
                           </div>
                           {i < arr.length - 1 && <div className={styles.detailDivider} />}
@@ -399,11 +423,24 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
             )}
 
             <div className={styles.detailSection}>
-              <button className={styles.sectionToggle} onClick={() => { setVolunteersCollapsed((c) => !c); }}>
+              <button
+                className={styles.sectionToggle}
+                onClick={() => {
+                  setVolunteersCollapsed((c) => !c);
+                }}
+              >
                 <span className={styles.sectionTitle}>All Volunteers</span>
                 <div className={styles.projectMeta}>
-                  <span className={styles.toggleHint}>{volunteersCollapsed ? "Expand" : "Collapse"}</span>
-                  <svg className={`${styles.chevron} ${volunteersCollapsed ? styles.chevronCollapsed : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <span className={styles.toggleHint}>
+                    {volunteersCollapsed ? "Expand" : "Collapse"}
+                  </span>
+                  <svg
+                    className={`${styles.chevron} ${volunteersCollapsed ? styles.chevronCollapsed : ""}`}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </div>
@@ -417,10 +454,14 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                         .map((change, i, arr) => (
                           <div key={change.email} className={styles.detailItem}>
                             <div className={styles.detailHeader}>
-                              <span className={`${styles.detailBadge} ${change.status === "New" ? styles.detailBadgeNew : styles.detailBadgeUpdated}`}>
+                              <span
+                                className={`${styles.detailBadge} ${change.status === "New" ? styles.detailBadgeNew : styles.detailBadgeUpdated}`}
+                              >
                                 {change.status}
                               </span>
-                              <span className={styles.detailName}>{change.firstName} {change.lastName}</span>
+                              <span className={styles.detailName}>
+                                {change.firstName} {change.lastName}
+                              </span>
                             </div>
                             <div className={styles.detailMeta}>Email: {change.email}</div>
                             <div className={styles.detailMeta}>Phone: {change.phoneNumber}</div>
@@ -434,7 +475,9 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                       totalItems={csvParsedInfo.uniqueVolunteers.length}
                       currentPage={currentPage}
                       itemsPerPage={ITEMS_PER_PAGE}
-                      onPageChange={(page) => { setCurrentPage(page); }}
+                      onPageChange={(page) => {
+                        setCurrentPage(page);
+                      }}
                     />
                   )}
                 </>
@@ -450,15 +493,28 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
 
               return (
                 <div key={projectKey} className={styles.detailSection}>
-                  <button className={styles.sectionToggle} onClick={() => { toggleProject(projectKey); }}>
-                    <span className={styles.sectionTitle}>
-                      {group.projectName ?? "No Project"}
-                    </span>
+                  <button
+                    className={styles.sectionToggle}
+                    onClick={() => {
+                      toggleProject(projectKey);
+                    }}
+                  >
+                    <span className={styles.sectionTitle}>{group.projectName ?? "No Project"}</span>
                     <div className={styles.projectMeta}>
                       {newCount > 0 && <span className={styles.metaBadgeNew}>{newCount} new</span>}
-                      {updatedCount > 0 && <span className={styles.metaBadgeUpdated}>{updatedCount} updated</span>}
-                      <span className={styles.toggleHint}>{isCollapsed ? "Expand" : "Collapse"}</span>
-                      <svg className={`${styles.chevron} ${isCollapsed ? styles.chevronCollapsed : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      {updatedCount > 0 && (
+                        <span className={styles.metaBadgeUpdated}>{updatedCount} updated</span>
+                      )}
+                      <span className={styles.toggleHint}>
+                        {isCollapsed ? "Expand" : "Collapse"}
+                      </span>
+                      <svg
+                        className={`${styles.chevron} ${isCollapsed ? styles.chevronCollapsed : ""}`}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
                         <polyline points="6 9 12 15 18 9" />
                       </svg>
                     </div>
@@ -466,11 +522,17 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                   {!isCollapsed && (
                     <div className={styles.detailCard}>
                       {group.assignments.map((assignment, ai) => (
-                        <div key={assignment.assignmentName ?? "__none__"} className={styles.assignmentGroup}>
-                          {(assignment.assignmentName !== null || assignment.shiftNames.length > 0) && (
+                        <div
+                          key={assignment.assignmentName ?? "__none__"}
+                          className={styles.assignmentGroup}
+                        >
+                          {(assignment.assignmentName !== null ||
+                            assignment.shiftNames.length > 0) && (
                             <div className={styles.assignmentMeta}>
                               {assignment.assignmentName && (
-                                <span className={`${styles.detailBadge} ${styles.detailBadgeAssignment}`}>
+                                <span
+                                  className={`${styles.detailBadge} ${styles.detailBadgeAssignment}`}
+                                >
                                   {assignment.assignmentName}
                                 </span>
                               )}
@@ -483,14 +545,22 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                           )}
                           {assignment.volunteers.map((v) => (
                             <div key={v.email} className={styles.volunteerRow}>
-                              <span className={`${styles.detailBadge} ${v.status === "New" ? styles.detailBadgeNew : styles.detailBadgeUpdated}`}>
+                              <span
+                                className={`${styles.detailBadge} ${v.status === "New" ? styles.detailBadgeNew : styles.detailBadgeUpdated}`}
+                              >
                                 {v.status}
                               </span>
-                              <span className={styles.volunteerName}>{v.firstName} {v.lastName}</span>
-                              <span className={styles.volunteerContact}>{v.email} · {v.phoneNumber}</span>
+                              <span className={styles.volunteerName}>
+                                {v.firstName} {v.lastName}
+                              </span>
+                              <span className={styles.volunteerContact}>
+                                {v.email} · {v.phoneNumber}
+                              </span>
                             </div>
                           ))}
-                          {ai < group.assignments.length - 1 && <div className={styles.detailDivider} />}
+                          {ai < group.assignments.length - 1 && (
+                            <div className={styles.detailDivider} />
+                          )}
                         </div>
                       ))}
                     </div>

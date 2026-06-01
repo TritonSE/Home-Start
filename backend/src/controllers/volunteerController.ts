@@ -100,6 +100,9 @@ type CreateVolunteerBody = {
   assignmentName?: string;
   projectName?: string;
   shiftNames?: string[];
+  // new format only — undefined means old format (don't touch existing tags)
+  programNames?: string[];
+  groupNames?: string[];
 };
 
 type VolunteerCreationBody = CreateVolunteerBody;
@@ -386,7 +389,7 @@ const normalizeCsvText = (value: unknown) => {
 
 type TagToCreate = {
   name: string;
-  type: "assignment" | "project" | "shift";
+  type: "assignment" | "project" | "shift" | "program" | "group";
   color: string;
 };
 
@@ -415,6 +418,25 @@ export const uploadVolunteerBatch: RequestHandler<
       );
     }
 
+    const allProgramNames = new Set<string>();
+    const allGroupNames = new Set<string>();
+    for (const v of volunteers) {
+      for (const name of v.programNames ?? []) allProgramNames.add(name);
+      for (const name of v.groupNames ?? []) allGroupNames.add(name);
+    }
+
+    const [programTags, groupTags] = await Promise.all([
+      allProgramNames.size > 0
+        ? TagModel.find({ name: { $in: [...allProgramNames] }, type: "program" })
+        : Promise.resolve([]),
+      allGroupNames.size > 0
+        ? TagModel.find({ name: { $in: [...allGroupNames] }, type: "group" })
+        : Promise.resolve([]),
+    ]);
+
+    const programTagByName = new Map(programTags.map((t) => [t.name, t._id]));
+    const groupTagByName = new Map(groupTags.map((t) => [t.name, t._id]));
+
     const volunteersByKey = new Map<VolunteerImportKey, CreateVolunteerBody>();
     for (const body of volunteers) {
       volunteersByKey.set(makeVolunteerImportKey(body), body);
@@ -422,18 +444,32 @@ export const uploadVolunteerBatch: RequestHandler<
 
     const uniqueVolunteers = [...volunteersByKey.values()];
 
-    const bulkOps = uniqueVolunteers.map((body) => ({
-      updateOne: {
-        filter: {
-          $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
+    const bulkOps = uniqueVolunteers.map((body) => {
+      const programTagIds = body.programNames
+        ?.map((n) => programTagByName.get(n))
+        .filter((id): id is NonNullable<typeof id> => id !== undefined);
+      const groupTagIds = body.groupNames
+        ?.map((n) => groupTagByName.get(n))
+        .filter((id): id is NonNullable<typeof id> => id !== undefined);
+
+      return {
+        updateOne: {
+          filter: {
+            $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
+          },
+          update: {
+            $set: {
+              ...normalizeVolunteerForBulkWrite(body),
+              effectiveDate: new Date(),
+              ...(body.programNames !== undefined && { programTagIds: programTagIds ?? [] }),
+              ...(body.groupNames !== undefined && { groupTagIds: groupTagIds ?? [] }),
+            },
+            $setOnInsert: { dateCreated: new Date() },
+          },
+          upsert: true,
         },
-        update: {
-          $set: { ...normalizeVolunteerForBulkWrite(body), effectiveDate: new Date() },
-          $setOnInsert: { dateCreated: new Date() },
-        },
-        upsert: true,
-      },
-    }));
+      };
+    });
     // Continue writing others even if one fails
     const createdVolunteers = await VolunteerModel.bulkWrite(bulkOps, { ordered: false });
 
@@ -661,18 +697,176 @@ const parseCreationBody = (data: NormalizedVolunteerCSVFormat): VolunteerCreatio
   };
 };
 
+type NewFormatRawRow = {
+  externalId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  status: "returning" | "new" | undefined;
+  address: VolunteerAddressInfo;
+  birthday: string;
+  preferredPronouns: string;
+  effectiveDate: string;
+  mediaConsent: string;
+  faceConsent: string;
+  nameConsent: string;
+  programs: string[];
+  groups: string[];
+  assignment: string;
+  project: string;
+  shift: string;
+};
+
+const isNewCsvFormat = (headers: string[]): boolean => headers.includes("constituent id");
+
+const parseSemicolonList = (value: string): string[] =>
+  value
+    .split(";")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+const normalizeNewFormatRow = (data: Record<string, string>): NewFormatRawRow => ({
+  externalId: normalizeCsvText(data["constituent id"]),
+  firstName: normalizeCsvText(data["First Name"]),
+  lastName: normalizeCsvText(data["Last Name"]),
+  email: normalizeCsvText(data.Email),
+  phoneNumber: normalizeCsvText(data.Cell),
+  status: statusKeyToEnum(data.Status ?? ""),
+  address: {
+    line1: normalizeCsvText(data.Address1),
+    line2: normalizeCsvText(data.Address2),
+    city: normalizeCsvText(data.City),
+    state: normalizeCsvText(data.State),
+    zip: normalizeCsvText(data.Zip),
+  },
+  birthday: normalizeCsvText(data.Birthday),
+  preferredPronouns: normalizeCsvText(data["NEW Pronouns"]),
+  effectiveDate: normalizeCsvText(data["Effective Date (date record was updated)"]),
+  mediaConsent: normalizeCsvText(data["NEW Media Consent"]),
+  faceConsent: normalizeCsvText(data["NEW Face"]),
+  nameConsent: normalizeCsvText(data["NEW Name Consent"]),
+  programs: parseSemicolonList(normalizeCsvText(data.program ?? "")),
+  groups: parseSemicolonList(normalizeCsvText(data.groups ?? "")),
+  assignment: normalizeCsvText(data.assignment),
+  project: normalizeCsvText(data.project),
+  shift: normalizeCsvText(data.shift ?? ""),
+});
+
+const aggregateMultiRowVolunteers = (rows: NewFormatRawRow[]): VolunteerCreationBody[] => {
+  type VolunteerBlock = {
+    base: NewFormatRawRow | null;
+    assignments: { assignment: string; project: string; shift: string }[];
+  };
+
+  const byId = new Map<string, VolunteerBlock>();
+
+  for (const row of rows) {
+    if (!row.externalId) {
+      throw createError(400, `Row is missing an ID: "${row.firstName} ${row.lastName}"`);
+    }
+
+    if (!byId.has(row.externalId)) {
+      byId.set(row.externalId, { base: null, assignments: [] });
+    }
+    const block = byId.get(row.externalId)!;
+
+    if (row.email || row.phoneNumber) {
+      if (block.base === null) {
+        block.base = row;
+      } else if (
+        (row.email && block.base.email && row.email !== block.base.email) ||
+        (row.phoneNumber && block.base.phoneNumber && row.phoneNumber !== block.base.phoneNumber) ||
+        (row.firstName && block.base.firstName && row.firstName !== block.base.firstName) ||
+        (row.lastName && block.base.lastName && row.lastName !== block.base.lastName)
+      ) {
+        throw createError(
+          400,
+          `Conflicting personal data for volunteer ID "${row.externalId}": rows have different names or contact info`,
+        );
+      }
+    }
+
+    if (row.assignment && !row.project) {
+      throw createError(
+        400,
+        `Volunteer ID "${row.externalId}" has assignment "${row.assignment}" with no project`,
+      );
+    }
+
+    if (row.assignment && row.project) {
+      block.assignments.push({ assignment: row.assignment, project: row.project, shift: row.shift });
+    }
+  }
+
+  const result: VolunteerCreationBody[] = [];
+
+  for (const [externalId, block] of byId) {
+    if (!block.base) {
+      throw createError(
+        400,
+        `No personal data (email/phone) found for volunteer ID "${externalId}"`,
+      );
+    }
+
+    const baseFields: VolunteerCreationBody = {
+      firstName: block.base.firstName,
+      lastName: block.base.lastName,
+      email: block.base.email,
+      phoneNumber: normalizePhoneNumber(block.base.phoneNumber),
+      status: block.base.status,
+      address: block.base.address,
+      birthday: block.base.birthday || undefined,
+      preferredPronouns: block.base.preferredPronouns || undefined,
+      effectiveDate: block.base.effectiveDate || undefined,
+      mediaConsent: toConsentYesNo(block.base.mediaConsent),
+      faceConsent: toConsentYesNo(block.base.faceConsent),
+      nameConsent: toConsentName(block.base.nameConsent),
+      programNames: block.base.programs,
+      groupNames: block.base.groups,
+    };
+
+    if (block.assignments.length === 0) {
+      result.push(baseFields);
+    } else {
+      for (const a of block.assignments) {
+        result.push({
+          ...baseFields,
+          assignmentName: a.assignment,
+          projectName: a.project,
+          shiftNames: a.shift ? [a.shift] : [],
+        });
+      }
+    }
+  }
+
+  return result;
+};
+
 const parseVolunteersHelper = async (fileBuffer: Buffer) => {
   const parsedVolunteers: VolunteerCreationBody[] = [];
   const bufferStream = new PassThrough();
   bufferStream.end(fileBuffer);
 
+  let detectedNewFormat = false;
+  const newFormatRawRows: NewFormatRawRow[] = [];
+
   await new Promise<void>((resolve, reject) => {
     bufferStream
       .pipe(csvParser())
+      .on("headers", (headers: string[]) => {
+        detectedNewFormat = isNewCsvFormat(headers);
+      })
       .on("data", (data: Record<string, string>) => {
         if (data.Count === "0") {
           return;
         }
+
+        if (detectedNewFormat) {
+          newFormatRawRows.push(normalizeNewFormatRow(data));
+          return;
+        }
+
         const normalized = normalizeCSVData(data);
         const creationBody = parseCreationBody(normalized);
         const valid = validateVolunteer(creationBody);
@@ -686,7 +880,29 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
 
         parsedVolunteers.push(creationBody);
       })
-      .on("end", resolve)
+      .on("end", () => {
+        if (detectedNewFormat) {
+          try {
+            const aggregated = aggregateMultiRowVolunteers(newFormatRawRows);
+            for (const v of aggregated) {
+              if (!validateVolunteer(v)) {
+                reject(
+                  createError(
+                    400,
+                    `Invalid volunteer data for ID "${v.email}": missing required fields`,
+                  ),
+                );
+                return;
+              }
+            }
+            parsedVolunteers.push(...aggregated);
+          } catch (err) {
+            reject(err);
+            return;
+          }
+        }
+        resolve();
+      })
       .on("error", reject);
   });
 
@@ -733,12 +949,21 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
       .filter((v) => existingSet.has(v.email) || existingSet.has(v.phoneNumber))
       .map((v) => v.email);
 
-    const referencedTags: { name: string; type: "assignment" | "project" | "shift" }[] = [];
+    const referencedTags: {
+      name: string;
+      type: "assignment" | "project" | "shift" | "program" | "group";
+    }[] = [];
     for (const v of parsedVolunteers) {
       if (v.assignmentName) referencedTags.push({ name: v.assignmentName, type: "assignment" });
       if (v.projectName) referencedTags.push({ name: v.projectName, type: "project" });
       for (const shiftName of v.shiftNames ?? []) {
         referencedTags.push({ name: shiftName, type: "shift" });
+      }
+      for (const programName of v.programNames ?? []) {
+        referencedTags.push({ name: programName, type: "program" });
+      }
+      for (const groupName of v.groupNames ?? []) {
+        referencedTags.push({ name: groupName, type: "group" });
       }
     }
 
@@ -821,9 +1046,19 @@ type PopulatedAssignment = {
 
 type VolunteerExportDoc = Awaited<ReturnType<typeof VolunteerModel.findOne>> & object;
 
+type CsvRowContext = {
+  volunteer: VolunteerExportDoc;
+  volunteerId: number;
+  assignmentName: string;
+  projectName: string;
+  shiftName: string;
+  programNames: string[];
+  groupNames: string[];
+};
+
 type CsvColumn = {
   header: string;
-  toCell: (volunteer: VolunteerExportDoc, assignmentName: string, projectName: string) => string;
+  toCell: (ctx: CsvRowContext) => string;
 };
 
 const fmtDate = (date: Date | null | undefined): string =>
@@ -837,31 +1072,35 @@ const escapeCsvField = (value: string): string => {
 };
 
 const CSV_COLUMNS: CsvColumn[] = [
-  { header: "First Name", toCell: (v) => v.firstName },
-  { header: "Last Name", toCell: (v) => v.lastName },
-  { header: "assignment", toCell: (_, a) => a },
-  { header: "project", toCell: (_, __, p) => p },
-  { header: "Status", toCell: (v) => v.status ?? "" },
-  { header: "Address1", toCell: (v) => v.address?.line1 ?? "" },
-  { header: "Address2", toCell: (v) => v.address?.line2 ?? "" },
-  { header: "City", toCell: (v) => v.address?.city ?? "" },
-  { header: "State", toCell: (v) => v.address?.state ?? "" },
-  { header: "Zip", toCell: (v) => v.address?.zip ?? "" },
-  { header: "Birthday", toCell: (v) => fmtDate(v.birthday) },
-  { header: "Cell", toCell: (v) => v.phoneNumber },
-  { header: "Email", toCell: (v) => v.email },
-  { header: "NEW Pronouns", toCell: (v) => v.preferredPronouns ?? "" },
-  { header: "NEW Media Consent", toCell: (v) => v.mediaConsent ?? "" },
-  { header: "NEW Name Consent", toCell: (v) => v.nameConsent ?? "" },
-  { header: "NEW Face", toCell: (v) => v.faceConsent ?? "" },
-  { header: "Effective Date (date record was updated)", toCell: (v) => fmtDate(v.effectiveDate) },
+  { header: "constituent id", toCell: (ctx) => String(ctx.volunteerId) },
+  { header: "First Name", toCell: (ctx) => ctx.volunteer.firstName },
+  { header: "Last Name", toCell: (ctx) => ctx.volunteer.lastName },
+  { header: "program", toCell: (ctx) => ctx.programNames.join("; ") },
+  { header: "groups", toCell: (ctx) => ctx.groupNames.join("; ") },
+  { header: "assignment", toCell: (ctx) => ctx.assignmentName },
+  { header: "project", toCell: (ctx) => ctx.projectName },
+  { header: "shift", toCell: (ctx) => ctx.shiftName },
+  { header: "Status", toCell: (ctx) => ctx.volunteer.status ?? "" },
+  { header: "Address1", toCell: (ctx) => ctx.volunteer.address?.line1 ?? "" },
+  { header: "Address2", toCell: (ctx) => ctx.volunteer.address?.line2 ?? "" },
+  { header: "City", toCell: (ctx) => ctx.volunteer.address?.city ?? "" },
+  { header: "State", toCell: (ctx) => ctx.volunteer.address?.state ?? "" },
+  { header: "Zip", toCell: (ctx) => ctx.volunteer.address?.zip ?? "" },
+  { header: "Birthday", toCell: (ctx) => fmtDate(ctx.volunteer.birthday) },
+  { header: "Cell", toCell: (ctx) => ctx.volunteer.phoneNumber },
+  { header: "Email", toCell: (ctx) => ctx.volunteer.email },
+  { header: "NEW Pronouns", toCell: (ctx) => ctx.volunteer.preferredPronouns ?? "" },
+  { header: "NEW Media Consent", toCell: (ctx) => ctx.volunteer.mediaConsent ?? "" },
+  { header: "NEW Name Consent", toCell: (ctx) => ctx.volunteer.nameConsent ?? "" },
+  { header: "NEW Face", toCell: (ctx) => ctx.volunteer.faceConsent ?? "" },
+  {
+    header: "Effective Date (date record was updated)",
+    toCell: (ctx) => fmtDate(ctx.volunteer.effectiveDate),
+  },
 ];
 
-const buildCsvRow = (
-  volunteer: VolunteerExportDoc,
-  assignmentName: string,
-  projectName: string,
-): string[] => CSV_COLUMNS.map((col) => col.toCell(volunteer, assignmentName, projectName));
+const buildCsvRow = (ctx: CsvRowContext): string[] =>
+  CSV_COLUMNS.map((col) => col.toCell(ctx));
 
 const buildCsv = (rows: string[][]): string =>
   rows.map((row) => row.map(escapeCsvField).join(",")).join("\r\n");
@@ -872,7 +1111,7 @@ export const exportVolunteersCsv: RequestHandler = async (req, res, next) => {
     const volunteerFilter = Array.isArray(ids) && ids.length > 0 ? { _id: { $in: ids } } : {};
 
     const [volunteers, assignments] = await Promise.all([
-      VolunteerModel.find(volunteerFilter),
+      VolunteerModel.find(volunteerFilter).populate("groupTagIds").populate("programTagIds"),
       VolunteerAssignmentModel.find()
         .populate("assignmentTagId")
         .populate("projectTagId")
@@ -890,19 +1129,50 @@ export const exportVolunteersCsv: RequestHandler = async (req, res, next) => {
 
     const rows: string[][] = [CSV_COLUMNS.map((col) => col.header)];
 
-    for (const volunteer of volunteers) {
+    volunteers.forEach((volunteer, volunteerId) => {
       const volunteerAssignments = assignmentsByVolunteerId.get(volunteer._id.toString()) ?? [];
+      const programNames = ((volunteer.programTagIds ?? []) as unknown as PopulatedTag[]).map(
+        (t) => t.name,
+      );
+      const groupNames = ((volunteer.groupTagIds ?? []) as unknown as PopulatedTag[]).map(
+        (t) => t.name,
+      );
 
       if (volunteerAssignments.length === 0) {
-        rows.push(buildCsvRow(volunteer, "", ""));
-      } else {
-        for (const a of volunteerAssignments) {
-          rows.push(
-            buildCsvRow(volunteer, a.assignmentTagId?.name ?? "", a.projectTagId?.name ?? ""),
-          );
-        }
+        rows.push(buildCsvRow({ volunteer, volunteerId, assignmentName: "", projectName: "", shiftName: "", programNames, groupNames }));
+        return;
       }
-    }
+
+      volunteerAssignments.forEach((a, aIdx) => {
+        const shifts = a.shiftTagIds ?? [];
+        // Only the first row for each volunteer carries program/group — continuation rows leave them blank
+        const isFirstRow = aIdx === 0;
+
+        if (shifts.length === 0) {
+          rows.push(buildCsvRow({
+            volunteer,
+            volunteerId,
+            assignmentName: a.assignmentTagId?.name ?? "",
+            projectName: a.projectTagId?.name ?? "",
+            shiftName: "",
+            programNames: isFirstRow ? programNames : [],
+            groupNames: isFirstRow ? groupNames : [],
+          }));
+        } else {
+          shifts.forEach((shift, sIdx) => {
+            rows.push(buildCsvRow({
+              volunteer,
+              volunteerId,
+              assignmentName: a.assignmentTagId?.name ?? "",
+              projectName: a.projectTagId?.name ?? "",
+              shiftName: shift.name,
+              programNames: isFirstRow && sIdx === 0 ? programNames : [],
+              groupNames: isFirstRow && sIdx === 0 ? groupNames : [],
+            }));
+          });
+        }
+      });
+    });
 
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", 'attachment; filename="volunteers.csv"');

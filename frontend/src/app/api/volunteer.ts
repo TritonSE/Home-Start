@@ -65,6 +65,8 @@ type VolunteerParseCsvDTO = {
     assignmentName?: string;
     projectName?: string;
     shiftNames?: string[];
+    programNames?: string[];
+    groupNames?: string[];
   }[];
 };
 
@@ -175,7 +177,7 @@ export type VolunteerCsvParseResult = {
   wouldCreate: string[];
   wouldUpdate: string[];
   totalCount: number;
-  missingTags: { name: string; type: "assignment" | "project" | "shift" }[];
+  missingTags: { name: string; type: "assignment" | "project" | "shift" | "program" | "group" }[];
 
   volunteerInfo: {
     firstName: string;
@@ -195,6 +197,8 @@ export type VolunteerCsvParseResult = {
     assignmentName?: string;
     projectName?: string;
     shiftNames?: string[];
+    programNames?: string[];
+    groupNames?: string[];
   }[];
 };
 
@@ -250,6 +254,8 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
 
     const volunteerInfo = Array.isArray(parsed.volunteerInfo) ? parsed.volunteerInfo : [];
     const rawMissingTags = Array.isArray(parsed.missingTags) ? parsed.missingTags : [];
+    const VALID_TAG_TYPES = ["assignment", "project", "shift", "program", "group"] as const;
+    type ValidTagType = (typeof VALID_TAG_TYPES)[number];
     const missingTags = rawMissingTags
       .filter((t): t is { name: string; type: string } => {
         if (!t || typeof t !== "object") return false;
@@ -258,9 +264,9 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
       })
       .map((t) => ({
         name: t.name,
-        type: (["assignment", "project", "shift"].includes(t.type)
+        type: (VALID_TAG_TYPES.includes(t.type as ValidTagType)
           ? t.type
-          : "assignment") as "assignment" | "project" | "shift",
+          : "assignment") as ValidTagType,
       }));
     const result: VolunteerCsvParseResult = {
       wouldCreateCount: parsed.wouldCreateCount,
@@ -302,6 +308,12 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
           projectName: typeof item.projectName === "string" ? item.projectName : undefined,
           shiftNames: Array.isArray(item.shiftNames)
             ? item.shiftNames.filter((value): value is string => typeof value === "string")
+            : undefined,
+          programNames: Array.isArray(item.programNames)
+            ? item.programNames.filter((value): value is string => typeof value === "string")
+            : undefined,
+          groupNames: Array.isArray(item.groupNames)
+            ? item.groupNames.filter((value): value is string => typeof value === "string")
             : undefined,
         })),
     };

@@ -8,14 +8,13 @@ import { useTextingFlowStore } from "../_store/textingFlowStore";
 
 import styles from "./page.module.css";
 
-import { createMessageHistory } from "@/app/api/messages";
+import { createMessageHistory, sendEmails } from "@/app/api/messages";
 import { fetchVolunteers } from "@/app/api/volunteer";
 import backIconAsset from "@/assets/back.svg";
 import groupsIconAsset from "@/assets/ic_volunteers_alt.svg";
 import { getGraphToken, signInWithOutlook } from "@/auth/msal";
 import RecipientsPanel from "@/components/messages/RecipientsPanel";
 import Sidebar from "@/components/Sidebar";
-import { auth } from "@/firebase/firebase";
 
 const DESKTOP_MQ = "(min-width: 1024px)";
 const FIRST_NAME_TOKEN = "{{First Name}}";
@@ -89,12 +88,6 @@ export default function ReviewAndSendPage() {
           return;
         }
 
-        const firebaseToken = await auth.currentUser?.getIdToken();
-        if (!firebaseToken) {
-          setSendError("You must be logged in to send emails.");
-          return;
-        }
-
         const allVolunteers = await fetchVolunteers();
         const recipients = allVolunteers.filter((v) => selectedRecipientIds.includes(v._id));
         if (recipients.length === 0) {
@@ -102,24 +95,16 @@ export default function ReviewAndSendPage() {
           return;
         }
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/messages/send-email`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${firebaseToken}`,
-          },
-          body: JSON.stringify({
-            graphToken,
-            recipients,
-            subject,
-            message,
-            ...(sendDate && { sendDate: sendDate.toISOString() }),
-          }),
+        const emailResult = await sendEmails({
+          graphToken,
+          recipients,
+          subject,
+          message,
+          ...(sendDate && { sendDate: sendDate.toISOString() }),
         });
-
-        if (!res.ok) {
-          const err = (await res.json()) as { error?: string };
-          setSendError(err.error ?? "Failed to send emails. Please try again.");
+        
+        if (!emailResult.success) {
+          setSendError(emailResult.error);
           return;
         }
 

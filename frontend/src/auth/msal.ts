@@ -2,11 +2,13 @@ import { PublicClientApplication } from "@azure/msal-browser";
 
 import type { AccountInfo } from "@azure/msal-browser";
 
+import env from "@/util/validateEnv";
+
 const msal = new PublicClientApplication({
   auth: {
-    clientId: process.env.NEXT_PUBLIC_MS_CLIENT_ID!,
+    clientId: env.NEXT_PUBLIC_MS_CLIENT_ID,
     authority: "https://login.microsoftonline.com/common",
-    redirectUri: process.env.NEXT_PUBLIC_MS_REDIRECT_URI!,
+    redirectUri: env.NEXT_PUBLIC_MS_REDIRECT_URI,
   },
 });
 

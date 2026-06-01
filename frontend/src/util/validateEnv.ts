@@ -13,9 +13,9 @@ export default cleanEnv(
     NEXT_PUBLIC_MS_REDIRECT_URI: process.env.NEXT_PUBLIC_MS_REDIRECT_URI,
   },
   {
-    NEXT_PUBLIC_FIREBASE: json(), // Firebase settings for frontend, stored as a JSON string
-    NEXT_PUBLIC_API_URL: str(),
-    NEXT_PUBLIC_MS_CLIENT_ID: str(),
-    NEXT_PUBLIC_MS_REDIRECT_URI: str(),
+    NEXT_PUBLIC_FIREBASE: json(),
+    NEXT_PUBLIC_API_URL: str({ default: "http://localhost:4000" }),
+    NEXT_PUBLIC_MS_CLIENT_ID: str({ default: "" }),
+    NEXT_PUBLIC_MS_REDIRECT_URI: str({ default: "" }),
   },
 );

@@ -102,7 +102,7 @@ export default function ReviewAndSendPage() {
           message,
           ...(sendDate && { sendDate: sendDate.toISOString() }),
         });
-        
+
         if (!emailResult.success) {
           setSendError(emailResult.error);
           return;

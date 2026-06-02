@@ -9,10 +9,10 @@ import type { VolunteerWithTags } from "@/types/volunteer";
 
 type TitleBarProps = {
   onImportComplete: () => void;
-  selectedVolunteers: VolunteerWithTags[];
+  selectedVolunteers?: VolunteerWithTags[];
 };
 
-export default function TitleBar({ onImportComplete, selectedVolunteers }: TitleBarProps) {
+export default function TitleBar({ onImportComplete, selectedVolunteers = [] }: TitleBarProps) {
   const [open, setOpen] = useState(false);
   return (
     <div className={styles.titleBar}>

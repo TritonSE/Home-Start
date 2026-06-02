@@ -2,8 +2,8 @@ import Image from "next/image";
 import { useState } from "react";
 
 import styles from "./ImportVolunteerModal.module.css";
+import Pagination from "./messages/pagination";
 import Modal from "./Modal";
-import PageBar from "./PageBar";
 
 import type { VolunteerCsvParseResult } from "@/app/api/volunteer";
 
@@ -472,13 +472,11 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                     </div>
                   </div>
                   {csvParsedInfo && csvParsedInfo.uniqueVolunteers.length > ITEMS_PER_PAGE && (
-                    <PageBar
+                    <Pagination
                       totalItems={csvParsedInfo.uniqueVolunteers.length}
                       currentPage={currentPage}
                       itemsPerPage={ITEMS_PER_PAGE}
-                      onPageChange={(page) => {
-                        setCurrentPage(page);
-                      }}
+                      setPageIndex={setCurrentPage}
                     />
                   )}
                 </>

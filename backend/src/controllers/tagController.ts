@@ -70,9 +70,9 @@ export const createTag: RequestHandler = async (req, res, next) => {
   try {
     validationErrorParser(errors);
 
-    const tag = await TagModel.findOne({ name });
+    const tag = await TagModel.findOne({ name, type });
     if (tag) {
-      throw createHttpError(409, "Tag with this name already exists");
+      throw createHttpError(409, "Tag with this name and type already exists");
     }
 
     const newTag = await TagModel.create({
@@ -86,8 +86,46 @@ export const createTag: RequestHandler = async (req, res, next) => {
   }
 };
 
+type TagUpdateBody = {
+  name: string;
+  color: string;
+};
+
+export const updateTag: RequestHandler = async (req, res, next) => {
+  const errors = validationResult(req);
+  const tagId = req.params.id;
+  const { name, color } = req.body as TagUpdateBody;
+
+  try {
+    validationErrorParser(errors);
+
+    const tag = await TagModel.findById(tagId);
+    if (!tag) {
+      throw createHttpError(404, "Could not find tag");
+    }
+
+    const duplicateTag = await TagModel.findOne({
+      _id: { $ne: tagId },
+      name,
+      type: tag.type,
+    });
+    if (duplicateTag) {
+      throw createHttpError(409, "Tag with this name and type already exists");
+    }
+
+    tag.name = name;
+    tag.color = color;
+    await tag.save();
+
+    res.status(200).json(tag);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const deleteTag: RequestHandler = async (req, res, next) => {
-  const tagId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const rawTagId = req.params.id as string | string[];
+  const tagId = Array.isArray(rawTagId) ? rawTagId[0] : rawTagId;
 
   try {
     const tagObjectId = new Types.ObjectId(tagId);

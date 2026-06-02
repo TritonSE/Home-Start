@@ -56,7 +56,6 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
             alt="Home Start"
             className={styles.logo}
             width={115}
-            height={140}
             style={{ height: "auto" }}
             priority
           />
@@ -75,6 +74,7 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
                 aria-current={active ? "page" : undefined}
               >
                 <Image src={item.icon} alt="" className={styles.icon} aria-hidden="true" />
+                {}
                 <span className={styles.label}>{item.label}</span>
               </Link>
             );

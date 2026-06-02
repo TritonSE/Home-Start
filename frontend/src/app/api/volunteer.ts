@@ -171,6 +171,65 @@ export async function fetchVolunteerAssignmentsByVolunteerId(
   return (await res.json()) as VolunteerAssignment[];
 }
 
+export async function createVolunteerAssignment(body: {
+  volunteerId: string;
+  assignmentTagId: string;
+  projectTagId: string;
+  shiftTagIds?: string[];
+}): Promise<VolunteerAssignment> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_BASE_URL}/api/volunteerAssignment`, {
+      method: "POST",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to create volunteer assignment: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data: unknown = await response.json();
+    return data as VolunteerAssignment;
+  } catch (error) {
+    console.error("Error creating volunteer assignment:", error);
+    throw error instanceof Error ? error : new Error("Unknown error creating volunteer assignment");
+  }
+}
+
+export async function updateVolunteerAssignment(
+  id: string,
+  body: {
+    shiftTagIds?: string[];
+    removeShiftTagIds?: string[];
+  },
+): Promise<VolunteerAssignment> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_BASE_URL}/api/volunteerAssignment/${id}`, {
+      method: "PUT",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to update volunteer assignment: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data: unknown = await response.json();
+    return data as VolunteerAssignment;
+  } catch (error) {
+    console.error("Error updating volunteer assignment:", error);
+    throw error instanceof Error ? error : new Error("Unknown error updating volunteer assignment");
+  }
+}
+
 export type VolunteerCsvParseResult = {
   wouldCreateCount: number;
   wouldUpdateCount: number;
@@ -277,9 +336,7 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
       missingTags,
       volunteerInfo: volunteerInfo
         .filter((item): item is VolunteerParseCsvDTO["volunteerInfo"][number] => {
-          if (!item || typeof item !== "object") {
-            return false;
-          }
+          if (!item || typeof item !== "object") return false;
           const row = item as Partial<VolunteerParseCsvDTO["volunteerInfo"][number]>;
           return (
             typeof row.firstName === "string" &&
@@ -307,7 +364,7 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
           assignmentName: typeof item.assignmentName === "string" ? item.assignmentName : undefined,
           projectName: typeof item.projectName === "string" ? item.projectName : undefined,
           shiftNames: Array.isArray(item.shiftNames)
-            ? item.shiftNames.filter((value): value is string => typeof value === "string")
+            ? item.shiftNames.filter((v): v is string => typeof v === "string")
             : undefined,
           programNames: Array.isArray(item.programNames)
             ? item.programNames.filter((value): value is string => typeof value === "string")
@@ -394,41 +451,6 @@ export async function uploadVolunteerBatch(
       ok: false,
       error: error instanceof Error ? error.message : "Unknown error uploading volunteers",
     };
-  }
-}
-
-export async function getVolunteerRows(): Promise<
-  { id: string; firstName: string; lastName: string }[]
-> {
-  try {
-    const headers = await getAuthHeaders();
-
-    const response = await fetch(`${API_BASE_URL}/api/volunteer/getVolunteerRows`, {
-      headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch volunteer rows: ${response.status} ${response.statusText}`);
-    }
-
-    const data: unknown = await response.json();
-
-    if (!Array.isArray(data)) {
-      throw new TypeError(`Expected array but got ${typeof data}`);
-    }
-
-    return data.map((item) => {
-      const row = isRecord(item) ? item : {};
-
-      return {
-        id: String(row.id ?? ""),
-        firstName: String(row.firstName ?? ""),
-        lastName: String(row.lastName ?? ""),
-      };
-    });
-  } catch (error) {
-    console.error("Error fetching volunteer rows: ", error);
-    throw error;
   }
 }
 

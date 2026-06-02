@@ -27,7 +27,7 @@
   justify-content: flex-start;
   background-color: #fff !important;
   color: #000 !important;
-  padding: 120px 60px;
+  padding: 15px 60px;
   gap: 16px;
 }
 
@@ -76,6 +76,29 @@
   font-size: 20px;
   cursor: pointer;
   color: #1f6b3a;
+}
+
+.sendMessageBtn {
+  position: sticky;
+  bottom: 40px;
+  align-self: flex-end;
+  z-index: 100;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  transition: transform 120ms ease;
+}
+
+.sendMessageBtn:active {
+  transform: scale(0.95);
+}
+
+.sendMessageBtn img {
+  transition: width 150ms ease;
 }
 
 .tableSummaryRow {

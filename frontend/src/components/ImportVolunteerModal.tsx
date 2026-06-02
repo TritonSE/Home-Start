@@ -248,6 +248,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
       titleFontSize="32px"
       titleLineHeight={40}
       padding="28px"
+      zIndex={2000}
     >
       <div className={styles.step}>
         <div className={styles.stepItem}>

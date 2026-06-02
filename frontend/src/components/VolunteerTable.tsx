@@ -37,19 +37,24 @@ const getVisibleTags = (tags: VolunteerTag[], type: string, maxVisible: number) 
 type VolunteerTableProps = {
   volunteers: VolunteerWithTags[];
   selectableVolunteers?: VolunteerWithTags[];
-  onSelectedCountChange?: (count: number) => void;
-  onSelectionChange?: (ids: Set<string>) => void;
+  controlledSelectedIds?: Set<string>;
+  onControlledToggleOne?: (id: string) => void;
+  onControlledToggleAll?: (scope: VolunteerWithTags[]) => void;
   onVolunteerSelect?: (volunteer: VolunteerWithTags) => void;
 };
 
 export default function VolunteerTable({
   volunteers,
   selectableVolunteers,
-  onSelectedCountChange,
-  onSelectionChange,
+  controlledSelectedIds,
+  onControlledToggleOne,
+  onControlledToggleAll,
   onVolunteerSelect,
 }: VolunteerTableProps) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
+  const isControlled = controlledSelectedIds !== undefined;
+  const selectedIds = isControlled ? controlledSelectedIds : internalSelectedIds;
+
   const selectionScope = selectableVolunteers ?? volunteers;
 
   const allSelected =
@@ -58,28 +63,29 @@ export default function VolunteerTable({
   const someSelected = selectionScope.some((volunteer) => selectedIds.has(volunteer._id));
 
   function toggleAll() {
+    if (isControlled) {
+      onControlledToggleAll?.(selectionScope);
+      return;
+    }
     if (allSelected) {
-      setSelectedIds(new Set());
+      setInternalSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(selectionScope.map((volunteer) => volunteer._id)));
+      setInternalSelectedIds(new Set(selectionScope.map((volunteer) => volunteer._id)));
     }
   }
 
-  function deselectAll() {
-    setSelectedIds(new Set());
-  }
-
   useEffect(() => {
-    onSelectedCountChange?.(selectedIds.size);
-    onSelectionChange?.(selectedIds);
-  }, [selectedIds, onSelectedCountChange, onSelectionChange]);
-
-  useEffect(() => {
-    deselectAll();
-  }, [selectionScope]);
+    if (!isControlled) {
+      setInternalSelectedIds(new Set());
+    }
+  }, [selectionScope, isControlled]);
 
   function toggleOne(id: string) {
-    setSelectedIds((prev) => {
+    if (isControlled) {
+      onControlledToggleOne?.(id);
+      return;
+    }
+    setInternalSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -130,6 +136,16 @@ export default function VolunteerTable({
             </th>
             <th>
               <div className={styles.headerContent}>
+                <span>Phone Number</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Email</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
                 <span>Status</span>
               </div>
             </th>
@@ -148,16 +164,6 @@ export default function VolunteerTable({
                 <span>Project</span>
               </div>
             </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Phone Number</span>
-              </div>
-            </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Email</span>
-              </div>
-            </th>
           </tr>
         </thead>
         <tbody>
@@ -168,7 +174,7 @@ export default function VolunteerTable({
               onClick={() => onVolunteerSelect?.(volunteer)}
               style={{ cursor: onVolunteerSelect ? "pointer" : "default" }}
             >
-              <td className={styles.checkboxCell}>
+              <td className={styles.checkboxCell} onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
                   className={styles.checkbox}
@@ -180,6 +186,8 @@ export default function VolunteerTable({
               </td>
               <td>{volunteer.lastName}</td>
               <td>{volunteer.firstName}</td>
+              <td>{volunteer.phoneNumber}</td>
+              <td>{volunteer.email}</td>
               <td>
                 <div className={styles.tagsContainer}>
                   <span
@@ -301,9 +309,6 @@ export default function VolunteerTable({
                   })()}
                 </div>
               </td>
-
-              <td>{volunteer.phoneNumber}</td>
-              <td>{volunteer.email}</td>
             </tr>
           ))}
         </tbody>

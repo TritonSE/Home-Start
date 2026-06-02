@@ -13,6 +13,8 @@ import type { Template } from "@/app/api/template";
 import { deleteTemplate, getTemplates, TemplateType } from "@/app/api/template";
 import icAddAsset from "@/assets/ic_add.svg";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
+import { initMsal, signInWithOutlook } from "@/auth/msal";
+import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
 import TemplateActionPopup from "@/components/TemplateActionPopup";
 import { TemplateList } from "@/components/TemplateList";
@@ -32,6 +34,7 @@ export default function TemplatePage() {
   const [openPopup, setOpenPopup] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState(false);
   const [templateType, setTemplateType] = useState<TemplateType>(TemplateType.TEXT);
+  const [successToast, setSuccessToast] = useState("");
 
   const fetchTemplates = () => {
     getTemplates()
@@ -50,6 +53,11 @@ export default function TemplatePage() {
 
   useEffect(() => {
     fetchTemplates();
+    const message = sessionStorage.getItem("success-toast");
+    if (message) {
+      setSuccessToast(message);
+      sessionStorage.removeItem("success-toast");
+    }
   }, []);
 
   useEffect(() => {
@@ -76,6 +84,7 @@ export default function TemplatePage() {
             setOpenPopup(false);
             // reload data
             fetchTemplates();
+            setSuccessToast("Template Deleted");
           } else {
             console.error(result.error);
           }
@@ -92,8 +101,26 @@ export default function TemplatePage() {
     }
   };
 
+  const onSelectTemplate = async (template: Template) => {
+    sessionStorage.setItem("success-toast", "Template Successfully Pasted");
+    if (template.type === TemplateType.EMAIL && !(await initMsal())) {
+      await signInWithOutlook();
+    }
+    void router.push("/communication");
+  };
+
+  const onToastDone = () => {
+    setSuccessToast("");
+  };
+
   return (
     <Sidebar>
+      <SuccessToast
+        open={!!successToast}
+        message={successToast}
+        durationMs={2600}
+        onDone={onToastDone}
+      />
       <div className={styles.page}>
         <header className={styles.header}>
           <Image src={icCaretLeft} alt="" width={40} height={40} onClick={handleBackClicked} />
@@ -107,7 +134,10 @@ export default function TemplatePage() {
           )}
         </header>
         {previewTemplate && selectedTemplate ? (
-          <TemplatePreview template={selectedTemplate} />
+          <TemplatePreview
+            template={selectedTemplate}
+            onUse={(template: Template) => void onSelectTemplate(template)}
+          />
         ) : (
           <>
             <div className={styles.templateType}>

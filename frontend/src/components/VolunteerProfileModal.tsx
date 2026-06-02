@@ -2,6 +2,9 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
+import CreateRoleModal from "./CreateRoleModal";
+import CreateShiftModal from "./CreateShiftModal";
+import EditTagModal from "./EditTagModal";
 import Modal from "./Modal";
 import RoleTable from "./RoleTable";
 import RoleTableEdit from "./RoleTableEdit";
@@ -17,7 +20,10 @@ import type {
 } from "../types/volunteer";
 
 import { createTag, searchTags } from "@/app/api/tag";
-import { fetchVolunteerAssignmentsByVolunteerId } from "@/app/api/volunteer";
+import {
+  fetchVolunteerAssignmentsByVolunteerId,
+  updateVolunteerAssignment,
+} from "@/app/api/volunteer";
 import icCloseAsset from "@/assets/ic_close.svg";
 import { auth } from "@/firebase/firebase";
 
@@ -70,6 +76,17 @@ const getTextColorForBackground = (backgroundColor: string): string => {
   );
   return found?.color ?? "#000000";
 };
+
+const toTagId = (tag: string | VolunteerTag): string => (typeof tag === "string" ? tag : tag._id);
+
+const getShiftTagIds = (assignment: VolunteerAssignment): string[] =>
+  assignment.shiftTagIds.map((tag) => toTagId(tag));
+
+const cloneAssignments = (assignments: VolunteerAssignment[]): VolunteerAssignment[] =>
+  assignments.map((assignment) => ({
+    ...assignment,
+    shiftTagIds: [...assignment.shiftTagIds],
+  }));
 
 function ConsentSelect({
   value,
@@ -337,6 +354,9 @@ export default function VolunteerProfileModal({
 }: VolunteerProfileModalProps) {
   const [activeTab, setActiveTab] = useState("view");
   const [volunteerAssignments, setVolunteerAssignments] = useState<VolunteerAssignment[]>([]);
+  const [editedVolunteerAssignments, setEditedVolunteerAssignments] = useState<
+    VolunteerAssignment[]
+  >([]);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -356,10 +376,14 @@ export default function VolunteerProfileModal({
   const [nameConsent, setNameConsent] = useState<"no" | "first" | "full">("no");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [saveKey, setSaveKey] = useState(0);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successKey, setSuccessKey] = useState(0);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [pendingExitAction, setPendingExitAction] = useState<"close" | "switchToView" | null>(null);
+  const [showCreateShiftModal, setShowCreateShiftModal] = useState(false);
+  const [showCreateRoleModal, setShowCreateRoleModal] = useState(false);
+  const [tagToEdit, setTagToEdit] = useState<VolunteerTag | null>(null);
+  const [selectedAssignment, setSelectedAssignment] = useState<VolunteerAssignment | null>(null);
   const [removedGroupIds, setRemovedGroupIds] = useState<Set<string>>(new Set());
   const [removedProgramIds, setRemovedProgramIds] = useState<Set<string>>(new Set());
   const [addedGroupTags, setAddedGroupTags] = useState<VolunteerTag[]>([]);
@@ -374,6 +398,18 @@ export default function VolunteerProfileModal({
   const resolvedProgramTags = (
     Array.isArray(volunteer?.programTagIds) ? volunteer.programTagIds : []
   ).filter((tag): tag is VolunteerTag => typeof tag === "object" && tag !== null);
+
+  const loadVolunteerAssignments = async (volunteerId: string) => {
+    try {
+      const assignments = await fetchVolunteerAssignmentsByVolunteerId(volunteerId);
+      setVolunteerAssignments(assignments);
+      setEditedVolunteerAssignments(cloneAssignments(assignments));
+    } catch (error) {
+      console.error("Failed to fetch volunteer assignments:", error);
+      setVolunteerAssignments([]);
+      setEditedVolunteerAssignments([]);
+    }
+  };
 
   // Effect to handle Group searching
   useEffect(() => {
@@ -455,26 +491,29 @@ export default function VolunteerProfileModal({
     setActiveTab("view");
     resetForm(volunteer);
 
-    // Fetch volunteer assignments
-    const fetchAssignments = async () => {
-      try {
-        const assignments = await fetchVolunteerAssignmentsByVolunteerId(volunteer._id);
-        setVolunteerAssignments(assignments);
-      } catch (error) {
-        console.error("Failed to fetch volunteer assignments:", error);
-        setVolunteerAssignments([]);
-      }
-    };
-
-    void fetchAssignments();
+    void loadVolunteerAssignments(volunteer._id);
   }, [volunteer, isOpen]);
 
   useEffect(() => {
-    setShowSuccess(false);
+    setSuccessMessage(null);
   }, [volunteer?._id]);
 
   useEffect(() => {
-    if (!isOpen) setShowSuccess(false);
+    if (!isOpen) setSuccessMessage(null);
+  }, [isOpen]);
+
+  const triggerSuccessNotification = (message: string) => {
+    setSuccessKey((key) => key + 1);
+    setSuccessMessage(message);
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      setShowCreateShiftModal(false);
+      setShowCreateRoleModal(false);
+      setTagToEdit(null);
+      setSelectedAssignment(null);
+    }
   }, [isOpen]);
 
   // Validate hours input before save
@@ -570,10 +609,37 @@ export default function VolunteerProfileModal({
         throw new Error(payload.error || "Failed to update volunteer");
       }
 
+      const assignmentUpdates: Promise<VolunteerAssignment>[] = [];
+      for (const originalAssignment of volunteerAssignments) {
+        const editedAssignment = editedVolunteerAssignments.find(
+          (assignment) => assignment._id === originalAssignment._id,
+        );
+
+        if (!editedAssignment) continue;
+
+        const originalShiftTagIds = getShiftTagIds(originalAssignment);
+        const editedShiftTagIds = new Set(getShiftTagIds(editedAssignment));
+        const removedShiftTagIds = originalShiftTagIds.filter(
+          (tagId) => !editedShiftTagIds.has(tagId),
+        );
+
+        if (removedShiftTagIds.length === 0) continue;
+
+        assignmentUpdates.push(
+          updateVolunteerAssignment(originalAssignment._id, {
+            removeShiftTagIds: removedShiftTagIds,
+          }),
+        );
+      }
+
+      if (assignmentUpdates.length > 0) {
+        await Promise.all(assignmentUpdates);
+      }
+
       const updated = (await response.json()) as Volunteer;
       onVolunteerUpdated?.(updated);
-      setSaveKey((k) => k + 1);
-      setShowSuccess(true);
+      setVolunteerAssignments(cloneAssignments(editedVolunteerAssignments));
+      triggerSuccessNotification("Successfully Updated Profile");
       setActiveTab("view");
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : "Failed to update volunteer");
@@ -584,6 +650,21 @@ export default function VolunteerProfileModal({
 
   const checkIsDirty = (): boolean => {
     if (!volunteer) return false;
+
+    const hasShiftTagRemoval = volunteerAssignments.some((originalAssignment) => {
+      const editedAssignment = editedVolunteerAssignments.find(
+        (assignment) => assignment._id === originalAssignment._id,
+      );
+
+      if (!editedAssignment) return false;
+
+      const originalShiftTagIds = getShiftTagIds(originalAssignment);
+      const editedShiftTagIds = getShiftTagIds(editedAssignment);
+
+      if (originalShiftTagIds.length !== editedShiftTagIds.length) return true;
+      return originalShiftTagIds.some((tagId, index) => tagId !== editedShiftTagIds[index]);
+    });
+
     return (
       firstName !== volunteer.firstName ||
       lastName !== volunteer.lastName ||
@@ -606,7 +687,62 @@ export default function VolunteerProfileModal({
       removedGroupIds.size > 0 ||
       removedProgramIds.size > 0 ||
       addedGroupTags.length > 0 ||
-      addedProgramTags.length > 0
+      addedProgramTags.length > 0 ||
+      hasShiftTagRemoval
+    );
+  };
+
+  const handleRemoveShiftTag = (assignmentId: string, shiftTagId: string) => {
+    setEditedVolunteerAssignments((previousAssignments) =>
+      previousAssignments.map((assignment) => {
+        if (assignment._id !== assignmentId) {
+          return assignment;
+        }
+
+        return {
+          ...assignment,
+          shiftTagIds: assignment.shiftTagIds.filter((tag) => toTagId(tag) !== shiftTagId),
+        };
+      }),
+    );
+  };
+
+  const handleOpenCreateShiftModal = (assignment: VolunteerAssignment) => {
+    setSelectedAssignment(assignment);
+    setShowCreateShiftModal(true);
+  };
+
+  const handleOpenCreateRoleModal = () => {
+    setShowCreateRoleModal(true);
+  };
+
+  const handleOpenEditTagModal = (tag: VolunteerTag) => {
+    setTagToEdit(tag);
+  };
+
+  const handleAssignmentChanged = () => {
+    if (!volunteer) return;
+    void loadVolunteerAssignments(volunteer._id);
+  };
+
+  const handleShiftSaved = (result: "linked-existing" | "created-and-linked") => {
+    handleAssignmentChanged();
+    triggerSuccessNotification(
+      result === "created-and-linked"
+        ? "Successfully Created Shift"
+        : "Successfully Added Existing Shift",
+    );
+  };
+
+  const handleRoleCreated = () => {
+    handleAssignmentChanged();
+    triggerSuccessNotification("Successfully Created Role");
+  };
+
+  const handleTagChanged = (action: "updated" | "deleted") => {
+    handleAssignmentChanged();
+    triggerSuccessNotification(
+      action === "deleted" ? "Successfully Deleted Tag" : "Successfully Updated Tag",
     );
   };
 
@@ -1172,7 +1308,13 @@ export default function VolunteerProfileModal({
                     <span className={styles.tapRemoveHint}>Tap x to Remove</span>
                   </div>
                   <div className={styles.tagsWrapper}>
-                    <RoleTableEdit volunteerAssignments={volunteerAssignments} />
+                    <RoleTableEdit
+                      volunteerAssignments={editedVolunteerAssignments}
+                      onRemoveShiftTag={handleRemoveShiftTag}
+                      onAddShiftTag={handleOpenCreateShiftModal}
+                      onCreateRole={handleOpenCreateRoleModal}
+                      onEditTag={handleOpenEditTagModal}
+                    />
                   </div>
                 </div>
               </div>
@@ -1217,9 +1359,7 @@ export default function VolunteerProfileModal({
           </div>
         ) : null}
       </div>
-      {showSuccess ? (
-        <SuccessNotification key={saveKey} message="Successfully Created Role" />
-      ) : null}
+      {successMessage ? <SuccessNotification key={successKey} message={successMessage} /> : null}
       {showCancelConfirm ? (
         <Modal
           onClose={() => setShowCancelConfirm(false)}
@@ -1229,6 +1369,7 @@ export default function VolunteerProfileModal({
           titleFontSize="18px"
           titleLineHeight={24}
           padding="20px"
+          zIndex={1050}
         >
           <p className={styles.confirmBody}>
             All changes will be discarded if you leave. Are you sure?
@@ -1242,6 +1383,7 @@ export default function VolunteerProfileModal({
               onClick={() => {
                 setShowCancelConfirm(false);
                 resetForm(volunteer);
+                setEditedVolunteerAssignments(cloneAssignments(volunteerAssignments));
                 if (pendingExitAction === "close") {
                   onClose();
                 } else {
@@ -1254,6 +1396,30 @@ export default function VolunteerProfileModal({
             </button>
           </div>
         </Modal>
+      ) : null}
+      {showCreateShiftModal ? (
+        <CreateShiftModal
+          onClose={() => {
+            setShowCreateShiftModal(false);
+            setSelectedAssignment(null);
+          }}
+          assignment={selectedAssignment}
+          onSaved={handleShiftSaved}
+        />
+      ) : null}
+      {showCreateRoleModal ? (
+        <CreateRoleModal
+          onClose={() => setShowCreateRoleModal(false)}
+          volunteer={volunteer}
+          onCreated={handleRoleCreated}
+        />
+      ) : null}
+      {tagToEdit ? (
+        <EditTagModal
+          onClose={() => setTagToEdit(null)}
+          tag={tagToEdit}
+          onChanged={handleTagChanged}
+        />
       ) : null}
     </>
   );

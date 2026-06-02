@@ -27,8 +27,18 @@ export async function initMsal(): Promise<AccountInfo | undefined> {
         navigateToLoginRequestUrl: false,
       });
       account = result?.account;
-    } catch (e) {
+    } catch (e: unknown) {
+      if (
+        typeof e === "object" &&
+        e !== null &&
+        "errorCode" in e &&
+        e.errorCode === "access_denied"
+      ) {
+        console.info("User cancelled Microsoft login");
+        return undefined;
+      }
       console.error("MSAL Redirect Error:", e);
+      return undefined;
     }
 
     if (!account) {

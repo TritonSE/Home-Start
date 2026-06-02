@@ -72,12 +72,22 @@
 
 .shiftCell {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-direction: column;
   padding: 8px 12px;
   justify-content: flex-start;
   align-items: center;
   gap: 8px;
+}
+
+.shiftCellEmpty {
+  align-items: flex-start;
+}
+
+.shiftTagRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
 }
 
 .pillTag {
@@ -96,6 +106,61 @@
   line-height: 16px;
   font-family: "Open Sans", sans-serif;
   font-weight: 500;
+}
+
+.pillTagButton {
+  border: none;
+  cursor: pointer;
+}
+
+.tagNameButton {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  line-height: inherit;
+  padding: 0;
+}
+
+.pillTagWithClose {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  padding-left: 12px;
+  padding-right: 8px;
+  border-radius: 100px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  gap: 8px;
+  font-size: 12px;
+  min-height: 32px;
+  line-height: 16px;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 500;
+}
+
+.tagCloseButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #a40026;
+  line-height: 1;
+}
+
+.tagCloseButton svg {
+  stroke: #a40026;
+  width: 12px;
+  height: 12px;
 }
 
 .emptyState {
@@ -126,6 +191,10 @@
   height: 24px;
   border-radius: 999px;
   flex: 0 0 auto;
+}
+
+.shiftAddButtonInline {
+  margin-left: 0;
 }
 
 .createRoleFooter {

@@ -7,11 +7,14 @@ import mongoose from "mongoose";
 
 import app from "./app";
 import { database_url, port } from "./config";
+import { startMessageWorker } from "./workers/messageWorker";
 
 async function startServer() {
   try {
     await mongoose.connect(database_url);
     console.info("Database Connected");
+
+    startMessageWorker();
 
     app.listen(port, () => {
       console.info(`Listening on port ${port}`);

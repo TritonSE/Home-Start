@@ -7,7 +7,7 @@ import RecipientRow from "./RecipientRow";
 import styles from "./RecipientsPanel.module.css";
 
 import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
-import SearchBar from "@/components/SearchBar";
+import SearchBarPanel from "@/components/SearchBarPanel";
 import volunteerFilterHook from "@/hooks/volunteerFilterHook";
 
 type RecipientsPanelProps = {
@@ -26,13 +26,23 @@ export default function RecipientsPanel({ mode }: RecipientsPanelProps) {
   const {
     search,
     handleSearchChange,
-    selectedStatus,
-    handleSelectedStatusChange,
     filteredVolunteers,
     displayedVolunteers,
     currentPage,
     itemsPerPage,
     setCurrentPage,
+    projectTags,
+    programTags,
+    assignmentTags,
+    statusTags,
+    selectedProject,
+    handleSelectedProjectChange,
+    selectedProgram,
+    handleSelectedProgramChange,
+    selectedAssignment,
+    handleSelectedAssignmentChange,
+    selectedStatus,
+    handleSelectedStatusChange,
   } = volunteerFilterHook({ itemsPerPage: NUMBER_OF_VOLUNTEERS_PER_PAGE });
 
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
@@ -48,14 +58,21 @@ export default function RecipientsPanel({ mode }: RecipientsPanelProps) {
 
   return (
     <div className={mode === "panel" ? styles.panel : styles.pageBody}>
-      <SearchBar
+      <SearchBarPanel
         search={search}
         setSearch={handleSearchChange}
+        projectTags={projectTags}
+        programTags={programTags}
+        assignmentTags={assignmentTags}
+        statusTags={statusTags}
+        selectedProject={selectedProject}
+        setSelectedProject={handleSelectedProjectChange}
+        selectedProgram={selectedProgram}
+        setSelectedProgram={handleSelectedProgramChange}
+        selectedAssignment={selectedAssignment}
+        setSelectedAssignment={handleSelectedAssignmentChange}
         selectedStatus={selectedStatus}
         setSelectedStatus={handleSelectedStatusChange}
-        projectTags={[]}
-        assignmentTags={[]}
-        programTags={[]}
         sortType="Newest"
         onSortOptionChange={() => {}}
       />
@@ -69,32 +86,40 @@ export default function RecipientsPanel({ mode }: RecipientsPanelProps) {
           <button
             type="button"
             className={styles.selectAllLink}
-            onClick={() => toggleSelectAll(filteredVolunteers)}
+            onClick={() => {
+              toggleSelectAll(filteredVolunteers);
+            }}
           >
             {allFilteredSelected ? "Deselect All" : "Select All"}
           </button>
         )}
       </div>
 
-      <div className={styles.list}>
-        {displayedVolunteers.map((r) => (
-          <RecipientRow
-            key={r._id + r.firstName}
-            name={`${r.firstName} ${r.lastName}`}
-            tags={[]}
-            selected={mounted ? selectedSet.has(r._id) : false}
-            onToggle={() => toggleRecipient(r._id)}
-            checkboxPosition="left"
-            disableSelectedStyle
-          />
-        ))}
-      </div>
-      <Pagination
-        totalItems={filteredVolunteers.length}
-        currentPage={currentPage}
-        itemsPerPage={itemsPerPage}
-        setPageIndex={setCurrentPage}
-      ></Pagination>
+      {displayedVolunteers.length === 0 ? (
+        <div className={styles.noRecipients}>No recipients match the current filters.</div>
+      ) : (
+        <div className={styles.list}>
+          {displayedVolunteers.map((r) => (
+            <RecipientRow
+              key={r._id + r.firstName}
+              name={`${r.firstName} ${r.lastName}`}
+              tags={r.tags}
+              selected={mounted ? selectedSet.has(r._id) : false}
+              onToggle={() => toggleRecipient(r._id)}
+              checkboxPosition="left"
+              disableSelectedStyle
+            />
+          ))}
+        </div>
+      )}
+      {displayedVolunteers.length > 0 && (
+        <Pagination
+          totalItems={filteredVolunteers.length}
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          setPageIndex={setCurrentPage}
+        />
+      )}
     </div>
   );
 }

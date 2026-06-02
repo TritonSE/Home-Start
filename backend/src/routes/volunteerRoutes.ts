@@ -27,9 +27,6 @@ const upload: Multer = multer({
 
 const router = express.Router();
 
-router.get("/getVolunteerRows", volunteer.getVolunteerRows);
-router.post("/export-csv", volunteer.exportVolunteersCsv);
-router.post("/getSelectedVolunteers", volunteer.getSelectedVolunteers);
 router.get("/:id", volunteer.getVolunteer);
 router.get("/", volunteer.getVolunteers);
 router.delete("/:id", volunteer.deleteVolunteer);
@@ -43,6 +40,7 @@ router.put(
 );
 
 router.post("/parse-csv", upload.single("csv"), volunteer.parseVolunteersCsv);
+router.post("/export-csv", volunteer.exportVolunteersCsv);
 
 router.post(
   "/batch",

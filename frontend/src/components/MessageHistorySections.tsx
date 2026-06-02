@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { MessageHistoryModal } from "./MessageHistoryModal";
@@ -48,6 +49,7 @@ function MessageRow({ message, onClick }: { message: Message; onClick: () => voi
 }
 
 export function MessageHistory() {
+  const router = useRouter();
   const [selectedMessage, setSelectedMessage] = useState<Message | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<"sent" | "scheduled">("scheduled");
 
@@ -111,8 +113,21 @@ export function MessageHistory() {
             setSelectedMessage(undefined);
           }}
           onActionButton={() => {
-            // go to edit message flow
-            console.info("Go to edit message flow");
+            if (selectedMessage.status === "pending") {
+              // go to edit message flow
+              console.info("Go to edit message flow");
+              return;
+            }
+
+            // "Use as Template": prefill the create-template flow with this message
+            const params = new URLSearchParams({
+              type: selectedMessage.type,
+              message: selectedMessage.body,
+            });
+            if (selectedMessage.type === "email" && selectedMessage.subject) {
+              params.set("subject", selectedMessage.subject);
+            }
+            void router.push(`/messages/templates/new?${params.toString()}`);
           }}
         />
       )}

@@ -1059,6 +1059,7 @@ type CsvRowContext = {
 type CsvColumn = {
   header: string;
   toCell: (ctx: CsvRowContext) => string;
+  isDetailColumn?: boolean;
 };
 
 const fmtDate = (date: Date | null | undefined): string =>
@@ -1072,14 +1073,14 @@ const escapeCsvField = (value: string): string => {
 };
 
 const CSV_COLUMNS: CsvColumn[] = [
-  { header: "constituent id", toCell: (ctx) => String(ctx.volunteerId) },
-  { header: "First Name", toCell: (ctx) => ctx.volunteer.firstName },
-  { header: "Last Name", toCell: (ctx) => ctx.volunteer.lastName },
+  { header: "constituent id", toCell: (ctx) => String(ctx.volunteerId), isDetailColumn: true },
+  { header: "First Name", toCell: (ctx) => ctx.volunteer.firstName, isDetailColumn: true },
+  { header: "Last Name", toCell: (ctx) => ctx.volunteer.lastName, isDetailColumn: true },
   { header: "program", toCell: (ctx) => ctx.programNames.join("; ") },
   { header: "groups", toCell: (ctx) => ctx.groupNames.join("; ") },
-  { header: "assignment", toCell: (ctx) => ctx.assignmentName },
-  { header: "project", toCell: (ctx) => ctx.projectName },
-  { header: "shift", toCell: (ctx) => ctx.shiftName },
+  { header: "assignment", toCell: (ctx) => ctx.assignmentName, isDetailColumn: true },
+  { header: "project", toCell: (ctx) => ctx.projectName, isDetailColumn: true },
+  { header: "shift", toCell: (ctx) => ctx.shiftName, isDetailColumn: true },
   { header: "Status", toCell: (ctx) => ctx.volunteer.status ?? "" },
   { header: "Address1", toCell: (ctx) => ctx.volunteer.address?.line1 ?? "" },
   { header: "Address2", toCell: (ctx) => ctx.volunteer.address?.line2 ?? "" },
@@ -1099,7 +1100,8 @@ const CSV_COLUMNS: CsvColumn[] = [
   },
 ];
 
-const buildCsvRow = (ctx: CsvRowContext): string[] => CSV_COLUMNS.map((col) => col.toCell(ctx));
+const buildCsvRow = (ctx: CsvRowContext, isDetailOnlyRow: boolean = false): string[] =>
+  CSV_COLUMNS.map((col) => (isDetailOnlyRow && !col.isDetailColumn ? "" : col.toCell(ctx)));
 
 const buildCsv = (rows: string[][]): string =>
   rows.map((row) => row.map(escapeCsvField).join(",")).join("\r\n");
@@ -1158,28 +1160,35 @@ export const exportVolunteersCsv: RequestHandler = async (req, res, next) => {
 
         if (shifts.length === 0) {
           rows.push(
-            buildCsvRow({
-              volunteer,
-              volunteerId,
-              assignmentName: a.assignmentTagId?.name ?? "",
-              projectName: a.projectTagId?.name ?? "",
-              shiftName: "",
-              programNames: isFirstRow ? programNames : [],
-              groupNames: isFirstRow ? groupNames : [],
-            }),
-          );
-        } else {
-          shifts.forEach((shift, sIdx) => {
-            rows.push(
-              buildCsvRow({
+            buildCsvRow(
+              {
                 volunteer,
                 volunteerId,
                 assignmentName: a.assignmentTagId?.name ?? "",
                 projectName: a.projectTagId?.name ?? "",
-                shiftName: shift.name,
-                programNames: isFirstRow && sIdx === 0 ? programNames : [],
-                groupNames: isFirstRow && sIdx === 0 ? groupNames : [],
-              }),
+                shiftName: "",
+                programNames: isFirstRow ? programNames : [],
+                groupNames: isFirstRow ? groupNames : [],
+              },
+              !isFirstRow,
+            ),
+          );
+        } else {
+          shifts.forEach((shift, sIdx) => {
+            const isFirstShift = isFirstRow && sIdx === 0;
+            rows.push(
+              buildCsvRow(
+                {
+                  volunteer,
+                  volunteerId,
+                  assignmentName: a.assignmentTagId?.name ?? "",
+                  projectName: a.projectTagId?.name ?? "",
+                  shiftName: shift.name,
+                  programNames: isFirstShift ? programNames : [],
+                  groupNames: isFirstShift ? groupNames : [],
+                },
+                !isFirstRow,
+              ),
             );
           });
         }

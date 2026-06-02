@@ -100,7 +100,6 @@ type CreateVolunteerBody = {
   assignmentName?: string;
   projectName?: string;
   shiftNames?: string[];
-  // new format only — undefined means old format (don't touch existing tags)
   programNames?: string[];
   groupNames?: string[];
 };
@@ -795,7 +794,11 @@ const aggregateMultiRowVolunteers = (rows: NewFormatRawRow[]): VolunteerCreation
     }
 
     if (row.assignment && row.project) {
-      block.assignments.push({ assignment: row.assignment, project: row.project, shift: row.shift });
+      block.assignments.push({
+        assignment: row.assignment,
+        project: row.project,
+        shift: row.shift,
+      });
     }
   }
 
@@ -976,9 +979,6 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
     const existingTagKeys = new Set(existingTags.map((t) => `${t.type}:${t.name}`));
 
     const missingTags = uniqueReferenced.filter((t) => !existingTagKeys.has(`${t.type}:${t.name}`));
-    for (const tag of missingTags) {
-      console.info(`[parse-csv] missing tag: ${tag.type} "${tag.name}"`); // TEMP LOG
-    }
 
     res.status(200).json({
       message: "CSV parsed successfully",
@@ -1099,8 +1099,7 @@ const CSV_COLUMNS: CsvColumn[] = [
   },
 ];
 
-const buildCsvRow = (ctx: CsvRowContext): string[] =>
-  CSV_COLUMNS.map((col) => col.toCell(ctx));
+const buildCsvRow = (ctx: CsvRowContext): string[] => CSV_COLUMNS.map((col) => col.toCell(ctx));
 
 const buildCsv = (rows: string[][]): string =>
   rows.map((row) => row.map(escapeCsvField).join(",")).join("\r\n");
@@ -1139,36 +1138,49 @@ export const exportVolunteersCsv: RequestHandler = async (req, res, next) => {
       );
 
       if (volunteerAssignments.length === 0) {
-        rows.push(buildCsvRow({ volunteer, volunteerId, assignmentName: "", projectName: "", shiftName: "", programNames, groupNames }));
+        rows.push(
+          buildCsvRow({
+            volunteer,
+            volunteerId,
+            assignmentName: "",
+            projectName: "",
+            shiftName: "",
+            programNames,
+            groupNames,
+          }),
+        );
         return;
       }
 
       volunteerAssignments.forEach((a, aIdx) => {
         const shifts = a.shiftTagIds ?? [];
-        // Only the first row for each volunteer carries program/group — continuation rows leave them blank
         const isFirstRow = aIdx === 0;
 
         if (shifts.length === 0) {
-          rows.push(buildCsvRow({
-            volunteer,
-            volunteerId,
-            assignmentName: a.assignmentTagId?.name ?? "",
-            projectName: a.projectTagId?.name ?? "",
-            shiftName: "",
-            programNames: isFirstRow ? programNames : [],
-            groupNames: isFirstRow ? groupNames : [],
-          }));
-        } else {
-          shifts.forEach((shift, sIdx) => {
-            rows.push(buildCsvRow({
+          rows.push(
+            buildCsvRow({
               volunteer,
               volunteerId,
               assignmentName: a.assignmentTagId?.name ?? "",
               projectName: a.projectTagId?.name ?? "",
-              shiftName: shift.name,
-              programNames: isFirstRow && sIdx === 0 ? programNames : [],
-              groupNames: isFirstRow && sIdx === 0 ? groupNames : [],
-            }));
+              shiftName: "",
+              programNames: isFirstRow ? programNames : [],
+              groupNames: isFirstRow ? groupNames : [],
+            }),
+          );
+        } else {
+          shifts.forEach((shift, sIdx) => {
+            rows.push(
+              buildCsvRow({
+                volunteer,
+                volunteerId,
+                assignmentName: a.assignmentTagId?.name ?? "",
+                projectName: a.projectTagId?.name ?? "",
+                shiftName: shift.name,
+                programNames: isFirstRow && sIdx === 0 ? programNames : [],
+                groupNames: isFirstRow && sIdx === 0 ? groupNames : [],
+              }),
+            );
           });
         }
       });

@@ -2,7 +2,7 @@ import { PassThrough } from "node:stream";
 
 import csvParser from "csv-parser";
 import { validationResult } from "express-validator";
-import createError from "http-errors";
+import createHttpError from "http-errors";
 
 import TagModel from "../models/tagModel";
 import VolunteerAssignmentModel from "../models/volunteerAssignmentModel";
@@ -28,7 +28,7 @@ export const getVolunteer: RequestHandler = async (req, res, next) => {
       .populate("programTagIds");
 
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw createHttpError(404, "Could not find volunteer");
     }
 
     res.status(200).json(volunteer);
@@ -57,7 +57,7 @@ export const getVolunteerByEmail: RequestHandler = async (req, res, next) => {
   try {
     const volunteer = await VolunteerModel.findOne({ email });
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw createHttpError(404, "Could not find volunteer");
     }
     res.status(200).json(volunteer);
   } catch (err) {
@@ -75,7 +75,7 @@ export const getVolunteerPhoneNumber: RequestHandler = async (req, res, next) =>
   try {
     const volunteer = await VolunteerModel.findOne({ phoneNumber });
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw createHttpError(404, "Could not find volunteer");
     }
     res.status(200).json(volunteer);
   } catch (err) {
@@ -119,7 +119,7 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
 
     const volunteer = await VolunteerModel.findOne({ email });
     if (volunteer) {
-      throw createError(409, "Volunteer with this email already exists");
+      throw createHttpError(409, "Volunteer with this email already exists");
     }
 
     const newVolunteer = await VolunteerModel.create({
@@ -228,7 +228,7 @@ export const updateVolunteer: RequestHandler = async (req, res, next) => {
       .populate("programTagIds");
 
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      return next(createHttpError(404, "Could not find volunteer"));
     }
 
     res.status(200).json(volunteer);
@@ -256,7 +256,7 @@ export const updateVolunteerContact: RequestHandler = async (req, res, next) => 
     });
 
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw createHttpError(404, "Could not find volunteer");
     }
 
     res.status(200).json(volunteer);
@@ -271,9 +271,9 @@ export const deleteVolunteer: RequestHandler = async (req, res, next) => {
   try {
     const volunteer = await VolunteerModel.findByIdAndDelete(volunteerId);
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw createHttpError(404, "Could not find volunteer");
     }
-    res.status(200).json({ message: "Volunteer deleted successfully" });
+    res.status(200).send();
   } catch (err) {
     next(err);
   }
@@ -419,18 +419,18 @@ export const uploadVolunteerBatch: RequestHandler<
           volunteerByKey.get(entry.volunteer.phoneNumber);
 
         if (!volunteer) {
-          throw createError(400, `Could not resolve volunteer for ${entry.volunteer.email}`);
+          throw createHttpError(400, `Could not resolve volunteer for ${entry.volunteer.email}`);
         }
 
         const assignmentTag = tagByName.get(entry.assignmentTag);
         const projectTag = tagByName.get(entry.projectTag);
 
         if (!assignmentTag || assignmentTag.type !== "assignment") {
-          throw createError(400, `Unknown assignment tag: ${entry.assignmentTag}`);
+          throw createHttpError(400, `Unknown assignment tag: ${entry.assignmentTag}`);
         }
 
         if (!projectTag || projectTag.type !== "project") {
-          throw createError(400, `Unknown project tag: ${entry.projectTag}`);
+          throw createHttpError(400, `Unknown project tag: ${entry.projectTag}`);
         }
 
         const shiftTagIds = [...entry.shiftNames]
@@ -545,7 +545,7 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
 
         if (!valid) {
           bufferStream.destroy();
-          reject(createError(400, `Invalid volunteer data: ${JSON.stringify(data)}`));
+          reject(createHttpError(400, `Invalid volunteer data: ${JSON.stringify(data)}`));
           return;
         }
 
@@ -561,7 +561,7 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
 export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
   try {
     if (req.file === undefined) {
-      throw createError(400, "No CSV file attached");
+      throw createHttpError(400, "No CSV file attached");
     }
 
     const parsedVolunteers = await parseVolunteersHelper(req.file.buffer);
@@ -571,7 +571,7 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
 
     const errors = validationResult(mockReq);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return next(createHttpError(400, { errors: errors.array() }));
     }
 
     const emails = parsedVolunteers.map((v) => v.email);
@@ -612,7 +612,7 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
 export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
   try {
     if (req.file === undefined) {
-      throw createError(400, "No CSV file attached");
+      throw createHttpError(400, "No CSV file attached");
     }
 
     const volunteerCreationBodies = await parseVolunteersHelper(req.file.buffer);
@@ -678,7 +678,7 @@ export const getSelectedVolunteers: RequestHandler = async (req, res, next) => {
       const tagEvents = tagEventsMap.map((tag) => tag._id);
 
       if (tagEvents.length !== events.length) {
-        return res.status(400).json({ error: "One or more event tags not found" });
+        return next(createHttpError(400, "One or more event tags not found"));
       }
 
       volunteerFilter.tags = { $in: tagEvents };

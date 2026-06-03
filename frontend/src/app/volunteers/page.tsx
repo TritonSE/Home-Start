@@ -22,18 +22,6 @@ import VolunteerTable from "@/components/VolunteerTable";
 const sendMessageButton = sendMessageButtonAsset as string;
 const sendMessageHoverButton = sendMessageHoverButtonAsset as string;
 
-type PopulatedAssignment = {
-  volunteerId: string;
-  assignmentTagId: VolunteerTag;
-  projectTagId: VolunteerTag;
-  shiftTagIds: VolunteerTag[];
-};
-
-type ProjectProgramMap = {
-  projectTagId: VolunteerTag;
-  programTagId: VolunteerTag;
-};
-
 export default function Page() {
   const router = useRouter();
   const setMode = useTextingFlowStore((s) => s.setMode);

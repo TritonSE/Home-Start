@@ -1,5 +1,5 @@
 import { validationResult } from "express-validator";
-import createError from "http-errors";
+import createHttpError from "http-errors";
 
 import MessageModel from "../models/messageModel";
 import validationErrorParser from "../util/validationErrorParser";
@@ -73,14 +73,14 @@ export const sendEmails = async (req: Request, res: Response, next: NextFunction
       !subject ||
       !message
     ) {
-      res.status(400).json({ error: "graphToken, recipients, subject, and message are required" });
-      return;
+      return next(
+        createHttpError(400, "graphToken, recipients, subject, and message are required"),
+      );
     }
 
     const date = sendDate ? new Date(sendDate) : undefined;
     if (date && Number.isNaN(date.getTime())) {
-      res.status(400).json({ error: "sendDate must be a proper date" });
-      return;
+      return next(createHttpError(400, "sendDate must be a proper date"));
     }
 
     const results = await Promise.allSettled(
@@ -219,7 +219,7 @@ export const getMessage: RequestHandler = async (req, res, next) => {
     const message = await MessageModel.findById(messageId).populate(defaultPopulateConfig);
 
     if (!message) {
-      throw createError(404, "Could not find message");
+      throw createHttpError(404, "Could not find message");
     }
 
     res.status(200).json(message);
@@ -242,7 +242,7 @@ export const createMessage: RequestHandler = async (req, res, next) => {
     validationErrorParser(errors);
 
     if (type === "email" && !subject) {
-      throw createError(400, "Email message requires subject");
+      throw createHttpError(400, "Email message requires subject");
     }
 
     const newMessage = await MessageModel.create({

@@ -152,7 +152,7 @@ export const deleteTag: RequestHandler = async (req, res, next) => {
 
     await TagModel.findByIdAndDelete(tagId);
 
-    res.status(200).json({ message: "Tag deleted successfully" });
+    res.status(200).send();
   } catch (err) {
     next(err);
   }

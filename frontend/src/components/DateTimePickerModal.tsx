@@ -1,8 +1,9 @@
 "use client";
 
+import IMask from "imask";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { IMask, IMaskInput } from "react-imask";
+import { IMaskInput } from "react-imask";
 
 import { DatePicker } from "./DatePicker";
 import styles from "./DateTimePickerModal.module.css";

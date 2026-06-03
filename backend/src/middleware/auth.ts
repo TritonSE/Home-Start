@@ -1,3 +1,5 @@
+import createHttpError from "http-errors";
+
 import { auth } from "../firebase/admin";
 
 import type { NextFunction, Request, Response } from "express";
@@ -16,7 +18,7 @@ export const verifyToken = async (req: AuthRequest, res: Response, next: NextFun
     const authHeader = req.headers.authorization;
 
     if (!authHeader?.startsWith("Bearer ")) {
-      res.status(401).json({ error: "No token provided" });
+      return next(createHttpError(401, "No token provided"));
       return;
     }
 
@@ -33,6 +35,6 @@ export const verifyToken = async (req: AuthRequest, res: Response, next: NextFun
     next();
   } catch (error) {
     console.error("Token verification failed:", error);
-    res.status(401).json({ error: "Invalid or expired token" });
+    return next(createHttpError(401, "Invalid or expired token"));
   }
 };

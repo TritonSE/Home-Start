@@ -92,7 +92,6 @@ function Composer({
   canReview,
   isDesktop,
   clickableTo,
-  setDateTimePickerOpen,
   onGoRecipients,
   onGoReview,
 }: ComposerProps) {

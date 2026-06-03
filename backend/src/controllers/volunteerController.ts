@@ -543,13 +543,9 @@ export const uploadVolunteerBatch: RequestHandler<
         }
 
         const assignmentTag = tagByKey.get(`assignment:${entry.assignmentTag}`);
-        const projectTag = tagByKey.get(`project:${entry.projectTag}`);
+        const projectTag = entry.projectTag ? tagByKey.get(`project:${entry.projectTag}`) : null;
 
         if (!assignmentTag || assignmentTag.type !== "assignment") {
-          return [];
-        }
-
-        if (!projectTag || projectTag.type !== "project") {
           return [];
         }
 
@@ -559,14 +555,23 @@ export const uploadVolunteerBatch: RequestHandler<
           .filter((tag) => tag.type === "shift")
           .map((tag) => tag._id);
 
+        const filter: {
+          volunteerId: Types.ObjectId;
+          assignmentTagId: Types.ObjectId;
+          projectTagId?: Types.ObjectId;
+        } = {
+          volunteerId: volunteer._id,
+          assignmentTagId: assignmentTag._id,
+        };
+
+        if (projectTag && projectTag.type === "project") {
+          filter.projectTagId = projectTag._id;
+        }
+
         return [
           {
             updateOne: {
-              filter: {
-                volunteerId: volunteer._id,
-                assignmentTagId: assignmentTag._id,
-                projectTagId: projectTag._id,
-              },
+              filter,
               update: {
                 $addToSet: { shiftTagIds: { $each: shiftTagIds } },
               },
@@ -786,14 +791,7 @@ const aggregateMultiRowVolunteers = (rows: NewFormatRawRow[]): VolunteerCreation
       }
     }
 
-    if (row.assignment && !row.project) {
-      throw createError(
-        400,
-        `Volunteer ID "${row.externalId}" has assignment "${row.assignment}" with no project`,
-      );
-    }
-
-    if (row.assignment && row.project) {
+    if (row.assignment) {
       block.assignments.push({
         assignment: row.assignment,
         project: row.project,

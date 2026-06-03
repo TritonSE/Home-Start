@@ -71,6 +71,7 @@ export default function Page() {
   const [sendMessageHovered, setSendMessageHovered] = useState(false);
   const [selectedVolunteer, setSelectedVolunteer] = useState<VolunteerWithTags | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [exportSelectedIds, setExportSelectedIds] = useState<Set<string>>(new Set());
   const [sortOption, setSortOption] = useState<
     "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A"
   >("Newest");
@@ -343,7 +344,10 @@ export default function Page() {
               ></button>
             </div>
           )}
-          <TitleBar onImportComplete={handleImportComplete} />
+          <TitleBar
+            onImportComplete={handleImportComplete}
+            selectedVolunteers={volunteers.filter((v) => exportSelectedIds.has(v._id))}
+          />
           <SearchBar
             search={search}
             setSearch={handleSearchChange}
@@ -366,6 +370,27 @@ export default function Page() {
             <VolunteerTable
               volunteers={displayedVolunteers}
               selectableVolunteers={filteredVolunteers}
+              controlledSelectedIds={exportSelectedIds}
+              onControlledToggleOne={(id) => {
+                setExportSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                });
+              }}
+              onControlledToggleAll={(scope) => {
+                setExportSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  const allSelected = scope.every((v) => next.has(v._id));
+                  if (allSelected) {
+                    scope.forEach((v) => next.delete(v._id));
+                  } else {
+                    scope.forEach((v) => next.add(v._id));
+                  }
+                  return next;
+                });
+              }}
               onVolunteerSelect={(v) => {
                 setSelectedVolunteer(v);
                 setIsSheetOpen(true);

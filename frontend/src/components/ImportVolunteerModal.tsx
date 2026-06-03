@@ -70,7 +70,6 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
   const [csvParsedInfo, setCSVParsedInfo] = useState<ParsedCSVResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [pendingBatch, setPendingBatch] = useState<VolunteerCsvParseResult["volunteerInfo"]>([]);
-  const [tagsCollapsed, setTagsCollapsed] = useState(false);
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
   const [volunteersCollapsed, setVolunteersCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -378,50 +377,6 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                 <div className={styles.summaryCount}>{csvParsedInfo?.updatedCount ?? 0}</div>
               </div>
             </div>
-
-            {(csvParsedInfo?.missingTags?.length ?? 0) > 0 && (
-              <div className={styles.detailSection}>
-                <button
-                  className={styles.sectionToggle}
-                  onClick={() => {
-                    setTagsCollapsed((c) => !c);
-                  }}
-                >
-                  <span className={styles.sectionTitle}>Tags to Create</span>
-                  <div className={styles.projectMeta}>
-                    <span className={styles.toggleHint}>
-                      {tagsCollapsed ? "Expand" : "Collapse"}
-                    </span>
-                    <svg
-                      className={`${styles.chevron} ${tagsCollapsed ? styles.chevronCollapsed : ""}`}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </div>
-                </button>
-                {!tagsCollapsed && (
-                  <div className={styles.detailCard}>
-                    <div className={styles.detailList}>
-                      {csvParsedInfo?.missingTags?.map((tag, i, arr) => (
-                        <div key={`${tag.type}:${tag.name}`} className={styles.detailItem}>
-                          <div className={styles.detailHeader}>
-                            <span className={`${styles.detailBadge} ${styles.detailBadgeTag}`}>
-                              {tag.type}
-                            </span>
-                            <span className={styles.detailName}>{tag.name}</span>
-                          </div>
-                          {i < arr.length - 1 && <div className={styles.detailDivider} />}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
 
             <div className={styles.detailSection}>
               <button

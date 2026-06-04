@@ -45,7 +45,7 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
   const [projectName, setProjectName] = useState("");
   const [assignmentColorIndex, setAssignmentColorIndex] = useState(0);
   const [projectColorIndex, setProjectColorIndex] = useState(0);
-  const [tags, setTags] = useState<VolunteerTag[]>([]);
+  const [, setTags] = useState<VolunteerTag[]>([]);
 
   const isFirstPage = step === 1;
   const inputValue = isFirstPage ? assignmentName : projectName;

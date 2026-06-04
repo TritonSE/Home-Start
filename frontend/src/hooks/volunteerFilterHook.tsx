@@ -9,6 +9,7 @@ import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer"
 
 type volunteerFilterHookProps = {
   itemsPerPage: number;
+  selectedRecipientIds?: string[];
 };
 
 type PopulatedAssignment = {
@@ -23,7 +24,10 @@ type ProjectProgramMap = {
   programTagId: VolunteerTag;
 };
 
-export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHookProps) {
+export default function volunteerFilterHook({
+  itemsPerPage,
+  selectedRecipientIds = [],
+}: volunteerFilterHookProps) {
   // Data state
   const [volunteers, setVolunteers] = useState<VolunteerWithTags[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
@@ -177,10 +181,25 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
     });
   }, [volunteers, selectedAssignment, selectedProgram, selectedStatus, search]);
 
+  const sortedFilteredVolunteers = useMemo(() => {
+    const selectedSet = new Set(selectedRecipientIds);
+
+    return [...filteredVolunteers].sort((a, b) => {
+      const aSelected = selectedSet.has(a._id);
+      const bSelected = selectedSet.has(b._id);
+
+      if (aSelected === bSelected) {
+        return 0;
+      }
+
+      return aSelected ? -1 : 1;
+    });
+  }, [filteredVolunteers, selectedRecipientIds]);
+
   // Calculate pagination slice
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
+  const displayedVolunteers = sortedFilteredVolunteers.slice(startIndex, endIndex);
 
   return {
     search,

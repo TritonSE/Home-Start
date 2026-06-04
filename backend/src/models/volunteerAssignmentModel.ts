@@ -16,18 +16,12 @@ const volunteerAssignmentSchema = new Schema({
   projectTagId: {
     type: Schema.Types.ObjectId,
     ref: "Tag",
-    required: true,
   },
   shiftTagIds: {
     type: [{ type: Schema.Types.ObjectId, ref: "Tag" }],
     default: [],
   },
 });
-
-volunteerAssignmentSchema.index(
-  { volunteerId: 1, assignmentTagId: 1, projectTagId: 1 },
-  { unique: true },
-);
 
 type VolunteerAssignment = InferSchemaType<typeof volunteerAssignmentSchema>;
 

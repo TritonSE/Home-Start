@@ -1,11 +1,12 @@
-import { randomUUID } from "crypto";
-import createError from "http-errors";
+import { randomUUID } from "node:crypto";
 
-const FIRST_NAME_TOKEN = "{{First Name}}";
+import createError from "http-errors";
 
 import TextJobModel from "../models/textJobModel";
 
 import type { NextFunction, Request, RequestHandler, Response } from "express";
+
+const FIRST_NAME_TOKEN = "{{First Name}}";
 
 type Recipient = {
   firstName: string;

@@ -30,6 +30,8 @@ export default function ReviewAndSendPage() {
   const subject = useTextingFlowStore((s) => s.subject);
   const message = useTextingFlowStore((s) => s.message);
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
+  const stringifiedDate = useTextingFlowStore((s) => s.sendDate);
+  const sendDate = stringifiedDate ? new Date(stringifiedDate) : undefined;
   const resetDraft = useTextingFlowStore((s) => s.resetDraft);
 
   const recipientsCount = selectedRecipientIds.length;
@@ -126,18 +128,8 @@ export default function ReviewAndSendPage() {
           return;
         }
 
-        const historyResult = await createMessageHistory({
-          recipients: selectedRecipientIds,
-          type: "email",
-          subject,
-          body: message,
-          status: "sent",
-        });
-
-        if (!historyResult.success) {
-          setSendError(historyResult.error);
-          return;
-        }
+        // Note: the /send-email endpoint persists the email to message history
+        // on success, so we intentionally do not create a second record here.
       }
 
       if (mode === "text") {
@@ -174,7 +166,10 @@ export default function ReviewAndSendPage() {
           return;
         }
 
-        const shortcutBase = process.env.NEXT_PUBLIC_SHORTCUT_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+        const shortcutBase =
+          process.env.NEXT_PUBLIC_SHORTCUT_API_URL ??
+          process.env.NEXT_PUBLIC_API_URL ??
+          "http://localhost:4000";
         const apiUrl = `${shortcutBase}/api/text-jobs/${jobResult.data.jobId}`;
         setShortcutUrl(
           `shortcuts://run-shortcut?name=${encodeURIComponent("Send Website Messages")}&input=text&text=${encodeURIComponent(apiUrl)}`,
@@ -285,6 +280,17 @@ export default function ReviewAndSendPage() {
     </>
   );
 
+  const dateFormatter = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  const formatDate = (date: Date) => {
+    return dateFormatter.format(new Date(date));
+  };
+
   return (
     <Sidebar>
       <div className={styles.page}>
@@ -348,6 +354,14 @@ export default function ReviewAndSendPage() {
                 <div className={styles.rightScroll}>
                   <ReviewContent />
                 </div>
+
+                {sendDate && (
+                  <div className={styles.scheduledTime}>
+                    <span>
+                      Scheduled:<b>&nbsp;{formatDate(sendDate)}</b>
+                    </span>
+                  </div>
+                )}
 
                 <div className={styles.desktopSend}>
                   {shortcutUrl ? (

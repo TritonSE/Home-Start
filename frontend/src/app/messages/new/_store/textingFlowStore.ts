@@ -18,6 +18,7 @@ type TextingFlowState = {
   recipients: Volunteer[];
   recipientIds: string[];
   numRecipientIds: number;
+  sendDate: Date | undefined;
 
   pageIndex: number;
 
@@ -35,6 +36,7 @@ type TextingFlowState = {
   setRecipients: (recipients: Volunteer[]) => void;
   setRecipientsPool: (recipients: Volunteer[]) => void;
   toggleSelectAll: (filteredVolunteers: Volunteer[]) => void;
+  setSendDate: (date: Date | undefined) => void;
 
   resetDraft: () => void;
   setPageIndex: (index: number) => void;
@@ -53,6 +55,7 @@ export const useTextingFlowStore = create<TextingFlowState>()(
       recipientIds: [],
       numSelectedRecipientIds: 0,
       numRecipientIds: 0,
+      sendDate: undefined,
 
       pageIndex: 0,
 
@@ -145,6 +148,7 @@ export const useTextingFlowStore = create<TextingFlowState>()(
           selectedRecipients: [...get().selectedRecipients, ...newVolunteers],
         });
       },
+      setSendDate: (date) => set({ sendDate: date }),
 
       resetDraft: () =>
         set({
@@ -152,6 +156,7 @@ export const useTextingFlowStore = create<TextingFlowState>()(
           message: "",
           selectedRecipientIds: [],
           selectedRecipients: [],
+          sendDate: undefined,
         }),
       setPageIndex: (index) => set({ pageIndex: index }),
     }),

@@ -28,21 +28,45 @@ type APIErrorBody = {
   error?: string;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null;
+};
+
+type VolunteerAddressInfo = {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+};
+
 type VolunteerParseCsvDTO = {
   wouldCreateCount: number;
   wouldUpdateCount: number;
   wouldCreate: string[];
   wouldUpdate: string[];
   total: number;
+  missingTags?: { name: string; type: string }[];
   volunteerInfo: {
     firstName: string;
     lastName: string;
     email: string;
     phoneNumber: string;
+    status?: string;
+    address?: VolunteerAddressInfo;
+    birthday?: string;
+    preferredPronouns?: string;
+    startDate?: string;
+    endDate?: string;
+    effectiveDate?: string;
+    mediaConsent?: string;
+    faceConsent?: string;
+    nameConsent?: string;
     assignmentName?: string;
     projectName?: string;
     shiftNames?: string[];
-    tags?: string[];
+    programNames?: string[];
+    groupNames?: string[];
   }[];
 };
 
@@ -59,13 +83,11 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
     lastName: String(source.lastName ?? ""),
     email: String(source.email ?? ""),
     phoneNumber: String(source.phoneNumber ?? ""),
-    tags: Array.isArray(source.tags) ? source.tags : [],
     status: normalizeVolunteerStatus(source.status),
     dateCreated: source.dateCreated ?? undefined,
     effectiveDate: source.effectiveDate ?? undefined,
     hours: typeof source.hours === "number" ? source.hours : undefined,
     wageRate: typeof source.wageRate === "number" ? source.wageRate : undefined,
-    groupIds: Array.isArray(source.groupIds) ? source.groupIds : undefined,
     groupTagIds: Array.isArray(source.groupTagIds) ? source.groupTagIds : undefined,
     programTagIds: Array.isArray(source.programTagIds) ? source.programTagIds : undefined,
     address: source.address ?? undefined,
@@ -214,16 +236,28 @@ export type VolunteerCsvParseResult = {
   wouldCreate: string[];
   wouldUpdate: string[];
   totalCount: number;
+  missingTags: { name: string; type: "assignment" | "project" | "shift" | "program" | "group" }[];
 
   volunteerInfo: {
     firstName: string;
     lastName: string;
     email: string;
     phoneNumber: string;
+    status?: string;
+    address?: VolunteerAddressInfo;
+    birthday?: string;
+    preferredPronouns?: string;
+    startDate?: string;
+    endDate?: string;
+    effectiveDate?: string;
+    mediaConsent?: string;
+    faceConsent?: string;
+    nameConsent?: string;
     assignmentName?: string;
     projectName?: string;
     shiftNames?: string[];
-    tags?: string[];
+    programNames?: string[];
+    groupNames?: string[];
   }[];
 };
 
@@ -278,12 +312,28 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
     }
 
     const volunteerInfo = Array.isArray(parsed.volunteerInfo) ? parsed.volunteerInfo : [];
+    const rawMissingTags = Array.isArray(parsed.missingTags) ? parsed.missingTags : [];
+    const VALID_TAG_TYPES = ["assignment", "project", "shift", "program", "group"] as const;
+    type ValidTagType = (typeof VALID_TAG_TYPES)[number];
+    const missingTags = rawMissingTags
+      .filter((t): t is { name: string; type: string } => {
+        if (!t || typeof t !== "object") return false;
+        const tag = t as { name?: unknown; type?: unknown };
+        return typeof tag.name === "string" && typeof tag.type === "string";
+      })
+      .map((t) => ({
+        name: t.name,
+        type: (VALID_TAG_TYPES.includes(t.type as ValidTagType)
+          ? t.type
+          : "assignment") as ValidTagType,
+      }));
     const result: VolunteerCsvParseResult = {
       wouldCreateCount: parsed.wouldCreateCount,
       wouldUpdateCount: parsed.wouldUpdateCount,
       wouldCreate: parsed.wouldCreate.filter((value): value is string => typeof value === "string"),
       wouldUpdate: parsed.wouldUpdate.filter((value): value is string => typeof value === "string"),
       totalCount: parsed.total,
+      missingTags,
       volunteerInfo: volunteerInfo
         .filter((item): item is VolunteerParseCsvDTO["volunteerInfo"][number] => {
           if (!item || typeof item !== "object") return false;
@@ -300,13 +350,27 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
           lastName: item.lastName,
           email: item.email,
           phoneNumber: item.phoneNumber,
+          status: typeof item.status === "string" ? item.status : undefined,
+          address: item.address ?? undefined,
+          birthday: typeof item.birthday === "string" ? item.birthday : undefined,
+          preferredPronouns:
+            typeof item.preferredPronouns === "string" ? item.preferredPronouns : undefined,
+          startDate: typeof item.startDate === "string" ? item.startDate : undefined,
+          endDate: typeof item.endDate === "string" ? item.endDate : undefined,
+          effectiveDate: typeof item.effectiveDate === "string" ? item.effectiveDate : undefined,
+          mediaConsent: typeof item.mediaConsent === "string" ? item.mediaConsent : undefined,
+          faceConsent: typeof item.faceConsent === "string" ? item.faceConsent : undefined,
+          nameConsent: typeof item.nameConsent === "string" ? item.nameConsent : undefined,
           assignmentName: typeof item.assignmentName === "string" ? item.assignmentName : undefined,
           projectName: typeof item.projectName === "string" ? item.projectName : undefined,
           shiftNames: Array.isArray(item.shiftNames)
             ? item.shiftNames.filter((v): v is string => typeof v === "string")
             : undefined,
-          tags: Array.isArray(item.tags)
-            ? item.tags.filter((t): t is string => typeof t === "string")
+          programNames: Array.isArray(item.programNames)
+            ? item.programNames.filter((value): value is string => typeof value === "string")
+            : undefined,
+          groupNames: Array.isArray(item.groupNames)
+            ? item.groupNames.filter((value): value is string => typeof value === "string")
             : undefined,
         })),
     };
@@ -324,7 +388,16 @@ type VolunteerCreationBody = {
   lastName: string;
   email: string;
   phoneNumber: string;
-  tags?: string[];
+  status?: "returning" | "new";
+  address?: VolunteerAddressInfo;
+  birthday?: string;
+  preferredPronouns?: string;
+  startDate?: string;
+  endDate?: string;
+  effectiveDate?: string;
+  mediaConsent?: string;
+  faceConsent?: string;
+  nameConsent?: string;
   assignmentName?: string;
   projectName?: string;
   shiftNames?: string[];
@@ -332,22 +405,43 @@ type VolunteerCreationBody = {
 
 export type UploadVolunteerBatchResponse = { ok: true } | { ok: false; error: string };
 
+const BATCH_CHUNK_SIZE = 200;
+
 export async function uploadVolunteerBatch(
   data: VolunteerCreationBody[],
+  tagsToCreate: { name: string; type: string; color: string }[] = [],
 ): Promise<UploadVolunteerBatchResponse> {
   try {
     const headers = await getAuthHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/api/volunteer/batch`, {
-      method: "POST",
-      headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify({ volunteers: data }),
-    });
+    const chunks: VolunteerCreationBody[][] = [];
+    for (let i = 0; i < data.length; i += BATCH_CHUNK_SIZE) {
+      chunks.push(data.slice(i, i + BATCH_CHUNK_SIZE));
+    }
 
-    if (!response.ok) {
+    const responses = await Promise.all(
+      chunks.map(async (chunk, index) =>
+        fetch(`${API_BASE_URL}/api/volunteer/batch`, {
+          method: "POST",
+          headers: { ...headers, "Content-Type": "application/json" },
+          body: JSON.stringify({ volunteers: chunk, ...(index === 0 ? { tagsToCreate } : {}) }),
+        }),
+      ),
+    );
+
+    const failed = responses.find((r) => !r.ok);
+    if (failed) {
+      let detail = "";
+      try {
+        const body: unknown = await failed.json();
+        detail = JSON.stringify(body);
+      } catch {
+        // ignore
+      }
+      console.error("Batch upload error body:", detail);
       return {
         ok: false,
-        error: `Failed to upload volunteer batch: ${response.status} ${response.statusText}`,
+        error: `Failed to upload volunteer batch: ${failed.status} ${failed.statusText}${detail ? ` - ${detail}` : ""}`,
       };
     }
 
@@ -358,4 +452,83 @@ export async function uploadVolunteerBatch(
       error: error instanceof Error ? error.message : "Unknown error uploading volunteers",
     };
   }
+}
+
+type Recipient = {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+};
+
+export async function getSelectedVolunteers({
+  events,
+  statuses,
+}: {
+  events: string[];
+  statuses: string[];
+}): Promise<Recipient[]> {
+  try {
+    const headers = await getAuthHeaders();
+
+    const response = await fetch(`${API_BASE_URL}/api/volunteer/getSelectedVolunteers`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+      body: JSON.stringify({ events, statuses }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch selected volunteers: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data: unknown = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new TypeError(`Expected array but got ${typeof data}`);
+    }
+
+    const recipients: Recipient[] = data.map((item) => {
+      const row = isRecord(item) ? item : {};
+      return {
+        _id: String(row._id ?? ""),
+        firstName: String(row.firstName ?? ""),
+        lastName: String(row.lastName ?? ""),
+        email: String(row.email ?? ""),
+        phoneNumber: String(row.phoneNumber ?? ""),
+      };
+    });
+
+    return recipients;
+  } catch (error) {
+    console.error("Error fetching selected volunteers: ", error);
+    throw error;
+  }
+}
+
+export async function exportVolunteersCsv(ids?: string[]): Promise<void> {
+  const headers = await getAuthHeaders();
+
+  const response = await fetch(`${API_BASE_URL}/api/volunteer/export-csv`, {
+    method: "POST",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({ ids: ids ?? [] }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to export volunteers: ${response.status} ${response.statusText}`);
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "volunteers.csv";
+  a.click();
+  URL.revokeObjectURL(url);
 }

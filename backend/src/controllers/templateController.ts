@@ -22,7 +22,7 @@ export const getTemplate: RequestHandler = async (req, res, next) => {
 
 export const getTemplates: RequestHandler = async (req, res, next) => {
   try {
-    const templates = await TemplateModel.find();
+    const templates = await TemplateModel.find().sort({ createdAt: -1 });
     res.status(200).json(templates);
   } catch (err) {
     next(err);

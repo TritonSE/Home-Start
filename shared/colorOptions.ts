@@ -21,6 +21,7 @@ export const getAutoTagColor = (name: string, type: string): string => {
   }
 
   return (
-    COLOR_OPTIONS[hash % COLOR_OPTIONS.length]?.backgroundColor ?? COLOR_OPTIONS[0].backgroundColor
+    COLOR_OPTIONS[hash % COLOR_OPTIONS.length]?.backgroundColor ??
+    COLOR_OPTIONS[0].backgroundColor
   );
 };

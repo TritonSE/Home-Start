@@ -13,6 +13,7 @@ import addPersonIconAsset from "@/assets/add_person_icon.svg";
 import blueChevronLeftAsset from "@/assets/blue_chevron_left.svg";
 import bluePlusAsset from "@/assets/blue_plus_alt.svg";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
+import icCloseAsset from "@/assets/ic_close.svg";
 import mdiInformationAsset from "@/assets/mdi_information.svg";
 import ouiCopyAsset from "@/assets/oui_copy.svg";
 import { initMsal, signInWithOutlook } from "@/auth/msal";
@@ -24,6 +25,7 @@ const addPersonIcon = addPersonIconAsset as string;
 const blueChevronLeft = blueChevronLeftAsset as string;
 const bluePlus = bluePlusAsset as string;
 const icCaretLeft = icCaretLeftAsset as string;
+const icClose = icCloseAsset as string;
 const ouiCopy = ouiCopyAsset as string;
 const mdiInformation = mdiInformationAsset as string;
 
@@ -37,6 +39,8 @@ type ComposerProps = {
   setSubject: (subject: string) => void;
   message: string;
   setMessage: (message: string) => void;
+  sendDate: Date | undefined;
+  setSendDate: (date: Date | undefined) => void;
   recipientsCount: number;
   canReview: boolean;
   isDesktop: boolean;
@@ -80,6 +84,8 @@ function Composer({
   setSubject,
   message,
   setMessage,
+  sendDate,
+  setSendDate,
   recipientsCount,
   canReview,
   isDesktop,
@@ -197,6 +203,17 @@ function Composer({
     setMessage(next);
   };
 
+  const dateFormatter = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  const formatDate = (date: Date) => {
+    return dateFormatter.format(new Date(date));
+  };
+
   return (
     <>
       <div className={styles.tabsWrap} role="tablist" aria-label="Message type">
@@ -309,6 +326,24 @@ function Composer({
         </div>
       </section>
 
+      {sendDate && (
+        <div className={styles.scheduledTime}>
+          <span />
+          <span>
+            Scheduled:<b>&nbsp;{formatDate(sendDate)}</b>
+          </span>
+          <button className={styles.btnWrapper} onClick={() => setSendDate(undefined)}>
+            <Image
+              className={styles.removeScheduleBtn}
+              src={icClose}
+              alt="Remove Schedule"
+              width={20}
+              height={20}
+            />
+          </button>
+        </div>
+      )}
+
       {!isDesktop ? (
         <div className={styles.reviewFixed}>
           <button
@@ -336,6 +371,10 @@ export default function NewMessagePage() {
 
   const message = useTextingFlowStore((s) => s.message);
   const setMessage = useTextingFlowStore((s) => s.setMessage);
+
+  const stringifiedDate = useTextingFlowStore((s) => s.sendDate);
+  const sendDate = stringifiedDate ? new Date(stringifiedDate) : undefined;
+  const setSendDate = useTextingFlowStore((s) => s.setSendDate);
 
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
   const recipientsCount = selectedRecipientIds.length;
@@ -393,6 +432,8 @@ export default function NewMessagePage() {
     setSubject,
     message: message ?? "",
     setMessage,
+    sendDate: sendDate ?? undefined,
+    setSendDate,
     recipientsCount,
     canReview,
     isDesktop,

@@ -7,7 +7,7 @@ import styles from "./CreateRoleModal.module.css";
 
 import type { Volunteer, VolunteerTag } from "@/types/volunteer";
 
-import { createTag, fetchTags } from "@/app/api/tag";
+import { createTag, fetchTags, searchTags } from "@/app/api/tag";
 import { createVolunteerAssignment } from "@/app/api/volunteer";
 import icCloseLargeAsset from "@/assets/ic_close_large.svg";
 import rightArrowAsset from "@/assets/rightarrow.svg";
@@ -43,12 +43,15 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
   const [step, setStep] = useState(1);
   const [assignmentName, setAssignmentName] = useState("");
   const [projectName, setProjectName] = useState("");
-  const [selectedColorIndex, setSelectedColorIndex] = useState(0);
+  const [assignmentColorIndex, setAssignmentColorIndex] = useState(0);
+  const [projectColorIndex, setProjectColorIndex] = useState(0);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
 
   const isFirstPage = step === 1;
   const inputValue = isFirstPage ? assignmentName : projectName;
   const setInputValue = isFirstPage ? setAssignmentName : setProjectName;
+  const selectedColorIndex = isFirstPage ? assignmentColorIndex : projectColorIndex;
+  const setSelectedColorIndex = isFirstPage ? setAssignmentColorIndex : setProjectColorIndex;
   const assignmentNameTrimmed = assignmentName.trim();
   const projectNameTrimmed = projectName.trim();
   const isAssignmentNameEmpty = assignmentNameTrimmed.length === 0;
@@ -60,24 +63,45 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
 
   const handleClose = () => {
     setStep(1);
+    setAssignmentName("");
+    setProjectName("");
+    setAssignmentColorIndex(0);
+    setProjectColorIndex(0);
     onClose();
   };
 
-  const getAssignmentTag = async (): Promise<VolunteerTag | undefined> => {
+  const resolveTag = async (
+    type: "assignment" | "project",
+    name: string,
+    colorIndex: number,
+  ): Promise<VolunteerTag | undefined> => {
+    const query = name.trim();
+    if (!query) return undefined;
+
+    const exactMatches = await searchTags(query, type).catch(() => [] as VolunteerTag[]);
+    const existing = exactMatches.find(
+      (tag) => tag.name.trim().toLowerCase() === query.toLowerCase(),
+    );
+    if (existing) {
+      setTags((prev) => {
+        const next = prev.filter((tag) => tag._id !== existing._id);
+        return [...next, existing];
+      });
+      return existing;
+    }
+
+    const selectedColor = COLOR_OPTIONS[colorIndex]?.backgroundColor ?? "#FFFFFF";
+    const newTag = await createTag({ name: query, color: selectedColor, type });
+    setTags((prev) => [...prev.filter((tag) => tag._id !== newTag._id), newTag]);
+    return newTag;
+  };
+
+  const getAssignmentTag = async (colorIndex: number): Promise<VolunteerTag | undefined> => {
     const query = assignmentNameTrimmed;
     if (!query) return undefined;
 
-    const existing = tags.find(
-      (t) => t.type === "assignment" && t.name.trim().toLowerCase() === query.toLowerCase(),
-    );
-    if (existing) return existing;
-
-    // create a new assignment tag using the selected color background
     try {
-      const color = COLOR_OPTIONS[selectedColorIndex]?.backgroundColor ?? "#FFFFFF";
-      const newTag = await createTag({ name: query, color, type: "assignment" });
-      setTags((prev) => [...prev, newTag]);
-      return newTag;
+      return await resolveTag("assignment", query, colorIndex);
     } catch (err) {
       const latest = await fetchTags().catch(() => [] as VolunteerTag[]);
       if (latest.length > 0) {
@@ -92,31 +116,22 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
     }
   };
 
-  const getProgramTag = async (): Promise<VolunteerTag | undefined> => {
+  const getProjectTag = async (colorIndex: number): Promise<VolunteerTag | undefined> => {
     const query = projectNameTrimmed;
     if (!query) return undefined;
 
-    const existing = tags.find(
-      (t) => t.type === "program" && t.name.trim().toLowerCase() === query.toLowerCase(),
-    );
-    if (existing) return existing;
-
-    // create a new program tag using the selected color background
     try {
-      const color = COLOR_OPTIONS[selectedColorIndex]?.backgroundColor ?? "#FFFFFF";
-      const newTag = await createTag({ name: query, color, type: "program" });
-      setTags((prev) => [...prev, newTag]);
-      return newTag;
+      return await resolveTag("project", query, colorIndex);
     } catch (err) {
       const latest = await fetchTags().catch(() => [] as VolunteerTag[]);
       if (latest.length > 0) {
         setTags(latest);
         const existingAfterRefresh = latest.find(
-          (t) => t.type === "program" && t.name.trim().toLowerCase() === query.toLowerCase(),
+          (t) => t.type === "project" && t.name.trim().toLowerCase() === query.toLowerCase(),
         );
         if (existingAfterRefresh) return existingAfterRefresh;
       }
-      console.error("Failed to create program tag:", err);
+      console.error("Failed to create project tag:", err);
       return undefined;
     }
   };
@@ -135,16 +150,16 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
 
       try {
         // Resolve sequentially to avoid race conditions creating tags with conflicting names.
-        const assignmentTag = await getAssignmentTag();
+        const assignmentTag = await getAssignmentTag(assignmentColorIndex);
         if (!assignmentTag) {
           console.error("Missing assignment tag after creation");
           return;
         }
 
-        const programTag = await getProgramTag();
+        const programTag = await getProjectTag(projectColorIndex);
 
         if (!programTag) {
-          console.error("Missing program tag after creation");
+          console.error("Missing project tag after creation");
           return;
         }
 

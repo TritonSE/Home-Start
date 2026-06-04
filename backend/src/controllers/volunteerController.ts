@@ -4,6 +4,7 @@ import csvParser from "csv-parser";
 import { validationResult } from "express-validator";
 import createError from "http-errors";
 
+import { getAutoTagColor } from "../../../shared/colorOptions";
 import TagModel from "../models/tagModel";
 import VolunteerAssignmentModel from "../models/volunteerAssignmentModel";
 import VolunteerModel from "../models/volunteerModel";
@@ -18,6 +19,105 @@ import type { Buffer } from "node:buffer";
 // eslint-disable-next-line regexp/no-super-linear-backtracking
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_NUMBER_REGEX = /^\+?1?\d{10}$|^\(?\d{3}\)?[-\s.]?\d{3}[-\s.]?\d{4}$/;
+
+type ProjectProgramPair = {
+  projectName: string;
+  programName: string;
+};
+
+const rawProjectProgramPairs: ProjectProgramPair[] = [
+  { projectName: "Administrative Internship", programName: "Administrative" },
+  { projectName: "Administrative Volunteer", programName: "Administrative" },
+  { projectName: "Adopt a Family 2017", programName: "Philanthropy" },
+  { projectName: "BackPack Drive 2022", programName: "Communities in Action" },
+  { projectName: "BackPack Drive 2024", programName: "Communities in Action" },
+  { projectName: "BHS Internship", programName: "Behavioral Health Services" },
+  { projectName: "BHS Volunteer", programName: "Behavioral Health Services" },
+  { projectName: "Blue Ribbon Broadcast 2021", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2017", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2018", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2019", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2022", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2023", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2024", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala 2025", programName: "Philanthropy" },
+  { projectName: "Blue Ribbon Gala Past", programName: "Philanthropy" },
+  { projectName: "Board of Directors", programName: "Executive" },
+  { projectName: "Bright Futures Candle", programName: "Finances" },
+  { projectName: "CalFresh Program", programName: "Communities in Action" },
+  { projectName: "CINA Internship", programName: "Communities in Action" },
+  { projectName: "CINA Volunteer", programName: "Communities in Action" },
+  { projectName: "Clinical Supervision", programName: "Behavioral Health Services" },
+  { projectName: "Committee", programName: "Philanthropy" },
+  { projectName: "CSF Internship", programName: "Community Services for Families" },
+  { projectName: "CSF Volunteer", programName: "Community Services for Families" },
+  { projectName: "DV Internship", programName: "Maternity Housing Program" },
+  { projectName: "DV Volunteer", programName: "Maternity Housing Program" },
+  { projectName: "East Youth Walk 2022", programName: "Maternity Housing Program" },
+  { projectName: "East Youth Walk 2024", programName: "Maternity Housing Program" },
+  { projectName: "EITC Volunteer", programName: "Communities in Action" },
+  { projectName: "Event Committee", programName: "Philanthropy" },
+  { projectName: "Executive Internship", programName: "Executive" },
+  { projectName: "Executive Strategy", programName: "Executive" },
+  { projectName: "F5FS Internship", programName: "First 5 First Steps" },
+  { projectName: "F5FS Volunteer", programName: "First 5 First Steps" },
+  { projectName: "Finances Committee", programName: "Finances" },
+  { projectName: "Fiscal Internship", programName: "Finances" },
+  { projectName: "Fiscal Volunteer", programName: "Finances" },
+  { projectName: "Food Distribution", programName: "Family Self-Sufficiency Program" },
+  { projectName: "FSS", programName: "Family Self-Sufficiency Program" },
+  { projectName: "Hallo-Wine 2016", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2017", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2018", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2019", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2020", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2021", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2022", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2023", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2024", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine 2025", programName: "Philanthropy" },
+  { projectName: "Hallo-Wine Past", programName: "Philanthropy" },
+  { projectName: "Holiday Dropoff 2019", programName: "Philanthropy" },
+  { projectName: "Housing Outreach Intern", programName: "Maternity Housing Program" },
+  { projectName: "Housing Outreach Volunteer", programName: "Maternity Housing Program" },
+  { projectName: "HR Internship", programName: "Human Resources" },
+  { projectName: "HR Volunteer", programName: "Human Resources" },
+  { projectName: "MHP Health Clinics", programName: "Maternity Housing Program" },
+  { projectName: "MHP Internship", programName: "Maternity Housing Program" },
+  { projectName: "MHP Volunteer", programName: "Maternity Housing Program" },
+  { projectName: "Personnel Committee", programName: "Human Resources" },
+  { projectName: "Philanthropy Internship", programName: "Philanthropy" },
+  { projectName: "Philanthropy Resources Committee", programName: "Philanthropy" },
+  { projectName: "Philanthropy Volunteer", programName: "Philanthropy" },
+  { projectName: "PR Marketing", programName: "Philanthropy" },
+  { projectName: "Rapid Rehousing Intern", programName: "Maternity Housing Program" },
+  { projectName: "Rapid ReHousing Volunteer", programName: "Maternity Housing Program" },
+  { projectName: "Storage Facility", programName: "Administrative" },
+  { projectName: "Targeted Home Visiting", programName: "Maternity Housing Program" },
+  { projectName: "Thrift Boutique", programName: "Finances" },
+  { projectName: "Thrift Boutique Committee", programName: "Finances" },
+  { projectName: "Toy Distribution 2016", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2017", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2018", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2019", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2020", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2021", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2022", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2023", programName: "Philanthropy" },
+  { projectName: "Toy Distribution 2024", programName: "Philanthropy" },
+  { projectName: "VITA", programName: "Communities in Action" },
+  { projectName: "VP Internship", programName: "Human Resources" },
+  { projectName: "VP Volunteer", programName: "Human Resources" },
+];
+
+const projectProgramNameByProjectName = new Map(
+  rawProjectProgramPairs.map(({ projectName, programName }) => [projectName, programName]),
+);
+
+const getMappedProgramName = (projectName?: string | null) => {
+  if (!projectName) return undefined;
+  return projectProgramNameByProjectName.get(projectName.trim());
+};
 
 export const getVolunteer: RequestHandler = async (req, res, next) => {
   const volunteerId = req.params.id;
@@ -404,9 +504,36 @@ export const uploadVolunteerBatch: RequestHandler<
 
     const { volunteers, tagsToCreate = [] } = req.body;
 
-    if (tagsToCreate.length > 0) {
+    const tagsToCreateByKey = new Map<string, TagToCreate>();
+    for (const tag of tagsToCreate) {
+      tagsToCreateByKey.set(`${tag.type}:${tag.name}`, tag);
+    }
+
+    const allProgramNames = new Set<string>();
+    const allGroupNames = new Set<string>();
+    for (const v of volunteers) {
+      for (const name of v.programNames ?? []) allProgramNames.add(name);
+      for (const name of v.groupNames ?? []) allGroupNames.add(name);
+
+      const mappedProgramName = getMappedProgramName(v.projectName);
+      if (mappedProgramName) {
+        allProgramNames.add(mappedProgramName);
+        const key = `program:${mappedProgramName}`;
+        if (!tagsToCreateByKey.has(key)) {
+          tagsToCreateByKey.set(key, {
+            name: mappedProgramName,
+            type: "program",
+            color: getAutoTagColor(mappedProgramName, "program"),
+          });
+        }
+      }
+    }
+
+    const mergedTagsToCreate = [...tagsToCreateByKey.values()];
+
+    if (mergedTagsToCreate.length > 0) {
       await TagModel.bulkWrite(
-        tagsToCreate.map((t) => ({
+        mergedTagsToCreate.map((t) => ({
           updateOne: {
             filter: { name: t.name, type: t.type },
             update: { $setOnInsert: { name: t.name, color: t.color, type: t.type } },
@@ -415,13 +542,6 @@ export const uploadVolunteerBatch: RequestHandler<
         })),
         { ordered: false },
       );
-    }
-
-    const allProgramNames = new Set<string>();
-    const allGroupNames = new Set<string>();
-    for (const v of volunteers) {
-      for (const name of v.programNames ?? []) allProgramNames.add(name);
-      for (const name of v.groupNames ?? []) allGroupNames.add(name);
     }
 
     const [programTags, groupTags] = await Promise.all([

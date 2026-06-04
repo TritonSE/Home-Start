@@ -23,11 +23,6 @@ const volunteerAssignmentSchema = new Schema({
   },
 });
 
-volunteerAssignmentSchema.index(
-  { volunteerId: 1, assignmentTagId: 1 },
-  { unique: true, sparse: true },
-);
-
 type VolunteerAssignment = InferSchemaType<typeof volunteerAssignmentSchema>;
 
 export default model<VolunteerAssignment>("VolunteerAssignment", volunteerAssignmentSchema);

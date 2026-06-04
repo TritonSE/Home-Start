@@ -44,4 +44,7 @@ export type Volunteer = {
   nameConsent?: "first" | "full" | "no";
 };
 
-export type VolunteerWithTags = Volunteer & { tags: VolunteerTag[] };
+export type VolunteerWithTags = Volunteer & {
+  tags: VolunteerTag[];
+  projectTagIds?: VolunteerTag[];
+};

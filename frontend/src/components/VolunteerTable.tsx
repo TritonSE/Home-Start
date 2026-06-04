@@ -1,28 +1,22 @@
 "use client";
 import { useEffect, useState } from "react";
 
+import { COLOR_OPTIONS } from "./colorOptions";
 import styles from "./VolunteerTable.module.css";
 
 import type { VolunteerTag, VolunteerWithTags } from "@/types/volunteer";
 
-const TAG_COLOR_PALETTE = [
-  { backgroundColor: "#F6E6E9", color: "#A40026" },
-  { backgroundColor: "#F9EFE6", color: "#C46200" },
-  { backgroundColor: "#F9F5EF", color: "#886F42" },
-  { backgroundColor: "#E6F2EC", color: "#007F3F" },
-  { backgroundColor: "#E6F2F3", color: "#007A8A" },
-  { backgroundColor: "#E9ECF1", color: "#1D3A6B" },
-  { backgroundColor: "#EFEBF3", color: "#452861" },
-] as const;
+const getStoredTagStyle = (tag: VolunteerTag) => {
+  const backgroundColor =
+    tag.color.startsWith("#") || tag.color.startsWith("rgb") ? tag.color : `#${tag.color}`;
+  const matchingColor = COLOR_OPTIONS.find(
+    (option) => option.backgroundColor.toLowerCase() === backgroundColor.toLowerCase(),
+  );
 
-const getTagPaletteStyle = (tag: VolunteerTag) => {
-  let hash = 0;
-
-  for (const character of tag._id || tag.name) {
-    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-  }
-
-  return TAG_COLOR_PALETTE[hash % TAG_COLOR_PALETTE.length];
+  return {
+    backgroundColor,
+    color: matchingColor?.textColor ?? "#000000",
+  };
 };
 
 const getVisibleTags = (tags: VolunteerTag[], type: string, maxVisible: number) => {
@@ -205,11 +199,7 @@ export default function VolunteerTable({
                 <div className={styles.tagsContainerNoWrap}>
                   {(() => {
                     const { visibleTags, hiddenCount } = getVisibleTags(
-                      Array.isArray(volunteer.programTagIds) && volunteer.programTagIds.length > 0
-                        ? volunteer.programTagIds.filter(
-                            (tag): tag is VolunteerTag => typeof tag === "object" && tag !== null,
-                          )
-                        : (volunteer.tags ?? []),
+                      volunteer.tags ?? [],
                       "program",
                       1,
                     );
@@ -217,7 +207,7 @@ export default function VolunteerTable({
                     return (
                       <>
                         {visibleTags.map((tag, index) => {
-                          const tagStyle = getTagPaletteStyle(tag);
+                          const tagStyle = getStoredTagStyle(tag);
                           return (
                             <span
                               key={`col4-${volunteer._id}-${tag.name}-${index}`}
@@ -252,7 +242,7 @@ export default function VolunteerTable({
                     return (
                       <>
                         {visibleTags.map((tag, index) => {
-                          const tagStyle = getTagPaletteStyle(tag);
+                          const tagStyle = getStoredTagStyle(tag);
                           return (
                             <span
                               key={`col2-${volunteer._id}-${tag.name}-${index}`}
@@ -279,7 +269,7 @@ export default function VolunteerTable({
                 <div className={styles.tagsContainerNoWrap}>
                   {(() => {
                     const { visibleTags, hiddenCount } = getVisibleTags(
-                      volunteer.tags ?? [],
+                      volunteer.projectTagIds ?? [],
                       "project",
                       1,
                     );
@@ -287,7 +277,7 @@ export default function VolunteerTable({
                     return (
                       <>
                         {visibleTags.map((tag, index) => {
-                          const tagStyle = getTagPaletteStyle(tag);
+                          const tagStyle = getStoredTagStyle(tag);
                           return (
                             <span
                               key={`col2-${volunteer._id}-${tag.name}-${index}`}

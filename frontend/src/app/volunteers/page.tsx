@@ -23,24 +23,10 @@ import VolunteerTable from "@/components/VolunteerTable";
 const sendMessageButton = sendMessageButtonAsset as string;
 const sendMessageHoverButton = sendMessageHoverButtonAsset as string;
 
-type PopulatedAssignment = {
-  volunteerId: string;
-  assignmentTagId: VolunteerTag;
-  projectTagId: VolunteerTag;
-  shiftTagIds: VolunteerTag[];
-};
-
-type ProjectProgramMap = {
-  projectTagId: VolunteerTag;
-  programTagId: VolunteerTag;
-};
-
 export default function Page() {
   const router = useRouter();
   const setMode = useTextingFlowStore((s) => s.setMode);
   const setRecipientsPool = useTextingFlowStore((s) => s.setRecipientsPool);
-  const toggleRecipient = useTextingFlowStore((s) => s.toggleRecipient);
-  const toggleSelectAll = useTextingFlowStore((s) => s.toggleSelectAll);
   const clearSelectedRecipients = useTextingFlowStore((s) => s.clearSelectedRecipients);
   const storeSelectedIds = useTextingFlowStore((s) => s.selectedRecipientIds);
 
@@ -110,6 +96,8 @@ export default function Page() {
         );
         const seenTagIds = new Set<string>();
         const volunteerTags: VolunteerTag[] = [];
+        const projectTagIds: VolunteerTag[] = [];
+        const seenProjectTagIds = new Set<string>();
 
         const pushTag = (tag: VolunteerTag | undefined) => {
           if (!tag || seenTagIds.has(tag._id)) return;
@@ -117,13 +105,20 @@ export default function Page() {
           volunteerTags.push(tag);
         };
 
+        const pushProjectTag = (tag: VolunteerTag | undefined) => {
+          if (!tag || seenProjectTagIds.has(tag._id)) return;
+          seenProjectTagIds.add(tag._id);
+          projectTagIds.push(tag);
+        };
+
         // Add assignment and project tags
         for (const assignment of volunteerAssignments) {
           pushTag(resolveTag(assignment.assignmentTagId));
-          pushTag(resolveTag(assignment.projectTagId));
+          const projectTag = resolveTag(assignment.projectTagId);
+          pushTag(projectTag);
+          pushProjectTag(projectTag);
 
-          const projTag = resolveTag(assignment.projectTagId);
-          pushTag(projTag ? programByProjectId.get(projTag._id) : undefined);
+          pushTag(projectTag ? programByProjectId.get(projectTag._id) : undefined);
 
           for (const shiftTag of assignment.shiftTagIds ?? []) pushTag(resolveTag(shiftTag));
         }
@@ -149,7 +144,7 @@ export default function Page() {
           }
         }
 
-        return { ...volunteer, tags: volunteerTags } satisfies VolunteerWithTags;
+        return { ...volunteer, tags: volunteerTags, projectTagIds } satisfies VolunteerWithTags;
       });
 
       setVolunteers(volunteersWithTags);
@@ -419,6 +414,9 @@ export default function Page() {
           volunteer={selectedVolunteer}
           isOpen={isSheetOpen}
           onClose={handleSheetClose}
+          onVolunteerDataChanged={() => {
+            void loadVolunteers();
+          }}
           onVolunteerUpdated={(updatedVolunteer) => {
             setSelectedVolunteer({ ...updatedVolunteer, tags: selectedVolunteer?.tags ?? [] });
             void loadVolunteers();

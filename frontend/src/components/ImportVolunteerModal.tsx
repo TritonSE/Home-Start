@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { useState } from "react";
 
+import { getAutoTagColor } from "./colorOptions";
 import styles from "./ImportVolunteerModal.module.css";
 import Pagination from "./messages/pagination";
 import Modal from "./Modal";
@@ -225,7 +226,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
         csvParsedInfo.missingTags.map((t) => ({
           name: t.name,
           type: t.type,
-          color: "#1d3a6b",
+          color: getAutoTagColor(t.name, t.type),
         })),
       );
       onComplete();

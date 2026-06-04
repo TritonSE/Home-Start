@@ -32,6 +32,7 @@ type VolunteerProfileModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onVolunteerUpdated?: (volunteer: Volunteer) => void;
+  onVolunteerDataChanged?: () => void;
 };
 
 const RETURNING_STATUS_LABELS = new Set(["returner", "returning", "expert"]);
@@ -351,6 +352,7 @@ export default function VolunteerProfileModal({
   isOpen,
   onClose,
   onVolunteerUpdated,
+  onVolunteerDataChanged,
 }: VolunteerProfileModalProps) {
   const [activeTab, setActiveTab] = useState("view");
   const [volunteerAssignments, setVolunteerAssignments] = useState<VolunteerAssignment[]>([]);
@@ -723,6 +725,7 @@ export default function VolunteerProfileModal({
   const handleAssignmentChanged = () => {
     if (!volunteer) return;
     void loadVolunteerAssignments(volunteer._id);
+    onVolunteerDataChanged?.();
   };
 
   const handleShiftSaved = (result: "linked-existing" | "created-and-linked") => {

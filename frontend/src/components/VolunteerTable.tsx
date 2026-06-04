@@ -95,15 +95,15 @@ export default function VolunteerTable({
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
         <colgroup>
-          <col style={{ minWidth: "60px" }} />
-          <col style={{ minWidth: "200px" }} />
-          <col style={{ minWidth: "200px" }} />
-          <col style={{ minWidth: "304px" }} />
-          <col style={{ minWidth: "240px" }} />
-          <col style={{ minWidth: "107px" }} />
-          <col style={{ minWidth: "304px" }} />
-          <col style={{ minWidth: "304px" }} />
-          <col style={{ minWidth: "304px" }} />
+          <col style={{ width: "40px" }} /> {/* checkbox */}
+          <col style={{ width: "140px" }} /> {/* last name */}
+          <col style={{ width: "140px" }} /> {/* first name */}
+          <col style={{ width: "200px" }} /> {/* phone number */}
+          <col style={{ minWidth: "300px" }} /> {/* email */}
+          <col style={{ width: "120px" }} /> {/* status */}
+          <col style={{ width: "304px" }} /> {/* program */}
+          <col style={{ minWidth: "240px" }} /> {/* assignment */}
+          <col style={{ minWidth: "240px" }} /> {/* project */}
         </colgroup>
         <thead>
           <tr>
@@ -119,12 +119,12 @@ export default function VolunteerTable({
                 aria-label="Select all volunteers"
               />
             </th>
-            <th>
+            <th className={styles.nameColumn}>
               <div className={styles.headerContent}>
                 <span>Last Name</span>
               </div>
             </th>
-            <th>
+            <th className={styles.nameColumn}>
               <div className={styles.headerContent}>
                 <span>First Name</span>
               </div>
@@ -179,8 +179,8 @@ export default function VolunteerTable({
                   aria-label={`Select ${volunteer.firstName} ${volunteer.lastName}`}
                 />
               </td>
-              <td>{volunteer.lastName}</td>
-              <td>{volunteer.firstName}</td>
+              <td className={styles.nameColumn}>{volunteer.lastName}</td>
+              <td className={styles.nameColumn}>{volunteer.firstName}</td>
               <td>{volunteer.phoneNumber}</td>
               <td>{volunteer.email}</td>
               <td>

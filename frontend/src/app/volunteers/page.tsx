@@ -27,8 +27,8 @@ export default function Page() {
   const router = useRouter();
   const setMode = useTextingFlowStore((s) => s.setMode);
   const setRecipientsPool = useTextingFlowStore((s) => s.setRecipientsPool);
+  const setSelectedRecipients = useTextingFlowStore((s) => s.setSelectedRecipients);
   const clearSelectedRecipients = useTextingFlowStore((s) => s.clearSelectedRecipients);
-  const storeSelectedIds = useTextingFlowStore((s) => s.selectedRecipientIds);
 
   // Data state
   const [volunteers, setVolunteers] = useState<VolunteerWithTags[]>([]);
@@ -280,28 +280,52 @@ export default function Page() {
       }
     };
 
+    const compareSelectedFirst = (a: VolunteerWithTags, b: VolunteerWithTags) => {
+      const aSelected = exportSelectedIds.has(a._id);
+      const bSelected = exportSelectedIds.has(b._id);
+
+      if (aSelected !== bSelected) {
+        return aSelected ? -1 : 1;
+      }
+
+      return 0;
+    };
+
+    const withSelectedFirst =
+      (compare: (a: VolunteerWithTags, b: VolunteerWithTags) => number) =>
+      (a: VolunteerWithTags, b: VolunteerWithTags) =>
+        compareSelectedFirst(a, b) || compare(a, b);
+
     switch (sortOption) {
       case "Newest":
-        return sorted.sort((a, b) => toTime(b.dateCreated) - toTime(a.dateCreated));
+        return sorted.sort(
+          withSelectedFirst((a, b) => toTime(b.dateCreated) - toTime(a.dateCreated)),
+        );
       case "Oldest":
-        return sorted.sort((a, b) => toTime(a.dateCreated) - toTime(b.dateCreated));
+        return sorted.sort(
+          withSelectedFirst((a, b) => toTime(a.dateCreated) - toTime(b.dateCreated)),
+        );
       case "First Name A-Z":
-        return sorted.sort((a, b) => a.firstName.localeCompare(b.firstName));
+        return sorted.sort(withSelectedFirst((a, b) => a.firstName.localeCompare(b.firstName)));
       case "First Name Z-A":
-        return sorted.sort((a, b) => b.firstName.localeCompare(a.firstName));
+        return sorted.sort(withSelectedFirst((a, b) => b.firstName.localeCompare(a.firstName)));
       case "Last Name A-Z":
-        return sorted.sort((a, b) => a.lastName.localeCompare(b.lastName));
+        return sorted.sort(withSelectedFirst((a, b) => a.lastName.localeCompare(b.lastName)));
       case "Last Name Z-A":
-        return sorted.sort((a, b) => b.lastName.localeCompare(a.lastName));
+        return sorted.sort(withSelectedFirst((a, b) => b.lastName.localeCompare(a.lastName)));
       default:
-        return sorted;
+        return sorted.sort(compareSelectedFirst);
     }
-  }, [filteredVolunteers, sortOption]);
+  }, [exportSelectedIds, filteredVolunteers, sortOption]);
 
   // Calculate pagination slice
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const displayedVolunteers = sortedFilteredVolunteers.slice(startIndex, endIndex);
+  const selectedVolunteersForMessage = useMemo(
+    () => volunteers.filter((volunteer) => exportSelectedIds.has(volunteer._id)),
+    [exportSelectedIds, volunteers],
+  );
 
   const handleImportComplete = () => {
     void loadVolunteers();
@@ -309,9 +333,21 @@ export default function Page() {
   };
 
   const handleSendMessage = useCallback(() => {
+    if (selectedVolunteersForMessage.length > 0) {
+      setSelectedRecipients(selectedVolunteersForMessage);
+    } else {
+      clearSelectedRecipients();
+    }
+
     setMode("text");
     void router.push("/communication");
-  }, [setMode, router]);
+  }, [
+    clearSelectedRecipients,
+    router,
+    selectedVolunteersForMessage,
+    setMode,
+    setSelectedRecipients,
+  ]);
   const handleSheetClose = () => {
     setIsSheetOpen(false);
   };
@@ -380,7 +416,9 @@ export default function Page() {
             />
             <div className={styles.tableSummaryRow}>
               <span className={styles.tableSummaryLeft}>
-                {storeSelectedIds.length > 0 ? `${storeSelectedIds.length} selected` : ""}
+                {selectedVolunteersForMessage.length > 0
+                  ? `${selectedVolunteersForMessage.length} selected`
+                  : ""}
               </span>
               <span className={styles.tableSummaryRight}>
                 Total volunteers: {filteredVolunteers.length}
@@ -400,7 +438,7 @@ export default function Page() {
             onClick={handleSendMessage}
             onMouseEnter={() => setSendMessageHovered(true)}
             onMouseLeave={() => setSendMessageHovered(false)}
-            aria-label={`Send message${storeSelectedIds.length > 0 ? ` to ${storeSelectedIds.length} selected volunteer${storeSelectedIds.length === 1 ? "" : "s"}` : ""}`}
+            aria-label={`Send message${selectedVolunteersForMessage.length > 0 ? ` to ${selectedVolunteersForMessage.length} selected volunteer${selectedVolunteersForMessage.length === 1 ? "" : "s"}` : ""}`}
           >
             <Image
               src={sendMessageHovered ? sendMessageHoverButton : sendMessageButton}

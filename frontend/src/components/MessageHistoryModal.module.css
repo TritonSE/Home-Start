@@ -164,4 +164,5 @@
   font-weight: 400;
   line-height: var(--paragraph-xsm-line-height, 16px); /* 133.333% */
   min-width: 159px;
+  cursor: pointer;
 }

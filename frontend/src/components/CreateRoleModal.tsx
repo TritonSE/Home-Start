@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import { COLOR_OPTIONS } from "./colorOptions";
+import { COLOR_OPTIONS } from "@/components/colorOptions";
 import styles from "./CreateRoleModal.module.css";
 
 import type { Volunteer, VolunteerTag } from "@/types/volunteer";

@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import { COLOR_OPTIONS } from "./colorOptions";
+import { COLOR_OPTIONS } from "@/components/colorOptions";
 import styles from "./CreateShiftModal.module.css";
 import DeleteTagConfirmationModal from "./DeleteTagConfirmationModal";
 

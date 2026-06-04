@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-import { COLOR_OPTIONS } from "./colorOptions";
+import { COLOR_OPTIONS } from "@/components/colorOptions";
 import styles from "./VolunteerTable.module.css";
 
 import type { VolunteerTag, VolunteerWithTags } from "@/types/volunteer";

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { useState } from "react";
 
-import { getAutoTagColor } from "./colorOptions";
+import { getAutoTagColor } from "@/components/colorOptions";
 import styles from "./ImportVolunteerModal.module.css";
 import Pagination from "./messages/pagination";
 import Modal from "./Modal";

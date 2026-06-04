@@ -113,7 +113,6 @@ export default function ReviewAndSendPage() {
             recipients,
             subject,
             message,
-            ...(sendDate && { sendDate: sendDate.toISOString() }),
           }),
         });
 

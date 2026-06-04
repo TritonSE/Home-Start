@@ -2,7 +2,6 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import { COLOR_OPTIONS } from "./colorOptions";
 import styles from "./CreateShiftModal.module.css";
 import DeleteTagConfirmationModal from "./DeleteTagConfirmationModal";
 
@@ -10,6 +9,7 @@ import type { VolunteerTag } from "@/types/volunteer";
 
 import { deleteTag, updateTag } from "@/app/api/tag";
 import icCloseLargeAsset from "@/assets/ic_close_large.svg";
+import { COLOR_OPTIONS } from "@/components/colorOptions";
 
 const icCloseLarge = icCloseLargeAsset as string;
 

@@ -62,6 +62,10 @@ export const createVolunteerAssignment: RequestHandler = async (req, res, next) 
       shiftTagIds: isStringArray(shiftTagIds) ? shiftTagIds : [],
     });
 
+    if (!assignment) {
+      throw createError(500, "Failed to create volunteer assignment");
+    }
+
     await assignment.populate(["assignmentTagId", "projectTagId", "shiftTagIds"]);
 
     res.status(201).json(assignment);

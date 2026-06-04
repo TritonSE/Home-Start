@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { Volunteer, VolunteerTag } from "@/types/volunteer";
+import type { VolunteerTag, VolunteerWithTags } from "@/types/volunteer";
 
 import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
@@ -13,6 +13,7 @@ import styles from "@/app/page.module.css";
 import sendMessageButtonAsset from "@/assets/send_message_button.svg";
 import sendMessageHoverButtonAsset from "@/assets/send_message_hover_button.svg";
 import Pagination from "@/components/messages/pagination";
+import SuccessToast from "@/components/messages/SuccessToast";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
@@ -22,32 +23,15 @@ import VolunteerTable from "@/components/VolunteerTable";
 const sendMessageButton = sendMessageButtonAsset as string;
 const sendMessageHoverButton = sendMessageHoverButtonAsset as string;
 
-type PopulatedAssignment = {
-  volunteerId: string;
-  assignmentTagId: VolunteerTag;
-  projectTagId: VolunteerTag;
-  shiftTagIds: VolunteerTag[];
-};
-
-type ProjectProgramMap = {
-  projectTagId: VolunteerTag;
-  programTagId: VolunteerTag;
-};
-
 export default function Page() {
   const router = useRouter();
   const setMode = useTextingFlowStore((s) => s.setMode);
   const setRecipientsPool = useTextingFlowStore((s) => s.setRecipientsPool);
-  const toggleRecipient = useTextingFlowStore((s) => s.toggleRecipient);
-  const toggleSelectAll = useTextingFlowStore((s) => s.toggleSelectAll);
   const clearSelectedRecipients = useTextingFlowStore((s) => s.clearSelectedRecipients);
   const storeSelectedIds = useTextingFlowStore((s) => s.selectedRecipientIds);
 
-  // Derive a Set from the store ids for efficient lookup in the table
-  const controlledSelectedIds = useMemo(() => new Set(storeSelectedIds), [storeSelectedIds]);
-
   // Data state
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [volunteers, setVolunteers] = useState<VolunteerWithTags[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
 
   const [search, setSearch] = useState("");
@@ -70,10 +54,11 @@ export default function Page() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [showImportSuccess, setShowImportSuccess] = useState(false);
+  const [importSuccessMessage, setImportSuccessMessage] = useState("");
   const [sendMessageHovered, setSendMessageHovered] = useState(false);
-  const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
+  const [selectedVolunteer, setSelectedVolunteer] = useState<VolunteerWithTags | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [exportSelectedIds, setExportSelectedIds] = useState<Set<string>>(new Set());
   const [sortOption, setSortOption] = useState<
     "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A"
   >("Newest");
@@ -111,6 +96,8 @@ export default function Page() {
         );
         const seenTagIds = new Set<string>();
         const volunteerTags: VolunteerTag[] = [];
+        const projectTagIds: VolunteerTag[] = [];
+        const seenProjectTagIds = new Set<string>();
 
         const pushTag = (tag: VolunteerTag | undefined) => {
           if (!tag || seenTagIds.has(tag._id)) return;
@@ -118,23 +105,22 @@ export default function Page() {
           volunteerTags.push(tag);
         };
 
+        const pushProjectTag = (tag: VolunteerTag | undefined) => {
+          if (!tag || seenProjectTagIds.has(tag._id)) return;
+          seenProjectTagIds.add(tag._id);
+          projectTagIds.push(tag);
+        };
+
         // Add assignment and project tags
         for (const assignment of volunteerAssignments) {
           pushTag(resolveTag(assignment.assignmentTagId));
-          pushTag(resolveTag(assignment.projectTagId));
+          const projectTag = resolveTag(assignment.projectTagId);
+          pushTag(projectTag);
+          pushProjectTag(projectTag);
 
-          const projTag = resolveTag(assignment.projectTagId);
-          pushTag(projTag ? programByProjectId.get(projTag._id) : undefined);
+          pushTag(projectTag ? programByProjectId.get(projectTag._id) : undefined);
 
           for (const shiftTag of assignment.shiftTagIds ?? []) pushTag(resolveTag(shiftTag));
-        }
-
-        // Add group tags from groupIds
-        if (Array.isArray(volunteer.groupIds) && volunteer.groupIds.length > 0) {
-          for (const groupId of volunteer.groupIds) {
-            const groupTag = tagData.find((tag) => tag._id === groupId);
-            pushTag(groupTag);
-          }
         }
 
         // Add directly saved group/program tags so filters use the latest edits.
@@ -158,7 +144,7 @@ export default function Page() {
           }
         }
 
-        return { ...volunteer, tags: volunteerTags };
+        return { ...volunteer, tags: volunteerTags, projectTagIds } satisfies VolunteerWithTags;
       });
 
       setVolunteers(volunteersWithTags);
@@ -319,7 +305,7 @@ export default function Page() {
 
   const handleImportComplete = () => {
     void loadVolunteers();
-    setShowImportSuccess(true);
+    setImportSuccessMessage("CSV Successfully Uploaded");
   };
 
   const handleSendMessage = useCallback(() => {
@@ -332,31 +318,18 @@ export default function Page() {
 
   return (
     <Sidebar>
+      <SuccessToast
+        open={!!importSuccessMessage}
+        message={importSuccessMessage}
+        durationMs={2600}
+        onDone={() => setImportSuccessMessage("")}
+      />
       <div className={styles.page}>
         <main className={styles.main}>
-          {showImportSuccess && (
-            <div className={styles.importSuccessBanner}>
-              <div className={styles.importSuccessContent}>
-                <Image
-                  src={"/ic_success.svg"}
-                  alt="Success"
-                  className={styles.importSuccessIcon}
-                  width={24}
-                  height={24}
-                />
-                <span className={styles.importSuccessText}>CSV Successfully Uploaded</span>
-              </div>
-              <button
-                type="button"
-                className={styles.importSuccessClose}
-                onClick={() => setShowImportSuccess(false)}
-                aria-label="Dismiss success message"
-              ></button>
-            </div>
-          )}
-
-          <TitleBar onImportComplete={handleImportComplete} />
-
+          <TitleBar
+            onImportComplete={handleImportComplete}
+            selectedVolunteers={volunteers.filter((v) => exportSelectedIds.has(v._id))}
+          />
           <SearchBar
             search={search}
             setSearch={handleSearchChange}
@@ -379,9 +352,27 @@ export default function Page() {
             <VolunteerTable
               volunteers={displayedVolunteers}
               selectableVolunteers={filteredVolunteers}
-              controlledSelectedIds={controlledSelectedIds}
-              onControlledToggleOne={toggleRecipient}
-              onControlledToggleAll={(scope) => toggleSelectAll(scope)}
+              controlledSelectedIds={exportSelectedIds}
+              onControlledToggleOne={(id) => {
+                setExportSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                });
+              }}
+              onControlledToggleAll={(scope) => {
+                setExportSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  const allSelected = scope.every((v) => next.has(v._id));
+                  if (allSelected) {
+                    scope.forEach((v) => next.delete(v._id));
+                  } else {
+                    scope.forEach((v) => next.add(v._id));
+                  }
+                  return next;
+                });
+              }}
               onVolunteerSelect={(v) => {
                 setSelectedVolunteer(v);
                 setIsSheetOpen(true);
@@ -423,8 +414,11 @@ export default function Page() {
           volunteer={selectedVolunteer}
           isOpen={isSheetOpen}
           onClose={handleSheetClose}
+          onVolunteerDataChanged={() => {
+            void loadVolunteers();
+          }}
           onVolunteerUpdated={(updatedVolunteer) => {
-            setSelectedVolunteer(updatedVolunteer);
+            setSelectedVolunteer({ ...updatedVolunteer, tags: selectedVolunteer?.tags ?? [] });
             void loadVolunteers();
           }}
         />

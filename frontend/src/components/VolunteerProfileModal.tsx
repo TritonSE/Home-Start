@@ -12,7 +12,12 @@ import SuccessNotification from "./SuccessNotification";
 import TagSearch from "./TagSearch";
 import styles from "./VolunteerProfileModal.module.css";
 
-import type { Volunteer, VolunteerAssignment, VolunteerTag } from "../types/volunteer";
+import type {
+  Volunteer,
+  VolunteerAssignment,
+  VolunteerTag,
+  VolunteerWithTags,
+} from "../types/volunteer";
 
 import { createTag, searchTags } from "@/app/api/tag";
 import {
@@ -23,15 +28,16 @@ import icCloseAsset from "@/assets/ic_close.svg";
 import { auth } from "@/firebase/firebase";
 
 type VolunteerProfileModalProps = {
-  volunteer: Volunteer | null;
+  volunteer: VolunteerWithTags | null;
   isOpen: boolean;
   onClose: () => void;
   onVolunteerUpdated?: (volunteer: Volunteer) => void;
+  onVolunteerDataChanged?: () => void;
 };
 
 const RETURNING_STATUS_LABELS = new Set(["returner", "returning", "expert"]);
 
-const deriveStatus = (volunteer: Volunteer): "new" | "returning" => {
+const deriveStatus = (volunteer: VolunteerWithTags): "new" | "returning" => {
   if (volunteer.status === "new" || volunteer.status === "returning") {
     return volunteer.status;
   }
@@ -151,7 +157,7 @@ function ViewContent({
   removedGroupIds,
   volunteerAssignments,
 }: {
-  volunteer: Volunteer;
+  volunteer: VolunteerWithTags;
   removedGroupIds: Set<string>;
   volunteerAssignments: VolunteerAssignment[];
 }) {
@@ -346,6 +352,7 @@ export default function VolunteerProfileModal({
   isOpen,
   onClose,
   onVolunteerUpdated,
+  onVolunteerDataChanged,
 }: VolunteerProfileModalProps) {
   const [activeTab, setActiveTab] = useState("view");
   const [volunteerAssignments, setVolunteerAssignments] = useState<VolunteerAssignment[]>([]);
@@ -718,6 +725,7 @@ export default function VolunteerProfileModal({
   const handleAssignmentChanged = () => {
     if (!volunteer) return;
     void loadVolunteerAssignments(volunteer._id);
+    onVolunteerDataChanged?.();
   };
 
   const handleShiftSaved = (result: "linked-existing" | "created-and-linked") => {

@@ -2,7 +2,6 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import { COLOR_OPTIONS } from "@/components/colorOptions";
 import styles from "./CreateRoleModal.module.css";
 
 import type { Volunteer, VolunteerTag } from "@/types/volunteer";
@@ -11,6 +10,7 @@ import { createTag, fetchTags, searchTags } from "@/app/api/tag";
 import { createVolunteerAssignment } from "@/app/api/volunteer";
 import icCloseLargeAsset from "@/assets/ic_close_large.svg";
 import rightArrowAsset from "@/assets/rightarrow.svg";
+import { COLOR_OPTIONS } from "@/components/colorOptions";
 
 const icCloseLarge = icCloseLargeAsset as string;
 const rightArrow = rightArrowAsset as string;

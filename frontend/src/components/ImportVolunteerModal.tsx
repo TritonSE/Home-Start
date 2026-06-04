@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { useState } from "react";
 
-import { getAutoTagColor } from "@/components/colorOptions";
 import styles from "./ImportVolunteerModal.module.css";
 import Pagination from "./messages/pagination";
 import Modal from "./Modal";
@@ -14,6 +13,7 @@ import icNewAsset from "@/assets/ic_new.svg";
 import icSuccessAsset from "@/assets/ic_success.svg";
 import icWarningAsset from "@/assets/ic_warning.svg";
 import uploadIconAsset from "@/assets/upload.svg";
+import { getAutoTagColor } from "@/components/colorOptions";
 
 const icError = icErrorAsset as string;
 const icNew = icNewAsset as string;

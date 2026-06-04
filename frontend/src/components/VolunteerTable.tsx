@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 
-import { COLOR_OPTIONS } from "@/components/colorOptions";
 import styles from "./VolunteerTable.module.css";
 
 import type { VolunteerTag, VolunteerWithTags } from "@/types/volunteer";
+
+import { COLOR_OPTIONS } from "@/components/colorOptions";
 
 const getStoredTagStyle = (tag: VolunteerTag) => {
   const backgroundColor =

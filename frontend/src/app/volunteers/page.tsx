@@ -13,6 +13,7 @@ import styles from "@/app/page.module.css";
 import sendMessageButtonAsset from "@/assets/send_message_button.svg";
 import sendMessageHoverButtonAsset from "@/assets/send_message_hover_button.svg";
 import Pagination from "@/components/messages/pagination";
+import SuccessToast from "@/components/messages/SuccessToast";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
@@ -67,7 +68,7 @@ export default function Page() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [showImportSuccess, setShowImportSuccess] = useState(false);
+  const [importSuccessMessage, setImportSuccessMessage] = useState("");
   const [sendMessageHovered, setSendMessageHovered] = useState(false);
   const [selectedVolunteer, setSelectedVolunteer] = useState<VolunteerWithTags | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -309,7 +310,7 @@ export default function Page() {
 
   const handleImportComplete = () => {
     void loadVolunteers();
-    setShowImportSuccess(true);
+    setImportSuccessMessage("CSV Successfully Uploaded");
   };
 
   const handleSendMessage = useCallback(() => {
@@ -322,28 +323,14 @@ export default function Page() {
 
   return (
     <Sidebar>
+      <SuccessToast
+        open={!!importSuccessMessage}
+        message={importSuccessMessage}
+        durationMs={2600}
+        onDone={() => setImportSuccessMessage("")}
+      />
       <div className={styles.page}>
         <main className={styles.main}>
-          {showImportSuccess && (
-            <div className={styles.importSuccessBanner}>
-              <div className={styles.importSuccessContent}>
-                <Image
-                  src={"/ic_success.svg"}
-                  alt="Success"
-                  className={styles.importSuccessIcon}
-                  width={24}
-                  height={24}
-                />
-                <span className={styles.importSuccessText}>CSV Successfully Uploaded</span>
-              </div>
-              <button
-                type="button"
-                className={styles.importSuccessClose}
-                onClick={() => setShowImportSuccess(false)}
-                aria-label="Dismiss success message"
-              ></button>
-            </div>
-          )}
           <TitleBar
             onImportComplete={handleImportComplete}
             selectedVolunteers={volunteers.filter((v) => exportSelectedIds.has(v._id))}

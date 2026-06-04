@@ -8,6 +8,7 @@ import { verifyToken } from "./middleware/auth";
 import messageRoutes from "./routes/messageRoutes";
 import tagRoutes from "./routes/tagRoutes";
 import templateRoutes from "./routes/templateRoutes";
+import textJobRoutes from "./routes/textJobRoutes";
 import volunteerAssignmentRoutes from "./routes/volunteerAssignmentRoutes";
 import volunteerRoutes from "./routes/volunteerRoutes";
 
@@ -43,6 +44,7 @@ app.use(
   }),
 );
 
+app.use("/api/text-jobs", textJobRoutes);
 app.use("/api/volunteer", verifyToken, volunteerRoutes);
 app.use("/api/volunteerAssignment", verifyToken, volunteerAssignmentRoutes);
 app.use("/api/tag", verifyToken, tagRoutes);

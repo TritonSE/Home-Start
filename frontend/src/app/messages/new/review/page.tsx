@@ -122,19 +122,8 @@ export default function ReviewAndSendPage() {
           return;
         }
 
-        // email history is created as part of send email endpoint
-        // const historyResult = await createMessageHistory({
-        //   recipients: selectedRecipientIds,
-        //   type: "email",
-        //   subject,
-        //   body: message,
-        //   status: "sent",
-        // });
-
-        // if (!historyResult.success) {
-        //   setSendError(historyResult.error);
-        //   return;
-        // }
+        // Note: the /send-email endpoint persists the email to message history
+        // on success, so we intentionally do not create a second record here.
       }
 
       if (mode === "text") {

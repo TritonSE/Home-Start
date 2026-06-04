@@ -8,12 +8,10 @@ import type { Message } from "@/app/api/messages";
 
 import icCaretdownAsset from "@/assets/ic_caretdown.svg";
 import icCopyAsset from "@/assets/ic_copy.svg";
-import icEditAsset from "@/assets/ic_edit.svg";
 import icVolunteersWhiteAsset from "@/assets/ic_volunteers_white.svg";
 
 const icVolunteersWhite = icVolunteersWhiteAsset as string;
 const icCaretdown = icCaretdownAsset as string;
-const icEdit = icEditAsset as string;
 const icCopy = icCopyAsset as string;
 
 type MessageHistoryModalProps = {
@@ -113,17 +111,10 @@ export function MessageHistoryModal({
         <button className={styles.secondary} onClick={onClose}>
           Cancel
         </button>
-        {message.status === "pending" ? (
-          <button className={styles.primary} onClick={onActionButton}>
-            <Image src={icEdit} alt="Edit" width={20} height={20} />
-            <span>Edit Message</span>
-          </button>
-        ) : (
-          <button className={styles.primary} onClick={onActionButton}>
-            <Image src={icCopy} alt="Copy" width={20} height={20} />
-            <span>Use as Template</span>
-          </button>
-        )}
+        <button className={styles.primary} onClick={onActionButton}>
+          <Image src={icCopy} alt="Copy" width={20} height={20} />
+          <span>Use as Template</span>
+        </button>
       </div>
     </Modal>
   );

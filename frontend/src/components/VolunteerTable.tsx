@@ -95,15 +95,17 @@ export default function VolunteerTable({
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
         <colgroup>
-          <col style={{ minWidth: "60px" }} />
-          <col style={{ minWidth: "200px" }} />
-          <col style={{ minWidth: "200px" }} />
-          <col style={{ minWidth: "304px" }} />
-          <col style={{ minWidth: "240px" }} />
-          <col style={{ minWidth: "107px" }} />
-          <col style={{ minWidth: "304px" }} />
-          <col style={{ minWidth: "304px" }} />
-          <col style={{ minWidth: "304px" }} />
+          {[
+            <col key="checkbox" style={{ width: "40px" }} />,
+            <col key="lastName" style={{ width: "140px" }} />,
+            <col key="firstName" style={{ width: "140px" }} />,
+            <col key="phoneNumber" style={{ width: "200px" }} />,
+            <col key="email" style={{ width: "320px" }} />,
+            <col key="status" style={{ width: "120px" }} />,
+            <col key="program" style={{ width: "340px" }} />,
+            <col key="assignment" style={{ width: "380px" }} />,
+            <col key="project" style={{ width: "300px" }} />,
+          ]}
         </colgroup>
         <thead>
           <tr>
@@ -119,12 +121,13 @@ export default function VolunteerTable({
                 aria-label="Select all volunteers"
               />
             </th>
-            <th>
+            <th className={styles.nameColumn}>
               <div className={styles.headerContent}>
                 <span>Last Name</span>
               </div>
             </th>
-            <th>
+            <th className={styles.nameColumn}>
+              <span className={styles.stickyDivider} aria-hidden="true" />
               <div className={styles.headerContent}>
                 <span>First Name</span>
               </div>
@@ -179,8 +182,11 @@ export default function VolunteerTable({
                   aria-label={`Select ${volunteer.firstName} ${volunteer.lastName}`}
                 />
               </td>
-              <td>{volunteer.lastName}</td>
-              <td>{volunteer.firstName}</td>
+              <td className={styles.nameColumn}>{volunteer.lastName}</td>
+              <td className={styles.nameColumn}>
+                <span className={styles.stickyDivider} aria-hidden="true" />
+                {volunteer.firstName}
+              </td>
               <td>{volunteer.phoneNumber}</td>
               <td>{volunteer.email}</td>
               <td>

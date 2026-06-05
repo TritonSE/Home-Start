@@ -53,7 +53,7 @@ export function MessageHistoryModal({
       onClick={() => {
         setRecipientDropDown(false);
       }}
-      width="1050px"
+      width="min(1050px, calc(100vw - 32px))"
       radius="12px"
       title={message.type === "email" ? "Email Message" : "Text Message"}
       subtitle={

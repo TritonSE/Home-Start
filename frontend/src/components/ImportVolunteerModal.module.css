@@ -95,6 +95,8 @@
 
 .uploadBox {
   height: 211px;
+  box-sizing: border-box;
+  padding: 24px;
   border: 1px dashed #494949;
   border-radius: 8px;
   display: flex;
@@ -210,14 +212,63 @@
 @media (max-width: 600px) {
   .body {
     max-height: 60vh;
+    padding-right: 0;
   }
 
   .uploadBox {
     height: 170px;
+    padding: 24px;
   }
 
   .warning {
     height: auto;
+    align-items: flex-start;
+  }
+
+  .step {
+    flex-wrap: wrap;
+  }
+
+  .sectionToggle {
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .sectionTitle {
+    font-size: 16px;
+    line-height: 22px;
+    overflow-wrap: anywhere;
+  }
+
+  .projectMeta {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .detailCard {
+    padding: 12px;
+  }
+
+  .detailHeader {
+    flex-wrap: wrap;
+  }
+
+  .detailMeta,
+  .volunteerContact,
+  .shiftsMeta {
+    overflow-wrap: anywhere;
+  }
+
+  .footer {
+    gap: 8px;
+    flex-direction: row;
+  }
+
+  .cancel,
+  .continue {
+    flex: 1;
+    width: auto;
+    min-width: 0;
   }
 }
 

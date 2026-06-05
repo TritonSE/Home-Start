@@ -39,6 +39,8 @@ export default function Page() {
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedAssignment, setSelectedAssignment] = useState<Set<string>>(new Set());
   const [selectedProgram, setSelectedProgram] = useState<Set<string>>(new Set());
+  const [dateCreatedStart, setDateCreatedStart] = useState<Date | null>(null);
+  const [dateCreatedEnd, setDateCreatedEnd] = useState<Date | null>(null);
 
   // Clear selection whenever any filter changes to avoid invisibly selected volunteers
   useEffect(() => {
@@ -49,6 +51,8 @@ export default function Page() {
     selectedStatus,
     selectedAssignment,
     selectedProgram,
+    dateCreatedStart,
+    dateCreatedEnd,
     clearSelectedRecipients,
   ]);
 
@@ -64,7 +68,7 @@ export default function Page() {
   >("Newest");
   const itemsPerPage = 100;
 
-  const loadVolunteers = async () => {
+  const loadVolunteers = useCallback(async () => {
     try {
       const [volunteerData, tagData, assignmentData, projectProgramMapData] = await Promise.all([
         fetchVolunteers(),
@@ -154,7 +158,7 @@ export default function Page() {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
+  }, [setRecipientsPool]);
 
   const handleSortOptionChange = (
     option:
@@ -199,9 +203,15 @@ export default function Page() {
     setCurrentPage(1);
   };
 
+  const handleDateCreatedRangeChange = (start: Date | null, end: Date | null) => {
+    setDateCreatedStart(start);
+    setDateCreatedEnd(end);
+    setCurrentPage(1);
+  };
+
   useEffect(() => {
     void loadVolunteers();
-  }, []);
+  }, [loadVolunteers]);
 
   const projectTags = [
     ...new Set(
@@ -245,6 +255,14 @@ export default function Page() {
 
       if (selectedStatus && volunteer.status !== selectedStatus) return false;
 
+      if (dateCreatedStart || dateCreatedEnd) {
+        if (!volunteer.dateCreated) return false;
+        const dateCreatedTime = new Date(volunteer.dateCreated).getTime();
+        if (Number.isNaN(dateCreatedTime)) return false;
+        if (dateCreatedStart && dateCreatedTime < dateCreatedStart.getTime()) return false;
+        if (dateCreatedEnd && dateCreatedTime > dateCreatedEnd.getTime()) return false;
+      }
+
       // Search filter (includes first/last/full name, phone, email)
       if (search.trim()) {
         const query = search.trim().toLowerCase();
@@ -267,7 +285,16 @@ export default function Page() {
 
       return true;
     });
-  }, [volunteers, selectedProject, selectedAssignment, selectedProgram, selectedStatus, search]);
+  }, [
+    volunteers,
+    selectedProject,
+    selectedAssignment,
+    selectedProgram,
+    selectedStatus,
+    dateCreatedStart,
+    dateCreatedEnd,
+    search,
+  ]);
 
   const sortedFilteredVolunteers = useMemo(() => {
     const sorted = [...filteredVolunteers];
@@ -327,8 +354,10 @@ export default function Page() {
     [exportSelectedIds, volunteers],
   );
 
-  const handleImportComplete = () => {
-    void loadVolunteers();
+  const handleImportComplete = async () => {
+    await loadVolunteers();
+    setCurrentPage(1);
+    setExportSelectedIds(new Set());
     setImportSuccessMessage("CSV Successfully Uploaded");
   };
 
@@ -365,6 +394,7 @@ export default function Page() {
           <TitleBar
             onImportComplete={handleImportComplete}
             selectedVolunteers={volunteers.filter((v) => exportSelectedIds.has(v._id))}
+            onBack={() => router.push("/dashboard")}
           />
           <SearchBar
             search={search}
@@ -381,6 +411,9 @@ export default function Page() {
             setSelectedAssignment={handleSelectedAssignmentChange}
             selectedProgram={selectedProgram}
             setSelectedProgram={handleSelectedProgramChange}
+            dateCreatedStart={dateCreatedStart}
+            dateCreatedEnd={dateCreatedEnd}
+            setDateCreatedRange={handleDateCreatedRangeChange}
             onSortOptionChange={handleSortOptionChange}
           />
 

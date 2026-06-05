@@ -1,11 +1,14 @@
 .volunteerTable {
+  --col-checkbox: 40px;
+  --col-name: 140px;
+
   border: none;
-  border-collapse: separate;
+  border-collapse: collapse;
   border-spacing: 0;
   width: 100%;
   margin: 0;
-  min-width: 1050px;
-  table-layout: auto;
+  min-width: 1110px;
+  table-layout: fixed;
 }
 
 .volunteerTable th {
@@ -57,39 +60,92 @@
 .volunteerTable td:nth-child(1) {
   position: sticky;
   left: 0;
+  width: var(--col-checkbox);
+  min-width: var(--col-checkbox);
+  max-width: var(--col-checkbox);
 }
 
 .volunteerTable th:nth-child(2),
 .volunteerTable td:nth-child(2) {
   position: sticky;
-  left: 40px;
+  left: var(--col-checkbox);
+  width: var(--col-name);
+  min-width: var(--col-name);
+  max-width: var(--col-name);
+  z-index: 4;
 }
 
 .volunteerTable th:nth-child(3),
 .volunteerTable td:nth-child(3) {
   position: sticky;
-  left: 200px;
+  left: calc(var(--col-checkbox) + var(--col-name));
+  width: var(--col-name);
+  min-width: var(--col-name);
+  max-width: var(--col-name);
+  z-index: 5;
+  overflow: visible;
+}
+
+.stickyDivider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 1px;
+  background-color: #dcdcdc;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.volunteerTable th:nth-child(1) {
+  z-index: 6;
+}
+
+.volunteerTable th:nth-child(2) {
+  z-index: 7;
+}
+
+.volunteerTable th:nth-child(3) {
+  z-index: 8;
 }
 
 .volunteerTable th:nth-child(-n + 3) {
-  z-index: 6;
   background-color: #ecf3f3;
 }
 
-.volunteerTable td:nth-child(-n + 3) {
-  z-index: 2;
-  background-color: #ffffff;
+.volunteerTable td:nth-child(1) {
+  z-index: 3;
 }
 
-.volunteerTable th:nth-child(3),
-.volunteerTable td:nth-child(3) {
-  box-shadow: 2px 0 0 #dcdcdc;
+.volunteerTable td:nth-child(-n + 3) {
+  background-color: #ffffff;
 }
 
 .volunteerTable tbody tr:hover td:nth-child(-n + 3) {
   background-color: #e8e8e8;
 }
 /*END: Sticky first 3 columns */
+
+.volunteerTable th.nameColumn,
+.volunteerTable td.nameColumn {
+  width: var(--col-name);
+  min-width: var(--col-name);
+  max-width: var(--col-name);
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.volunteerTable th.nameColumn:nth-child(2),
+.volunteerTable td.nameColumn:nth-child(2) {
+  padding-left: 16px;
+  padding-right: 0;
+}
+
+.volunteerTable th.nameColumn:nth-child(3),
+.volunteerTable td.nameColumn:nth-child(3) {
+  padding-left: 8px;
+  padding-right: 8px;
+}
 
 .emailCell {
   white-space: nowrap;
@@ -211,11 +267,15 @@
   border-radius: 8px;
 }
 
-.checkboxCell {
-  width: 44px;
-  text-align: center;
-  padding-left: 8px;
-  padding-right: 8px;
+.volunteerTable th.checkboxCell,
+.volunteerTable td.checkboxCell {
+  width: var(--col-checkbox);
+  min-width: var(--col-checkbox);
+  max-width: var(--col-checkbox);
+  box-sizing: border-box;
+  text-align: left;
+  padding-left: 12px;
+  padding-right: 4px;
 }
 
 .checkbox {
@@ -236,4 +296,34 @@
 
 .clickableRow {
   cursor: pointer;
+}
+
+@media (max-width: 940px) {
+  .volunteerTable th:nth-child(2),
+  .volunteerTable td:nth-child(2),
+  .volunteerTable th:nth-child(3),
+  .volunteerTable td:nth-child(3) {
+    position: static;
+    left: auto;
+    z-index: auto;
+  }
+
+  .volunteerTable th:nth-child(2),
+  .volunteerTable th:nth-child(3) {
+    background-color: #ecf3f3;
+  }
+
+  .volunteerTable td:nth-child(2),
+  .volunteerTable td:nth-child(3) {
+    background-color: inherit;
+  }
+
+  .volunteerTable tbody tr:hover td:nth-child(2),
+  .volunteerTable tbody tr:hover td:nth-child(3) {
+    background-color: inherit;
+  }
+
+  .stickyDivider {
+    display: none;
+  }
 }

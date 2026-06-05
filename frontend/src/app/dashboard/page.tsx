@@ -49,7 +49,7 @@ export default function Dashboard() {
       icon: mail,
     },
     {
-      href: "some-route3",
+      href: "/volunteers",
       onClick: () => {},
       majorText: "Import/Export data",
       minorText: "Manage volunteer information",
@@ -63,58 +63,60 @@ export default function Dashboard() {
 
   return (
     <Sidebar>
-      <div className={styles.dashboard}>
+      <div className={styles.dashboard} data-dashboard-page>
         <div className={styles.dashboardHeader}>
           <p className={styles.headersH2}>Dashboard</p>
         </div>
 
-        <div className={styles.dashboardSecond}>
-          <div className={styles.quickActions}>
-            <p className={styles.headersH4}>Quick Actions</p>
-            <p className={styles.bodyMdLong}>Select an action to get started</p>
-            <p className={styles.bodyMdShort}>Select to start</p>
-          </div>
+        <div className={styles.dashboardBody}>
+          <div className={styles.dashboardSecond}>
+            <div className={styles.quickActions}>
+              <p className={styles.headersH4}>Quick Actions</p>
+              <p className={styles.bodyMdLong}>Select an action to get started</p>
+              <p className={styles.bodyMdShort}>Select to start</p>
+            </div>
 
-          <div className={styles.cards}>
-            {CARDS.map((card) => {
-              return (
-                <Link
-                  key={card.majorText}
-                  href={card.href}
-                  onClick={card.onClick}
-                  className={styles.card}
-                  aria-current={undefined}
-                >
-                  <div className={styles.frame1}>
-                    <div className={styles.iconFrame}>
-                      <Image src={card.icon} alt="" />
+            <div className={styles.cards}>
+              {CARDS.map((card) => {
+                return (
+                  <Link
+                    key={card.majorText}
+                    href={card.href}
+                    onClick={card.onClick}
+                    className={styles.card}
+                    aria-current={undefined}
+                  >
+                    <div className={styles.frame1}>
+                      <div className={styles.iconFrame}>
+                        <Image src={card.icon} alt="" />
+                      </div>
+                      <div className={styles.arrowFrame}>
+                        <Image src={icCaretRight} alt="" />
+                      </div>
                     </div>
-                    <div className={styles.arrowFrame}>
-                      <Image src={icCaretRight} alt="" />
+                    <div className={styles.frame2}>
+                      <p className={styles.headersH5}>{card.majorText}</p>
                     </div>
-                  </div>
-                  <div className={styles.frame2}>
-                    <p className={styles.headersH5}>{card.majorText}</p>
-                  </div>
-                  <div className={styles.frame3}>
-                    <p className={styles.bodyMd}>{card.minorText}</p>
-                  </div>
-                </Link>
-              );
-            })}
+                    <div className={styles.frame3}>
+                      <p className={styles.bodyMd}>{card.minorText}</p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
+          <MessageHistory />
+          <LogoutButton onLogout={() => setShowLogoutModal(true)} />
+          {showLogoutModal && (
+            <LogoutModal
+              onClose={() => setShowLogoutModal(false)}
+              onConfirm={() => {
+                setShowLogoutModal(false);
+                void handleLogout();
+              }}
+            />
+          )}
         </div>
-        <MessageHistory />
-        <LogoutButton onLogout={() => setShowLogoutModal(true)} />
-        {showLogoutModal && (
-          <LogoutModal
-            onClose={() => setShowLogoutModal(false)}
-            onConfirm={() => {
-              setShowLogoutModal(false);
-              void handleLogout();
-            }}
-          />
-        )}
       </div>
     </Sidebar>
   );

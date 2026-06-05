@@ -3,6 +3,8 @@
   flex-direction: column;
   gap: 8px;
   margin: 32px 0;
+  width: 100%;
+  min-width: 0;
 }
 
 .recipientsBar {
@@ -114,6 +116,8 @@
   border-radius: 8px;
   border: 1px solid var(--Lofi-Gray-2, #b9b9b9);
   background: var(--Surface-page, #fbffff);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .body {
@@ -165,4 +169,49 @@
   line-height: var(--paragraph-xsm-line-height, 16px); /* 133.333% */
   min-width: 159px;
   cursor: pointer;
+}
+
+@media (max-width: 747px) {
+  .content {
+    margin: 12px 0;
+    gap: 10px;
+  }
+
+  .recipientsBar {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .recipientsBarText {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .dropdown {
+    left: auto;
+    right: 0;
+    max-width: calc(100vw - 64px);
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .emails {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .text {
+    padding: 14px;
+  }
+
+  .buttons {
+    width: 100%;
+    flex-direction: column-reverse;
+  }
+
+  .secondary,
+  .primary {
+    width: 100%;
+    min-width: 0;
+  }
 }

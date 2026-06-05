@@ -401,11 +401,48 @@ type VolunteerCreationBody = {
   assignmentName?: string;
   projectName?: string;
   shiftNames?: string[];
+  programNames?: string[];
+  groupNames?: string[];
 };
 
 export type UploadVolunteerBatchResponse = { ok: true } | { ok: false; error: string };
 
-const BATCH_CHUNK_SIZE = 200;
+const MAX_ROWS_PER_BATCH_REQUEST = 75;
+
+const getVolunteerImportKey = (volunteer: VolunteerCreationBody) => {
+  const email = volunteer.email.trim().toLowerCase();
+  if (email) return `email:${email}`;
+  return `phone:${volunteer.phoneNumber.trim()}`;
+};
+
+const chunkVolunteerBatch = (data: VolunteerCreationBody[]): VolunteerCreationBody[][] => {
+  const groupedByVolunteer = new Map<string, VolunteerCreationBody[]>();
+  for (const volunteer of data) {
+    const key = getVolunteerImportKey(volunteer);
+    groupedByVolunteer.set(key, [...(groupedByVolunteer.get(key) ?? []), volunteer]);
+  }
+
+  const chunks: VolunteerCreationBody[][] = [];
+  let currentChunk: VolunteerCreationBody[] = [];
+
+  for (const group of groupedByVolunteer.values()) {
+    if (
+      currentChunk.length > 0 &&
+      currentChunk.length + group.length > MAX_ROWS_PER_BATCH_REQUEST
+    ) {
+      chunks.push(currentChunk);
+      currentChunk = [];
+    }
+
+    currentChunk.push(...group);
+  }
+
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk);
+  }
+
+  return chunks;
+};
 
 export async function uploadVolunteerBatch(
   data: VolunteerCreationBody[],
@@ -414,36 +451,47 @@ export async function uploadVolunteerBatch(
   try {
     const headers = await getAuthHeaders();
 
-    const chunks: VolunteerCreationBody[][] = [];
-    for (let i = 0; i < data.length; i += BATCH_CHUNK_SIZE) {
-      chunks.push(data.slice(i, i + BATCH_CHUNK_SIZE));
-    }
+    const chunks = chunkVolunteerBatch(data);
 
-    const responses = await Promise.all(
-      chunks.map(async (chunk, index) =>
-        fetch(`${API_BASE_URL}/api/volunteer/batch`, {
-          method: "POST",
-          headers: { ...headers, "Content-Type": "application/json" },
-          body: JSON.stringify({ volunteers: chunk, ...(index === 0 ? { tagsToCreate } : {}) }),
-        }),
-      ),
-    );
+    const uploadChunk = async (
+      chunk: VolunteerCreationBody[],
+      index: number,
+    ): Promise<UploadVolunteerBatchResponse> => {
+      const response = await fetch(`${API_BASE_URL}/api/volunteer/batch`, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ volunteers: chunk, ...(index === 0 ? { tagsToCreate } : {}) }),
+      });
 
-    const failed = responses.find((r) => !r.ok);
-    if (failed) {
-      let detail = "";
-      try {
-        const body: unknown = await failed.json();
-        detail = JSON.stringify(body);
-      } catch {
-        // ignore
+      if (!response.ok) {
+        let detail = "";
+        try {
+          const body: unknown = await response.json();
+          detail = JSON.stringify(body);
+        } catch {
+          // ignore
+        }
+        console.error("Batch upload error body:", detail);
+        return {
+          ok: false,
+          error: `Failed to upload volunteer batch: ${response.status} ${response.statusText}${detail ? ` - ${detail}` : ""}`,
+        };
       }
-      console.error("Batch upload error body:", detail);
-      return {
-        ok: false,
-        error: `Failed to upload volunteer batch: ${failed.status} ${failed.statusText}${detail ? ` - ${detail}` : ""}`,
-      };
-    }
+
+      return { ok: true };
+    };
+
+    const firstChunk = chunks[0];
+    if (!firstChunk) return { ok: true };
+
+    const firstResult = await uploadChunk(firstChunk, 0);
+    if (!firstResult.ok) return firstResult;
+
+    const remainingResults = await Promise.all(
+      chunks.slice(1).map(async (chunk, index) => await uploadChunk(chunk, index + 1)),
+    );
+    const failedResult = remainingResults.find((result) => !result.ok);
+    if (failedResult) return failedResult;
 
     return { ok: true };
   } catch (error) {

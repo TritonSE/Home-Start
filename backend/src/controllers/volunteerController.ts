@@ -237,11 +237,24 @@ type NormalizedVolunteerCSVFormat = {
 };
 
 type VolunteerImportKey = string;
+type VolunteerImportIdentity = {
+  email: string;
+  phoneNumber: string;
+};
 
-const makeVolunteerImportKey = (body: CreateVolunteerBody): VolunteerImportKey => {
+const makeVolunteerImportKey = (body: VolunteerImportIdentity): VolunteerImportKey => {
   const email = body.email.trim().toLowerCase();
   const phoneNumber = body.phoneNumber.trim();
   return email ? `email:${email}` : `phone:${phoneNumber}`;
+};
+
+const makeVolunteerImportFilter = (body: CreateVolunteerBody) => {
+  const email = body.email.trim().toLowerCase();
+  if (email) {
+    return { email };
+  }
+
+  return { phoneNumber: body.phoneNumber.trim() };
 };
 
 const toDate = (value: string | undefined): Date | undefined => {
@@ -573,9 +586,7 @@ export const uploadVolunteerBatch: RequestHandler<
 
       return {
         updateOne: {
-          filter: {
-            $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
-          },
+          filter: makeVolunteerImportFilter(body),
           update: {
             $set: {
               ...normalizeVolunteerForBulkWrite(body),
@@ -619,8 +630,7 @@ export const uploadVolunteerBatch: RequestHandler<
       const tagByKey = new Map(allTags.map((tag) => [`${tag.type}:${tag.name}`, tag]));
       const volunteerByKey = new Map<string, (typeof savedVolunteers)[number]>();
       for (const volunteer of savedVolunteers) {
-        volunteerByKey.set(volunteer.email, volunteer);
-        volunteerByKey.set(volunteer.phoneNumber, volunteer);
+        volunteerByKey.set(makeVolunteerImportKey(volunteer), volunteer);
       }
 
       const groupedAssignments = new Map<
@@ -654,9 +664,7 @@ export const uploadVolunteerBatch: RequestHandler<
       }
 
       const assignmentOps = [...groupedAssignments.values()].flatMap((entry) => {
-        const volunteer =
-          volunteerByKey.get(entry.volunteer.email) ??
-          volunteerByKey.get(entry.volunteer.phoneNumber);
+        const volunteer = volunteerByKey.get(makeVolunteerImportKey(entry.volunteer));
 
         if (!volunteer) {
           throw createError(400, `Could not resolve volunteer for ${entry.volunteer.email}`);
@@ -1056,18 +1064,17 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
       $or: [{ email: { $in: emails } }, { phoneNumber: { $in: phoneNumbers } }],
     });
 
-    const existingSet = new Set<string>();
+    const existingSet = new Set<VolunteerImportKey>();
     existing.forEach((volunteer) => {
-      existingSet.add(volunteer.email);
-      existingSet.add(volunteer.phoneNumber);
+      existingSet.add(makeVolunteerImportKey(volunteer));
     });
 
     const wouldCreate = uniqueVolunteers
-      .filter((v) => !existingSet.has(v.email) && !existingSet.has(v.phoneNumber))
+      .filter((v) => !existingSet.has(makeVolunteerImportKey(v)))
       .map((v) => v.email);
 
     const wouldUpdate = uniqueVolunteers
-      .filter((v) => existingSet.has(v.email) || existingSet.has(v.phoneNumber))
+      .filter((v) => existingSet.has(makeVolunteerImportKey(v)))
       .map((v) => v.email);
 
     const referencedTags: {

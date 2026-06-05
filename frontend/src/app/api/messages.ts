@@ -6,6 +6,13 @@ export type MessageResponse = {
   messages: Message[];
 };
 
+export type MessagesPageResponse = MessageResponse & {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
 export type Recipient = {
   _id: string;
   firstName?: string;
@@ -61,6 +68,32 @@ function isMessagesResponse(value: unknown): value is MessageResponse {
   return Array.isArray(c.messages) && c.messages.every((m) => isMessageResponse(m));
 }
 
+function isMessagesPageResponse(value: unknown): value is MessagesPageResponse {
+  if (!isMessagesResponse(value)) return false;
+  const c = value as Partial<MessagesPageResponse>;
+  return (
+    typeof c.total === "number" &&
+    typeof c.page === "number" &&
+    typeof c.limit === "number" &&
+    typeof c.totalPages === "number"
+  );
+}
+
+type GetMessagesOptions = {
+  page?: number;
+  limit?: number;
+  type?: "text" | "email";
+};
+
+const buildMessagesQuery = ({ page, limit, type }: GetMessagesOptions) => {
+  const params = new URLSearchParams();
+  if (page !== undefined) params.set("page", String(page));
+  if (limit !== undefined) params.set("limit", String(limit));
+  if (type !== undefined) params.set("type", type);
+  const query = params.toString();
+  return query ? `?${query}` : "";
+};
+
 export const getMessages = async (): Promise<APIResult<Message[]>> => {
   try {
     const response = await get("/api/message");
@@ -79,8 +112,38 @@ export const getMessages = async (): Promise<APIResult<Message[]>> => {
 
     const { messages } = responseJson;
     return { success: true, data: messages };
-  } catch (_error) {
-    return { success: false, error: "An unexpected error occurred" };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+};
+
+export const getMessagesPage = async (
+  options: GetMessagesOptions = {},
+): Promise<APIResult<MessagesPageResponse>> => {
+  try {
+    const response = await get(`/api/message${buildMessagesQuery(options)}`);
+    if (!response.ok) {
+      return { success: false, error: await response.text() };
+    }
+
+    const responseJson: unknown = await response.json();
+
+    if (!isMessagesPageResponse(responseJson)) {
+      return {
+        success: false,
+        error: `Unexpected message response format: ${JSON.stringify(responseJson)}`,
+      };
+    }
+
+    return { success: true, data: responseJson };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "An unexpected error occurred",
+    };
   }
 };
 

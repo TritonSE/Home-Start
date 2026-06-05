@@ -23,7 +23,7 @@ const uploadIcon = uploadIconAsset as string;
 
 type ImportVolunteerModalProps = {
   onClose: () => void;
-  onComplete: () => void;
+  onComplete: () => void | Promise<void>;
 };
 
 const ITEMS_PER_PAGE = 10;
@@ -201,7 +201,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
     if (!csvParsedInfo) return;
     setIsSubmitting(true);
     try {
-      await uploadVolunteerBatch(
+      const result = await uploadVolunteerBatch(
         pendingBatch.map((v) => ({
           firstName: v.firstName,
           lastName: v.lastName,
@@ -229,9 +229,20 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
           color: getAutoTagColor(t.name, t.type),
         })),
       );
-      onComplete();
+
+      if (!result.ok) {
+        setErrorMessage(result.error);
+        setStatus("error");
+        setStep("upload");
+        setIsSubmitting(false);
+        return;
+      }
+
+      await onComplete();
       onClose();
     } catch (_err) {
+      setErrorMessage(_err instanceof Error ? _err.message : "An unexpected error occurred");
+      setStatus("error");
       setIsSubmitting(false);
     }
   }
@@ -242,7 +253,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
   return (
     <Modal
       onClose={onClose}
-      width="1050px"
+      width="min(1050px, calc(100vw - 32px))"
       radius="12px"
       title="Import Volunteer Matrix"
       titleFontSize="32px"
@@ -409,7 +420,10 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                       {csvParsedInfo?.uniqueVolunteers
                         ?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
                         .map((change, i, arr) => (
-                          <div key={change.email} className={styles.detailItem}>
+                          <div
+                            key={`${change.email || change.phoneNumber}-${(currentPage - 1) * ITEMS_PER_PAGE + i}`}
+                            className={styles.detailItem}
+                          >
                             <div className={styles.detailHeader}>
                               <span
                                 className={`${styles.detailBadge} ${change.status === "New" ? styles.detailBadgeNew : styles.detailBadgeUpdated}`}
@@ -498,8 +512,11 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                               )}
                             </div>
                           )}
-                          {assignment.volunteers.map((v) => (
-                            <div key={v.email} className={styles.volunteerRow}>
+                          {assignment.volunteers.map((v, vi) => (
+                            <div
+                              key={`${projectKey}-${assignment.assignmentName ?? "__none__"}-${v.email || v.phoneNumber}-${vi}`}
+                              className={styles.volunteerRow}
+                            >
                               <span
                                 className={`${styles.detailBadge} ${v.status === "New" ? styles.detailBadgeNew : styles.detailBadgeUpdated}`}
                               >

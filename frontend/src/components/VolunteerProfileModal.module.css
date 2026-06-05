@@ -212,6 +212,16 @@
   border-color: #1d3a6b;
 }
 
+.editInputButton {
+  text-align: left;
+  cursor: pointer;
+  background: #ffffff;
+}
+
+.editInputEmpty {
+  color: #979797;
+}
+
 .twoColumnRow {
   display: flex;
   gap: 16px;

@@ -87,7 +87,7 @@ export function MessageHistory() {
           ))}
       </div>
       <div className={styles.viewHistoryRow}>
-        <Link href="#" className={styles.viewHistoryLink}>
+        <Link href="/messages" className={styles.viewHistoryLink}>
           View Entire History
         </Link>
       </div>

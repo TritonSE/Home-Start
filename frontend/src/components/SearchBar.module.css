@@ -8,6 +8,13 @@
   z-index: 20;
 }
 
+.searchFilterRow {
+  display: flex;
+  width: 100%;
+  gap: 12px;
+  align-items: stretch;
+}
+
 .searchField {
   gap: 8px;
   width: 100%;
@@ -26,6 +33,12 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mobileFilterButton {
+  display: none;
 }
 
 .textField {
@@ -76,6 +89,7 @@
   margin-left: auto;
   display: flex;
   align-items: center;
+  gap: 12px;
 }
 
 .pillWrapper {
@@ -113,10 +127,10 @@
   cursor: pointer;
 }
 
-.pillTagStatus:hover .pillTagIcon,
-.pillTagEvent:hover .pillTagIcon,
-.pillTagVolunteerType:hover .pillTagIcon,
-.pillTagActive .pillTagIcon {
+.pillTagStatus:hover .pillTagIconDown,
+.pillTagEvent:hover .pillTagIconDown,
+.pillTagVolunteerType:hover .pillTagIconDown,
+.pillTagActive .pillTagIconDown {
   filter: brightness(0) invert(1);
 }
 
@@ -175,6 +189,11 @@
   width: 12px;
   height: 7px;
   display: block;
+  transition: transform 0.15s ease;
+}
+
+.pillTagIconOpen {
+  transform: rotate(180deg);
 }
 
 .dropdown {
@@ -332,4 +351,409 @@
 .clearFilterButton:hover {
   text-decoration: underline;
   cursor: pointer;
+}
+
+.datePaneSwitch {
+  display: none;
+}
+
+.datePeriodModal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.datePickerColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.datePickerDivider {
+  width: 1px;
+  background: #e8e8e8;
+}
+
+.datePickerTitle {
+  color: #141414;
+  font-family: var(--font-open-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0.8px;
+}
+
+.datePeriodButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.datePeriodPrimaryButton,
+.datePeriodSecondaryButton {
+  height: 40px;
+  border-radius: 8px;
+  padding: 0 16px;
+  font-family: var(--font-open-sans);
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+}
+
+.datePeriodPrimaryButton {
+  border: 1px solid #1d3a6b;
+  background: #1d3a6b;
+  color: #ffffff;
+}
+
+.datePeriodSecondaryButton {
+  border: 1px solid #d7d7d7;
+  background: #ffffff;
+  color: #141414;
+}
+
+.mobileFilterOverlay {
+  display: none;
+}
+
+@media (max-width: 747px) {
+  .searchBar {
+    gap: 12px;
+    z-index: 35;
+  }
+
+  .inputField {
+    height: 50px;
+    padding: 4px 16px;
+  }
+
+  .mobileFilterButton {
+    display: grid;
+    place-items: center;
+    width: 50px;
+    height: 50px;
+    flex: 0 0 50px;
+    border-radius: 4px;
+    border: 1px solid var(--Border-default, #e8e8e8);
+    background: #ffffff;
+    cursor: pointer;
+  }
+
+  .tagsContainer {
+    display: none;
+  }
+
+  .mobileFilterOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: grid;
+    align-items: end;
+  }
+
+  .mobileFilterDismiss {
+    position: absolute;
+    inset: 0;
+    border: none;
+    background: rgba(0, 0, 0, 0.38);
+  }
+
+  .mobileFilterSheet {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    width: 100%;
+    max-height: 82vh;
+    flex-direction: column;
+    padding: 10px 30px calc(30px + env(safe-area-inset-bottom));
+    border-radius: 16px 16px 0 0;
+    background: #ffffff;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .mobileFilterHandle {
+    width: 62px;
+    height: 5px;
+    margin: 6px auto 14px;
+    border-radius: 100px;
+    background: var(--Icons-ic-not-active, #979797);
+    flex: 0 0 auto;
+  }
+
+  .mobileFilterHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex: 0 0 auto;
+  }
+
+  .mobileFilterHeading {
+    color: #000;
+    font-family: var(--Font-family-Headings, Viga);
+    font-size: var(--h5-font-size, 24px);
+    font-style: normal;
+    font-weight: 400;
+    line-height: var(--h5-font-size, 24px);
+    letter-spacing: var(--h5-letter-spacing, 1.2px);
+  }
+
+  .mobileFilterClose {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    color: #000000;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .mobileFilterBody {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow-y: auto;
+    padding: 18px 0;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .mobileFilterSection {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mobileFilterTitle {
+    color: #000000;
+    font-family: var(--Font-family-Body, "Open Sans");
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .mobileStatusOptions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mobileStatusOption {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 28px;
+    padding: 4px;
+    border: none;
+    background: #ffffff;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .mobileStatusLabel {
+    color: #000000;
+    font-family: var(--Font-family-Body, "Open Sans");
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    letter-spacing: 0.8px;
+  }
+
+  .mobileStatusOptionSelected .mobileStatusLabel {
+    font-weight: 700;
+  }
+
+  .mobileCheckBox {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid #494949;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+
+  .mobileCheckBoxChecked {
+    border-color: #1d3a6b;
+    background: #1d3a6b;
+  }
+
+  .mobileFilterSearchField {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    padding: 4px 8px;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    background: #ffffff;
+    box-sizing: border-box;
+  }
+
+  .mobileOptionList {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--Lofi-Gray-1, #e8e8e8);
+    box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+  }
+
+  .mobileOptionItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    border-bottom: 1px solid var(--Lofi-Gray-1, #e8e8e8);
+    background: #ffffff;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .mobileOptionItem:last-child {
+    border-bottom: none;
+  }
+
+  .mobileOptionItemSelected {
+    background: var(--Surface-default, #ecf3f3);
+  }
+
+  .mobileOptionLabel,
+  .mobileOptionLabelSelected {
+    font-family: var(--Font-family-Body, "Open Sans");
+    font-size: var(--paragraph-xsm-font-size, 12px);
+    font-style: normal;
+    font-weight: 400;
+    line-height: var(--paragraph-xsm-line-height, 16px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobileOptionLabel {
+    color: var(--Text-headings, #141414);
+  }
+
+  .mobileOptionLabelSelected {
+    color: var(--Text-action, #1d3a6b);
+  }
+
+  .mobileDateButton {
+    width: fit-content;
+    min-height: 36px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1.5px solid #1d3a6b;
+    background: #ffffff;
+    color: var(--Text-headings, #141414);
+    font-family: var(--Font-family-Body, "Open Sans");
+    font-size: 12px;
+    line-height: 16px;
+    cursor: pointer;
+  }
+
+  .mobileFilterActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    flex: 0 0 auto;
+  }
+
+  .mobileClearButton,
+  .mobileApplyButton {
+    height: 48px;
+    border-radius: 4px;
+    font-family: "Open Sans";
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    cursor: pointer;
+  }
+
+  .mobileClearButton {
+    border: 1px solid var(--Icons-ic-action, #1d3a6b);
+    background: transparent;
+    color: var(--Text-action, #1d3a6b);
+  }
+
+  .mobileApplyButton {
+    border: none;
+    background: var(--Surface-action, #1d3a6b);
+    color: #ffffff;
+  }
+
+  .datePaneSwitch {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 4px;
+    border: 1px solid #d7d7d7;
+    border-radius: 999px;
+    background: #ffffff;
+  }
+
+  .datePaneSwitchButton {
+    flex: 1;
+    height: 32px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: #1d3a6b;
+    font-family: var(--font-open-sans);
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+  }
+
+  .datePaneSwitchButtonActive {
+    background: #1d3a6b;
+    color: #ffffff;
+  }
+
+  .datePeriodModal {
+    display: block;
+  }
+
+  .datePickerColumn {
+    display: none;
+  }
+
+  .datePickerColumnActive {
+    display: flex;
+  }
+
+  .datePickerDivider {
+    display: none;
+  }
+
+  .datePickerTitle {
+    display: none;
+  }
+
+  .datePeriodButtons {
+    justify-content: stretch;
+  }
+
+  .datePeriodPrimaryButton,
+  .datePeriodSecondaryButton {
+    flex: 1;
+  }
 }

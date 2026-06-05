@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
+import BirthdayPickerModal from "./BirthdayPickerModal";
 import CreateRoleModal from "./CreateRoleModal";
 import CreateShiftModal from "./CreateShiftModal";
 import EditTagModal from "./EditTagModal";
@@ -50,6 +51,32 @@ const deriveStatus = (volunteer: VolunteerWithTags): "new" | "returning" => {
 
 const formatStatus = (status: "new" | "returning") =>
   status === "returning" ? "Returning" : "New";
+
+const parseBirthdayValue = (value: string): Date | null => {
+  if (!value) return null;
+  const parts = value.split("-");
+  if (parts.length !== 3) return null;
+  const [year, month, day] = parts.map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+};
+
+const formatBirthdayValue = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const formatBirthdayLabel = (value: string): string => {
+  const date = parseBirthdayValue(value);
+  if (!date) return "";
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
 const TAG_COLOR_PALETTE = [
   { backgroundColor: "#F6E6E9", color: "#A40026" },
@@ -382,6 +409,7 @@ export default function VolunteerProfileModal({
   const [successKey, setSuccessKey] = useState(0);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [pendingExitAction, setPendingExitAction] = useState<"close" | "switchToView" | null>(null);
+  const [showBirthdayPicker, setShowBirthdayPicker] = useState(false);
   const [showCreateShiftModal, setShowCreateShiftModal] = useState(false);
   const [showCreateRoleModal, setShowCreateRoleModal] = useState(false);
   const [tagToEdit, setTagToEdit] = useState<VolunteerTag | null>(null);
@@ -979,13 +1007,14 @@ export default function VolunteerProfileModal({
                 <label className={styles.editLabel} htmlFor="edit-birthday">
                   Birthday
                 </label>
-                <input
+                <button
+                  type="button"
                   id="edit-birthday"
-                  className={styles.editInput}
-                  type="date"
-                  value={birthday}
-                  onChange={(event) => setBirthday(event.target.value)}
-                />
+                  className={`${styles.editInput} ${styles.editInputButton} ${!birthday ? styles.editInputEmpty : ""}`}
+                  onClick={() => setShowBirthdayPicker(true)}
+                >
+                  {birthday ? formatBirthdayLabel(birthday) : "Select birthday"}
+                </button>
               </div>
 
               <div className={styles.editField}>
@@ -1363,6 +1392,13 @@ export default function VolunteerProfileModal({
         ) : null}
       </div>
       {successMessage ? <SuccessNotification key={successKey} message={successMessage} /> : null}
+      {showBirthdayPicker ? (
+        <BirthdayPickerModal
+          date={parseBirthdayValue(birthday)}
+          onDone={(date) => setBirthday(formatBirthdayValue(date))}
+          onClose={() => setShowBirthdayPicker(false)}
+        />
+      ) : null}
       {showCancelConfirm ? (
         <Modal
           onClose={() => setShowCancelConfirm(false)}

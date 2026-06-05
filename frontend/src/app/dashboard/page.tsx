@@ -49,7 +49,7 @@ export default function Dashboard() {
       icon: mail,
     },
     {
-      href: "some-route3",
+      href: "/volunteers",
       onClick: () => {},
       majorText: "Import/Export data",
       minorText: "Manage volunteer information",

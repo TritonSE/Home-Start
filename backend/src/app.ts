@@ -35,8 +35,8 @@ const handleError = (error: unknown, req: Request, res: Response, _next: NextFun
 
 const app = express();
 
-// Provide json body-parser middleware
-app.use(express.json());
+// CSV imports can send large volunteer batches with assignment/tag metadata.
+app.use(express.json({ limit: "5mb" }));
 
 app.use(
   cors({

@@ -11,6 +11,7 @@ import SortSelectionButton from "./SortSelectorButton";
 import bluePlusAltAsset from "@/assets/blue_plus_alt.svg";
 import checkboxIconAsset from "@/assets/checkbox.svg";
 import caretDownIconAsset from "@/assets/ic_caretdown.svg";
+import icCloseWhiteAsset from "@/assets/ic_close_white.svg";
 import filterIconAsset from "@/assets/ic_filter.svg";
 import plusIconAsset from "@/assets/plus.svg";
 import unionIconAsset from "@/assets/union.svg";
@@ -18,6 +19,7 @@ import unionIconAsset from "@/assets/union.svg";
 const bluePlusAltIcon = bluePlusAltAsset as string;
 const checkboxIcon = checkboxIconAsset as string;
 const caretDownIcon = caretDownIconAsset as string;
+const icCloseWhite = icCloseWhiteAsset as string;
 const filterIcon = filterIconAsset as string;
 const plusIcon = plusIconAsset as string;
 const unionIcon = unionIconAsset as string;
@@ -369,7 +371,13 @@ export default function SearchBar({
                   className={`${styles.mobileOptionItem} ${
                     isSelected ? styles.mobileOptionItemSelected : ""
                   }`}
-                  onClick={() => toggleTag(item, cat)}
+                  onClick={() => {
+                    toggleTag(item, cat);
+                    setMobileTagSearch((current) => ({
+                      ...current,
+                      [cat]: "",
+                    }));
+                  }}
                 >
                   <Image
                     src={isSelected ? bluePlusAltIcon : plusIcon}
@@ -393,8 +401,35 @@ export default function SearchBar({
     );
   }
 
+  function renderMobileSelectedFilterPill(
+    label: string,
+    count: number,
+    cat: "project" | "status" | "assignment" | "program",
+  ) {
+    if (count === 0) return null;
+
+    return (
+      <div className={styles.mobileSelectedFilterPill}>
+        <span className={styles.mobileSelectedFilterLabel}>{label}</span>
+        <span className={styles.mobileSelectedFilterCount}>{count}</span>
+        <button
+          type="button"
+          className={styles.mobileSelectedFilterRemove}
+          aria-label={`Clear ${label} filter`}
+          onClick={() => clearCategory(cat)}
+        >
+          <Image src={icCloseWhite} alt="" width={16} height={16} />
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.searchBar}>
+    <div
+      className={`${styles.searchBar} ${
+        isMobileFilterOpen || isDateFilterOpen ? styles.searchBarMobileFilterOpen : ""
+      }`}
+    >
       <div className={styles.searchFilterRow}>
         <div className={styles.inputField}>
           <span className={styles.ic_search}>
@@ -426,6 +461,13 @@ export default function SearchBar({
         >
           <Image src={filterIcon} alt="" width={20} height={20} />
         </button>
+      </div>
+
+      <div className={styles.mobileSelectedFilters}>
+        {renderMobileSelectedFilterPill("Projects", selectedProject?.size ?? 0, "project")}
+        {renderMobileSelectedFilterPill("Status", selectedStatus ? 1 : 0, "status")}
+        {renderMobileSelectedFilterPill("Programs", selectedProgram?.size ?? 0, "program")}
+        {renderMobileSelectedFilterPill("Assignments", selectedAssignment?.size ?? 0, "assignment")}
       </div>
 
       <div className={styles.tagsContainer} ref={wrapperRef}>
@@ -679,6 +721,18 @@ export default function SearchBar({
             </div>
           </div>
           <div className={styles.datePeriodButtons}>
+            <button
+              type="button"
+              className={styles.datePeriodClearButton}
+              onClick={() => {
+                setDraftStartDate(null);
+                setDraftEndDate(null);
+                setDateCreatedRange(null, null);
+                setIsDateFilterOpen(false);
+              }}
+            >
+              Clear Date Range
+            </button>
             <button
               type="button"
               className={styles.datePeriodSecondaryButton}

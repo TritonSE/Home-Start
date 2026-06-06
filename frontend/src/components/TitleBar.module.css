@@ -60,7 +60,7 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  z-index: 50;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -78,6 +78,7 @@
     justify-content: center;
     border-bottom: 1px solid var(--Lofi-Gray-1, #e8e8e8);
     background: #ffffff;
+    z-index: 500;
   }
 
   .volunteers {

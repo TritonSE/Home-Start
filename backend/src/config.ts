@@ -5,8 +5,7 @@ import { InternalError } from "./errors";
 // Retrieve .env variables
 dotenv.config({ quiet: true });
 
-if (!process.env.PORT) throw InternalError.NO_APP_PORT;
-const port = process.env.PORT;
+const port = process.env.PORT ?? "4000";
 
 if (!process.env.FRONTEND_ORIGIN) throw InternalError.NO_FRONTEND_ORIGIN;
 const frontend_origin = process.env.FRONTEND_ORIGIN;

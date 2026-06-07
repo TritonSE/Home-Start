@@ -2,6 +2,7 @@ import { onAuthStateChanged } from "firebase/auth";
 
 import { API_BASE_URL } from "./requests";
 
+import type { APIErrorBody } from "./types";
 import type { Volunteer, VolunteerAssignment } from "@/types/volunteer";
 
 import { auth } from "@/firebase/firebase";
@@ -23,10 +24,6 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   const token = await waitForAuth();
   return { Authorization: `Bearer ${token}` };
 }
-
-type APIErrorBody = {
-  error?: string;
-};
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null;

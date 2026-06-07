@@ -8,7 +8,7 @@ import { useTextingFlowStore } from "../_store/textingFlowStore";
 
 import styles from "./page.module.css";
 
-import { createMessageHistory } from "@/app/api/messages";
+import { createMessageHistory, sendEmails } from "@/app/api/messages";
 import { createTextJob } from "@/app/api/textJobs";
 import { fetchVolunteers } from "@/app/api/volunteer";
 import backIconAsset from "@/assets/back.svg";
@@ -16,7 +16,6 @@ import groupsIconAsset from "@/assets/ic_volunteers_alt.svg";
 import { getGraphToken, signInWithOutlook } from "@/auth/msal";
 import RecipientsPanel from "@/components/messages/RecipientsPanel";
 import Sidebar from "@/components/Sidebar";
-import { auth } from "@/firebase/firebase";
 
 const DESKTOP_MQ = "(min-width: 1024px)";
 const FIRST_NAME_TOKEN = "{{First Name}}";
@@ -95,12 +94,6 @@ export default function ReviewAndSendPage() {
           return;
         }
 
-        const firebaseToken = await auth.currentUser?.getIdToken();
-        if (!firebaseToken) {
-          setSendError("You must be logged in to send emails.");
-          return;
-        }
-
         const allVolunteers = await fetchVolunteers();
         const recipients = allVolunteers.filter((v) => selectedRecipientIds.includes(v._id));
         if (recipients.length === 0) {
@@ -108,55 +101,23 @@ export default function ReviewAndSendPage() {
           return;
         }
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/messages/send-email`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${firebaseToken}`,
-          },
-          body: JSON.stringify({
-            graphToken,
-            recipients,
-            subject,
-            message,
-          }),
-        });
-
-        if (!res.ok) {
-          const err = (await res.json()) as { error?: string };
-          setSendError(err.error ?? "Failed to send emails. Please try again.");
-          return;
-        }
-
-        // Note: the /send-email endpoint persists the email to message history
-        // on success, so we intentionally do not create a second record here.
-      }
-
-      if (mode === "text") {
-        const allVolunteers = await fetchVolunteers();
-        const textRecipients = allVolunteers.filter((v) => selectedRecipientIds.includes(v._id));
-        if (textRecipients.length === 0) {
-          setSendError("Could not find recipient data. Please re-select your recipients.");
-          return;
-        }
-
-        const jobResult = await createTextJob({
+        const emailResult = await sendEmails({
+          graphToken,
+          recipients,
+          subject,
           message,
-          recipients: textRecipients.map((v) => ({
-            firstName: v.firstName,
-            phoneNumber: v.phoneNumber,
-          })),
+          ...(sendDate && { sendDate: sendDate.toISOString() }),
         });
 
-        if (!jobResult.success) {
-          setSendError(jobResult.error);
+        if (!emailResult.success) {
+          setSendError(emailResult.error);
           return;
         }
 
         const historyResult = await createMessageHistory({
           recipients: selectedRecipientIds,
-          type: "text",
-          subject: null,
+          type: "email",
+          subject,
           body: message,
           status: "sent",
         });
@@ -166,21 +127,53 @@ export default function ReviewAndSendPage() {
           return;
         }
 
-        const shortcutBase =
-          process.env.NEXT_PUBLIC_SHORTCUT_API_URL ??
-          process.env.NEXT_PUBLIC_API_URL ??
-          "http://localhost:4000";
-        const apiUrl = `${shortcutBase}/api/text-jobs/${jobResult.data.jobId}`;
-        setShortcutUrl(
-          `shortcuts://run-shortcut?name=${encodeURIComponent("Send Website Messages")}&input=text&text=${encodeURIComponent(apiUrl)}`,
-        );
+        sessionStorage.setItem("success-toast", successMessage);
+        resetDraft();
+        router.replace("/communication");
         return;
       }
 
-      // email only reaches here
-      sessionStorage.setItem("success-toast", successMessage);
-      resetDraft();
-      router.replace("/communication");
+      const allVolunteers = await fetchVolunteers();
+      const recipients = allVolunteers.filter((v) => selectedRecipientIds.includes(v._id));
+      if (recipients.length === 0) {
+        setSendError("Could not find recipient data. Please re-select your recipients.");
+        return;
+      }
+
+      const jobResult = await createTextJob({
+        message,
+        recipients: recipients.map((recipient) => ({
+          firstName: recipient.firstName,
+          phoneNumber: recipient.phoneNumber,
+        })),
+      });
+
+      if (!jobResult.success) {
+        setSendError(jobResult.error);
+        return;
+      }
+
+      const historyResult = await createMessageHistory({
+        recipients: selectedRecipientIds,
+        type: "text",
+        subject: null,
+        body: message,
+        status: "pending",
+      });
+
+      if (!historyResult.success) {
+        setSendError(historyResult.error);
+        return;
+      }
+
+      const shortcutBase =
+        process.env.NEXT_PUBLIC_SHORTCUT_API_URL ??
+        process.env.NEXT_PUBLIC_API_URL ??
+        "http://localhost:4000";
+      const apiUrl = `${shortcutBase}/api/text-jobs/${jobResult.data.jobId}`;
+      setShortcutUrl(
+        `shortcuts://run-shortcut?name=${encodeURIComponent("Send Website Messages")}&input=text&text=${encodeURIComponent(apiUrl)}`,
+      );
     } finally {
       setSending(false);
     }

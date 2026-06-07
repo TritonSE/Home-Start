@@ -159,3 +159,22 @@ export const createMessageHistory = async (
     return handleAPIError(err);
   }
 };
+
+export type SendEmailRequest = {
+  graphToken: string;
+  recipients: Recipient[];
+  subject: string;
+  message: string;
+  sendDate?: string;
+};
+
+export const sendEmails = async (emailObj: SendEmailRequest): Promise<APIResult<unknown>> => {
+  try {
+    const response = await post("/api/messages/send-email", emailObj);
+    const responseJson: unknown = await response.json();
+
+    return { success: true, data: responseJson };
+  } catch (err) {
+    return handleAPIError(err);
+  }
+};

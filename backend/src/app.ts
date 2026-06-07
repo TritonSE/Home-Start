@@ -44,13 +44,15 @@ app.use(
   }),
 );
 
+app.use(verifyToken);
+
+app.use("/api/volunteer", volunteerRoutes);
+app.use("/api/volunteerAssignment", volunteerAssignmentRoutes);
+app.use("/api/tag", tagRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/template", templateRoutes);
+app.use("/api/message", messageRoutes);
 app.use("/api/text-jobs", textJobRoutes);
-app.use("/api/volunteer", verifyToken, volunteerRoutes);
-app.use("/api/volunteerAssignment", verifyToken, volunteerAssignmentRoutes);
-app.use("/api/tag", verifyToken, tagRoutes);
-app.use("/api/messages", verifyToken, messageRoutes);
-app.use("/api/template", verifyToken, templateRoutes);
-app.use("/api/message", verifyToken, messageRoutes);
 
 app.use(handleError);
 

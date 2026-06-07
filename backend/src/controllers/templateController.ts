@@ -1,4 +1,5 @@
 import { validationResult } from "express-validator";
+import createHttpError from "http-errors";
 
 import TemplateModel from "../models/templateModel";
 import validationErrorParser from "../util/validationErrorParser";
@@ -11,7 +12,7 @@ export const getTemplate: RequestHandler = async (req, res, next) => {
   try {
     const template = await TemplateModel.findById(templateId);
     if (!template) {
-      return res.status(404).json({ error: "Could not find template" });
+      return next(createHttpError(404, "Could not find template"));
     }
 
     res.status(200).json(template);
@@ -44,7 +45,7 @@ export const createTemplate: RequestHandler = async (req, res, next) => {
     validationErrorParser(errors);
 
     if (type === "email" && !subject) {
-      return res.status(400).json({ error: "Email template requires subject" });
+      return next(createHttpError(400, "Email template requires subject"));
     }
 
     const newTemplate = await TemplateModel.create({
@@ -68,7 +69,7 @@ export const updateTemplate: RequestHandler = async (req, res, next) => {
     validationErrorParser(errors);
 
     if (type === "email" && !subject) {
-      return res.status(400).json({ error: "Email template requires subject" });
+      return next(createHttpError(400, "Email template requires subject"));
     }
 
     const template = await TemplateModel.findByIdAndUpdate(templateId, {
@@ -78,7 +79,7 @@ export const updateTemplate: RequestHandler = async (req, res, next) => {
       subject,
     });
     if (!template) {
-      return res.status(404).json({ error: "Could not find template" });
+      return next(createHttpError(404, "Could not find template"));
     }
 
     res.status(200).json(template);
@@ -93,9 +94,9 @@ export const deleteTemplate: RequestHandler = async (req, res, next) => {
   try {
     const template = await TemplateModel.findByIdAndDelete(templateId);
     if (!template) {
-      return res.status(404).json({ error: "Could not find template" });
+      return next(createHttpError(404, "Could not find template"));
     }
-    res.status(200).json({ message: "Template deleted successfully" });
+    res.status(200).send();
   } catch (err) {
     next(err);
   }

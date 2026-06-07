@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useTextingFlowStore } from "../messages/new/_store/textingFlowStore";
@@ -19,21 +20,36 @@ export async function handleEmailClick() {
 }
 
 export default function CommunicationPage() {
+  const searchParams = useSearchParams();
+  const requestedMode = searchParams.get("mode");
   const [emailReady, setEmailReady] = useState(false);
   const mode = useTextingFlowStore((s) => s.mode);
   const setMode = useTextingFlowStore((s) => s.setMode);
+
   useEffect(() => {
     let mounted = true;
+    const wantsEmail =
+      requestedMode === "email" || sessionStorage.getItem("pendingMode") === "email";
 
     const finalizeMicrosoftLogin = async () => {
       const account = await initMsal();
 
+      if (!mounted) return;
+
+      if (wantsEmail && account) {
+        setMode("email");
+        sessionStorage.removeItem("pendingMode");
+        setEmailReady(true);
+        return;
+      }
+
+      if (wantsEmail && !account) {
+        sessionStorage.setItem("pendingMode", "email");
+        await signInWithOutlook();
+        return;
+      }
+
       if (mounted) {
-        const pendingMode = sessionStorage.getItem("pendingMode");
-        if (account && pendingMode === "email") {
-          setMode("email");
-          sessionStorage.removeItem("pendingMode");
-        }
         setEmailReady(true);
       }
     };
@@ -43,11 +59,11 @@ export default function CommunicationPage() {
     return () => {
       mounted = false;
     };
-  }, [mode]);
+  }, [requestedMode, setMode]);
 
   const pendingMode = sessionStorage.getItem("pendingMode");
 
-  if (mode === "text" && !pendingMode) {
+  if (mode === "text" && !pendingMode && requestedMode !== "email") {
     return <NewMessagePage />;
   }
 

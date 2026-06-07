@@ -58,8 +58,10 @@
 
 .lastEditedWrapper {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   margin-bottom: -8px;
 }
@@ -208,6 +210,16 @@
 
 .editInput:focus {
   border-color: #1d3a6b;
+}
+
+.editInputButton {
+  text-align: left;
+  cursor: pointer;
+  background: #ffffff;
+}
+
+.editInputEmpty {
+  color: #979797;
 }
 
 .twoColumnRow {
@@ -904,6 +916,13 @@
   .content {
     padding: 16px;
     gap: 16px;
+  }
+
+  .lastEditedWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
   }
 
   .infoSection {

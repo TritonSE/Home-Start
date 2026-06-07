@@ -19,6 +19,8 @@ function CreateTemplateContent() {
 
   const templateType =
     searchParams.get("type") === "email" ? TemplateType.EMAIL : TemplateType.TEXT;
+  const prefillMessage = searchParams.get("message") ?? "";
+  const prefillSubject = searchParams.get("subject") ?? "";
 
   const onSave = (title: string, message: string, type: TemplateType, subject: string) => {
     const createTemplateRequest: CreateTemplateRequest = {
@@ -51,7 +53,13 @@ function CreateTemplateContent() {
           <h1 className={styles.headerTitle}>Create Template</h1>
           <span style={{ height: "40px" }}></span>
         </header>
-        <TemplateCreate onSave={onSave} title="" message="" type={templateType} />
+        <TemplateCreate
+          onSave={onSave}
+          title=""
+          message={prefillMessage}
+          type={templateType}
+          subject={prefillSubject}
+        />
       </div>
     </Sidebar>
   );

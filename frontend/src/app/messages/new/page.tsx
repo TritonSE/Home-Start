@@ -17,7 +17,6 @@ import icCloseAsset from "@/assets/ic_close.svg";
 import mdiInformationAsset from "@/assets/mdi_information.svg";
 import ouiCopyAsset from "@/assets/oui_copy.svg";
 import { initMsal, signInWithOutlook } from "@/auth/msal";
-import DateTimePickerModal from "@/components/DateTimePickerModal";
 import RecipientsPanel from "@/components/messages/RecipientsPanel";
 import SuccessToast from "@/components/messages/SuccessToast";
 import Sidebar from "@/components/Sidebar";
@@ -46,7 +45,6 @@ type ComposerProps = {
   canReview: boolean;
   isDesktop: boolean;
   clickableTo: boolean;
-  setDateTimePickerOpen: (open: boolean) => void;
   onGoRecipients: () => void;
   onGoReview: () => void;
 };
@@ -92,7 +90,6 @@ function Composer({
   canReview,
   isDesktop,
   clickableTo,
-  setDateTimePickerOpen,
   onGoRecipients,
   onGoReview,
 }: ComposerProps) {
@@ -165,14 +162,17 @@ function Composer({
     pill.setAttribute("contenteditable", "false");
     pill.textContent = "First Name";
 
-    const space = document.createTextNode(" ");
-
     const sel = window.getSelection();
     if (!sel) return;
 
     if (sel.rangeCount === 0) {
       editor.appendChild(pill);
-      editor.appendChild(space);
+
+      const endRange = document.createRange();
+      endRange.setStartAfter(pill);
+      endRange.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(endRange);
 
       const next = readPlainTextFromEditor();
       lastSyncedMessageRef.current = next;
@@ -193,9 +193,8 @@ function Composer({
 
     const r = sel.getRangeAt(0);
     r.deleteContents();
-    r.insertNode(space);
     r.insertNode(pill);
-    r.setStartAfter(space);
+    r.setStartAfter(pill);
     r.collapse(true);
     sel.removeAllRanges();
     sel.addRange(r);
@@ -381,7 +380,6 @@ export default function NewMessagePage() {
 
   const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
   const recipientsCount = selectedRecipientIds.length;
-  const [dateTimePickerOpen, setDateTimePickerOpen] = useState<boolean>(false);
 
   const [successToast, setSuccessToast] = useState("");
 
@@ -476,7 +474,7 @@ export default function NewMessagePage() {
 
         {!isDesktop ? (
           <main className={styles.content}>
-            <Composer {...commonProps} clickableTo setDateTimePickerOpen={setDateTimePickerOpen} />
+            <Composer {...commonProps} clickableTo />
           </main>
         ) : null}
 
@@ -491,11 +489,7 @@ export default function NewMessagePage() {
 
               <section className={styles.rightPane}>
                 <div className={styles.rightScroll}>
-                  <Composer
-                    {...commonProps}
-                    clickableTo={false}
-                    setDateTimePickerOpen={setDateTimePickerOpen}
-                  />
+                  <Composer {...commonProps} clickableTo={false} />
                 </div>
 
                 <div className={styles.desktopReview}>
@@ -516,17 +510,6 @@ export default function NewMessagePage() {
           </main>
         ) : null}
       </div>
-      {dateTimePickerOpen && (
-        <DateTimePickerModal
-          date={sendDate ?? new Date()}
-          onDone={(date) => {
-            setSendDate(date);
-          }}
-          onClose={() => {
-            setDateTimePickerOpen(false);
-          }}
-        />
-      )}
     </Sidebar>
   );
 }

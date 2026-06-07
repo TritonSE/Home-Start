@@ -40,6 +40,7 @@ router.put(
 );
 
 router.post("/parse-csv", upload.single("csv"), volunteer.parseVolunteersCsv);
+router.post("/export-csv", volunteer.exportVolunteersCsv);
 
 router.post(
   "/batch",

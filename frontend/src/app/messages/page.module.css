@@ -1,0 +1,278 @@
+.page {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  background: var(--Surface-page, #fbffff);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  min-width: 0;
+  padding: 20px 16px 28px;
+}
+
+@media (min-width: 748px) {
+  .main {
+    padding: 28px 32px 36px;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.backButton {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.backButton:hover {
+  background: var(--Surface-default, #ecf3f3);
+}
+
+.title {
+  margin: 0;
+  color: var(--Text-headings, #141414);
+  font-family: var(--Font-family-Headings, Viga);
+  font-size: var(--h4-font-size, 32px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--h4-line-height, 40px);
+  letter-spacing: var(--h4-letter-spacing, 1.2px);
+}
+
+.historySection {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: visible;
+  overflow-y: visible;
+}
+
+.messageFilterPills.messageFilterPills {
+  display: flex;
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+  padding: 20px;
+  color: var(--Lofi-Gray-4, #676767);
+  text-align: center;
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.datePaneSwitch {
+  display: none;
+}
+
+.datePeriodModal {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  gap: 20px;
+  overflow-x: auto;
+}
+
+.datePickerColumn {
+  display: flex;
+  flex: 1 0 0;
+  min-width: 330px;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.datePickerDivider {
+  width: 1px;
+  flex: 0 0 1px;
+  align-self: stretch;
+  background: var(--Border-default, #e8e8e8);
+}
+
+.datePickerTitle {
+  color: var(--Text-headings, #141414);
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-md-font-size, 16px);
+  font-style: normal;
+  font-weight: 700;
+  line-height: var(--paragraph-md-line-height, 20px);
+  letter-spacing: var(--paragraph-md-letter-spacing, 0.5px);
+}
+
+.datePeriodButtons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  align-self: stretch;
+  margin-top: 16px;
+}
+
+.datePeriodClearButton {
+  margin-right: auto;
+  border: none;
+  background: transparent;
+  color: #676767;
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.5px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.datePeriodClearButton:hover {
+  color: #141414;
+}
+
+.datePeriodPrimaryButton,
+.datePeriodSecondaryButton {
+  display: flex;
+  min-width: 60px;
+  height: 36px;
+  padding: 0 14px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: var(--paragraph-sm-font-size, 14px);
+  line-height: var(--paragraph-sm-line-height, 20px);
+  letter-spacing: var(--paragraph-sm-letter-spacing, 0.8px);
+  cursor: pointer;
+}
+
+.datePeriodPrimaryButton {
+  border: 1px solid var(--Icons-ic-action, #1d3a6b);
+  background: var(--Surface-action, #1d3a6b);
+  color: #fff;
+}
+
+.datePeriodSecondaryButton {
+  border: 1px solid var(--Icons-ic-action, #1d3a6b);
+  background: #fff;
+  color: var(--Text-action, #1d3a6b);
+}
+
+.typeDateGroup {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 747px) {
+  .messageFilterPills.messageFilterPills {
+    display: flex;
+    height: auto;
+    min-height: 32px;
+    flex-wrap: wrap;
+  }
+
+  .datePaneSwitch {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 4px;
+    border: 1px solid var(--Border-default, #e8e8e8);
+    border-radius: 999px;
+    background: #ffffff;
+  }
+
+  .datePaneSwitchButton {
+    flex: 1;
+    height: 32px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--Text-action, #1d3a6b);
+    font-family: var(--Font-family-Body, "Open Sans");
+    font-size: var(--paragraph-sm-font-size, 14px);
+    line-height: var(--paragraph-sm-line-height, 20px);
+    letter-spacing: var(--paragraph-sm-letter-spacing, 0.8px);
+    cursor: pointer;
+  }
+
+  .datePaneSwitchButtonActive {
+    background: var(--Surface-action, #1d3a6b);
+    color: #ffffff;
+  }
+
+  .datePeriodModal {
+    display: block;
+    overflow-x: visible;
+  }
+
+  .datePickerColumn {
+    display: none;
+    min-width: 0;
+  }
+
+  .datePickerColumnActive {
+    display: flex;
+  }
+
+  .datePickerDivider {
+    display: none;
+  }
+
+  .datePickerTitle {
+    display: none;
+  }
+
+  .datePeriodButtons {
+    flex-wrap: wrap;
+    justify-content: stretch;
+  }
+
+  .datePeriodPrimaryButton,
+  .datePeriodSecondaryButton {
+    flex: 1;
+  }
+
+  .datePeriodClearButton {
+    width: 100%;
+    margin-right: 0;
+    text-align: center;
+  }
+
+  .typeDateGroup {
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 16px;
+  border-top: 1px solid var(--Border-default, #e8e8e8);
+  color: var(--Lofi-Gray-4, #676767);
+  font-family: var(--Font-family-Body, "Open Sans");
+  font-size: 14px;
+  line-height: 20px;
+}

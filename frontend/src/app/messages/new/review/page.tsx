@@ -9,6 +9,7 @@ import { useTextingFlowStore } from "../_store/textingFlowStore";
 import styles from "./page.module.css";
 
 import { createMessageHistory, sendEmails } from "@/app/api/messages";
+import { createTextJob } from "@/app/api/textJobs";
 import { fetchVolunteers } from "@/app/api/volunteer";
 import backIconAsset from "@/assets/back.svg";
 import groupsIconAsset from "@/assets/ic_volunteers_alt.svg";
@@ -67,6 +68,11 @@ export default function ReviewAndSendPage() {
 
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [shortcutUrl, setShortcutUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    setShortcutUrl(null);
+  }, [selectedRecipientIds]);
 
   const successMessage = useMemo(() => {
     return `Your message has successfully\nbeen sent to ${recipientsCount} volunteers.`;
@@ -120,29 +126,63 @@ export default function ReviewAndSendPage() {
           setSendError(historyResult.error);
           return;
         }
+
+        sessionStorage.setItem("success-toast", successMessage);
+        resetDraft();
+        router.replace("/communication");
+        return;
       }
 
-      if (mode === "text") {
-        const historyResult = await createMessageHistory({
-          recipients: selectedRecipientIds,
-          type: "text",
-          subject: null,
-          body: message,
-          status: "sent",
-        });
-
-        if (!historyResult.success) {
-          setSendError(historyResult.error);
-          return;
-        }
+      const allVolunteers = await fetchVolunteers();
+      const recipients = allVolunteers.filter((v) => selectedRecipientIds.includes(v._id));
+      if (recipients.length === 0) {
+        setSendError("Could not find recipient data. Please re-select your recipients.");
+        return;
       }
 
-      sessionStorage.setItem("success-toast", successMessage);
-      resetDraft();
-      router.replace("/communication");
+      const jobResult = await createTextJob({
+        message,
+        recipients: recipients.map((recipient) => ({
+          firstName: recipient.firstName,
+          phoneNumber: recipient.phoneNumber,
+        })),
+      });
+
+      if (!jobResult.success) {
+        setSendError(jobResult.error);
+        return;
+      }
+
+      const historyResult = await createMessageHistory({
+        recipients: selectedRecipientIds,
+        type: "text",
+        subject: null,
+        body: message,
+        status: "pending",
+      });
+
+      if (!historyResult.success) {
+        setSendError(historyResult.error);
+        return;
+      }
+
+      const shortcutBase =
+        process.env.NEXT_PUBLIC_SHORTCUT_API_URL ??
+        process.env.NEXT_PUBLIC_API_URL ??
+        "http://localhost:4000";
+      const apiUrl = `${shortcutBase}/api/text-jobs/${jobResult.data.jobId}`;
+      setShortcutUrl(
+        `shortcuts://run-shortcut?name=${encodeURIComponent("Send Website Messages")}&input=text&text=${encodeURIComponent(apiUrl)}`,
+      );
     } finally {
       setSending(false);
     }
+  };
+
+  const handleDone = () => {
+    sessionStorage.setItem("success-toast", successMessage);
+    resetDraft();
+    router.replace("/communication");
   };
 
   const ReviewContent = () => (
@@ -271,23 +311,27 @@ export default function ReviewAndSendPage() {
 
             <div className={styles.bottomCta}>
               {sendError && <p className={styles.sendError}>{sendError}</p>}
-              {sendDate && (
-                <div className={styles.scheduledTime}>
-                  <span>
-                    Scheduled:<b>&nbsp;{formatDate(sendDate)}</b>
-                  </span>
+              {shortcutUrl ? (
+                <div className={styles.shortcutCta}>
+                  <a href={shortcutUrl} className={styles.shortcutBtn}>
+                    Open in Shortcuts
+                  </a>
+                  <button type="button" className={styles.doneBtn} onClick={handleDone}>
+                    Done
+                  </button>
                 </div>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.sendBtn}
+                  disabled={!canSend || sending}
+                  onClick={() => {
+                    void handleSend();
+                  }}
+                >
+                  {sending ? "Sending..." : mode === "email" ? "Send Email" : "Send Text"}
+                </button>
               )}
-              <button
-                type="button"
-                className={styles.sendBtn}
-                disabled={!canSend || sending}
-                onClick={() => {
-                  void handleSend();
-                }}
-              >
-                {sending ? "Sending..." : mode === "email" ? "Send Email" : "Send Text"}
-              </button>
             </div>
           </>
         ) : (
@@ -313,16 +357,27 @@ export default function ReviewAndSendPage() {
                 )}
 
                 <div className={styles.desktopSend}>
-                  <button
-                    type="button"
-                    className={styles.sendBtn}
-                    disabled={!canSend || sending}
-                    onClick={() => {
-                      void handleSend();
-                    }}
-                  >
-                    {sending ? "Sending..." : "Review and Send"}
-                  </button>
+                  {shortcutUrl ? (
+                    <div className={styles.shortcutCta}>
+                      <a href={shortcutUrl} className={styles.shortcutBtn}>
+                        Open in Shortcuts
+                      </a>
+                      <button type="button" className={styles.doneBtn} onClick={handleDone}>
+                        Done
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className={styles.sendBtn}
+                      disabled={!canSend || sending}
+                      onClick={() => {
+                        void handleSend();
+                      }}
+                    >
+                      {sending ? "Sending..." : "Review and Send"}
+                    </button>
+                  )}
                 </div>
               </section>
             </div>

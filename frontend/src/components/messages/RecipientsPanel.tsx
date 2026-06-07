@@ -23,6 +23,9 @@ export default function RecipientsPanel({ mode }: RecipientsPanelProps) {
     setMounted(true);
   }, []);
 
+  const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
+  const selectedSet = useMemo(() => new Set(selectedRecipientIds), [selectedRecipientIds]);
+
   const {
     search,
     handleSearchChange,
@@ -43,10 +46,10 @@ export default function RecipientsPanel({ mode }: RecipientsPanelProps) {
     handleSelectedAssignmentChange,
     selectedStatus,
     handleSelectedStatusChange,
-  } = volunteerFilterHook({ itemsPerPage: NUMBER_OF_VOLUNTEERS_PER_PAGE });
-
-  const selectedRecipientIds = useTextingFlowStore((s) => s.selectedRecipientIds);
-  const selectedSet = useMemo(() => new Set(selectedRecipientIds), [selectedRecipientIds]);
+  } = volunteerFilterHook({
+    itemsPerPage: NUMBER_OF_VOLUNTEERS_PER_PAGE,
+    selectedRecipientIds,
+  });
   const toggleRecipient = useTextingFlowStore((s) => s.toggleRecipient);
   const toggleSelectAll = useTextingFlowStore((s) => s.toggleSelectAll);
 

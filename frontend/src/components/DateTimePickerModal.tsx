@@ -21,7 +21,17 @@ type DateTimePickerProps = {
   onClose: () => void;
 };
 
-export default function DateTimePicker({ date, onDone, onClose }: DateTimePickerProps) {
+type DateTimePickerFieldsProps = {
+  date: Date | null;
+  onChange: (date: Date) => void;
+  showTime?: boolean;
+};
+
+export function DateTimePickerFields({
+  date,
+  onChange,
+  showTime = true,
+}: DateTimePickerFieldsProps) {
   const [currentDate, setCurrentDate] = useState(date ?? new Date());
   const [selectedDate, setSelectedDate] = useState(date ?? new Date());
   const [monthDropDown, setMonthDropDown] = useState<boolean>(false);
@@ -31,6 +41,12 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
   const [timePeriod, setTimePeriod] = useState("");
   const currYear = currentDate.getFullYear();
   const currMonth = currentDate.getMonth();
+
+  useEffect(() => {
+    const nextDate = date ?? new Date();
+    setCurrentDate(nextDate);
+    setSelectedDate(nextDate);
+  }, [date]);
 
   useEffect(() => {
     const formattedSelectedTime = selectedDate.toLocaleTimeString("en-US", {
@@ -84,6 +100,7 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
       selectedDate.getMilliseconds(),
     );
     setSelectedDate(newSelectedDate);
+    onChange(newSelectedDate);
   };
 
   const handleSelectTime = (time: string, period: string) => {
@@ -100,6 +117,7 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
       0,
     );
     setSelectedDate(newSelectedDate);
+    onChange(newSelectedDate);
     setTimePeriodDropDown(false);
   };
 
@@ -110,74 +128,65 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
   };
 
   return (
-    <Modal
-      onClose={onClose}
-      onClick={closeDropDowns}
-      width="370px"
-      radius="8px"
-      title="Select Date"
-      titleLineHeight={24}
-      titleFontSize="20px"
-      padding="20px"
-    >
-      <div className={styles.datetimePickerContainer}>
-        <div className={styles.calendar}>
-          <div className={styles.calendarHeader}>
-            <div className={styles.arrowPaddingLeft}>
-              <button className={styles.btnWrapper} onClick={handlePrevMonth}>
-                <Image
-                  src={chevronLeft}
-                  alt="Previous Month"
-                  width={16}
-                  height={16}
-                  style={{ cursor: "pointer" }}
-                />
-              </button>
-            </div>
-            <DropDown
-              onClick={() => {
-                setTimePeriodDropDown(false);
-                setMonthDropDown(!monthDropDown);
-              }}
-              selectedDisplay={currentDate.toLocaleString("default", { month: "long" })}
-              dropdownOpen={monthDropDown}
-              items={monthList}
-              onSelect={(i) => {
-                handleSelectMonth(i);
-              }}
-            />
-            <DropDown
-              onClick={() => {
-                setTimePeriodDropDown(false);
-                setYearDropDown(!yearDropDown);
-              }}
-              selectedDisplay={currentDate.getFullYear().toString()}
-              dropdownOpen={yearDropDown}
-              items={yearList}
-              onSelect={(i) => {
-                handleSelectYear(i);
-              }}
-            />
-            <div className={styles.arrowPaddingRight}>
-              <button className={styles.btnWrapper} onClick={handleNextMonth}>
-                <Image
-                  src={chevronRight}
-                  alt="Next Month"
-                  width={16}
-                  height={16}
-                  style={{ cursor: "pointer" }}
-                />
-              </button>
-            </div>
+    <div className={styles.datetimePickerContainer} onClick={closeDropDowns}>
+      <div className={styles.calendar}>
+        <div className={styles.calendarHeader}>
+          <div className={styles.arrowPaddingLeft}>
+            <button className={styles.btnWrapper} onClick={handlePrevMonth}>
+              <Image
+                src={chevronLeft}
+                alt="Previous Month"
+                width={16}
+                height={16}
+                style={{ cursor: "pointer" }}
+              />
+            </button>
           </div>
-          <DatePicker
-            currentDate={currentDate}
-            selectedDate={selectedDate}
+          <DropDown
+            onClick={() => {
+              setTimePeriodDropDown(false);
+              setMonthDropDown(!monthDropDown);
+            }}
+            selectedDisplay={currentDate.toLocaleString("default", { month: "long" })}
+            dropdownOpen={monthDropDown}
+            items={monthList}
             onSelect={(i) => {
-              handleSelectDay(i);
+              handleSelectMonth(i);
             }}
           />
+          <DropDown
+            onClick={() => {
+              setTimePeriodDropDown(false);
+              setYearDropDown(!yearDropDown);
+            }}
+            selectedDisplay={currentDate.getFullYear().toString()}
+            dropdownOpen={yearDropDown}
+            items={yearList}
+            onSelect={(i) => {
+              handleSelectYear(i);
+            }}
+          />
+          <div className={styles.arrowPaddingRight}>
+            <button className={styles.btnWrapper} onClick={handleNextMonth}>
+              <Image
+                src={chevronRight}
+                alt="Next Month"
+                width={16}
+                height={16}
+                style={{ cursor: "pointer" }}
+              />
+            </button>
+          </div>
         </div>
+        <DatePicker
+          currentDate={currentDate}
+          selectedDate={selectedDate}
+          onSelect={(i) => {
+            handleSelectDay(i);
+          }}
+        />
+      </div>
+      {showTime && (
         <div className={styles.time}>
           <span className={styles.timeLabel}>Time</span>
           <div className={styles.selectedTimeOutside}>
@@ -241,21 +250,39 @@ export default function DateTimePicker({ date, onDone, onClose }: DateTimePicker
             />
           </div>
         </div>
-        <div className={styles.buttons}>
-          <button type="button" onClick={onClose} className={styles.closeButton}>
-            Close
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              onDone(selectedDate);
-              onClose();
-            }}
-            className={styles.doneButton}
-          >
-            Done
-          </button>
-        </div>
+      )}
+    </div>
+  );
+}
+
+export default function DateTimePicker({ date, onDone, onClose }: DateTimePickerProps) {
+  const [selectedDate, setSelectedDate] = useState(date ?? new Date());
+
+  return (
+    <Modal
+      onClose={onClose}
+      width="370px"
+      radius="8px"
+      title="Select Date"
+      titleLineHeight={24}
+      titleFontSize="20px"
+      padding="20px"
+    >
+      <DateTimePickerFields date={date} onChange={setSelectedDate} />
+      <div className={styles.buttons}>
+        <button type="button" onClick={onClose} className={styles.closeButton}>
+          Close
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            onDone(selectedDate);
+            onClose();
+          }}
+          className={styles.doneButton}
+        >
+          Done
+        </button>
       </div>
     </Modal>
   );

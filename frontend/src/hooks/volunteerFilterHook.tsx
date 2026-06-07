@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import type { Volunteer, VolunteerTag } from "@/types/volunteer";
+import type { VolunteerTag, VolunteerWithTags } from "@/types/volunteer";
 
 import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
 
 type volunteerFilterHookProps = {
   itemsPerPage: number;
+  selectedRecipientIds?: string[];
 };
 
 type PopulatedAssignment = {
@@ -23,9 +24,12 @@ type ProjectProgramMap = {
   programTagId: VolunteerTag;
 };
 
-export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHookProps) {
+export default function volunteerFilterHook({
+  itemsPerPage,
+  selectedRecipientIds = [],
+}: volunteerFilterHookProps) {
   // Data state
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [volunteers, setVolunteers] = useState<VolunteerWithTags[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
   const statusTags = ["new", "returning"];
   const projectTags = tags.filter((tag) => tag.type === "project").map((tag) => tag.name);
@@ -43,7 +47,7 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
 
-  const loadVolunteers = async () => {
+  const loadVolunteers = async (): Promise<void> => {
     try {
       const [volunteerData, tagData, assignmentData, projectProgramMapData] = await Promise.all([
         fetchVolunteers(),
@@ -56,7 +60,7 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
         programByProjectId.set(map.projectTagId._id, map.programTagId);
       }
 
-      const volunteersWithTags = volunteerData.map((volunteer) => {
+      const volunteersWithTags: VolunteerWithTags[] = volunteerData.map((volunteer) => {
         const volunteerAssignments = (assignmentData as PopulatedAssignment[]).filter(
           (assignment) => assignment.volunteerId === volunteer._id,
         );
@@ -131,7 +135,7 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
 
   const filteredVolunteers = useMemo(() => {
     return volunteers.filter((volunteer) => {
-      const volunteerTags = volunteer.tags ?? [];
+      const volunteerTags = volunteer.tags;
 
       // Assignment filter
       if (selectedAssignment.size > 0) {
@@ -177,10 +181,25 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
     });
   }, [volunteers, selectedAssignment, selectedProgram, selectedStatus, search]);
 
+  const sortedFilteredVolunteers = useMemo(() => {
+    const selectedSet = new Set(selectedRecipientIds);
+
+    return [...filteredVolunteers].sort((a, b) => {
+      const aSelected = selectedSet.has(a._id);
+      const bSelected = selectedSet.has(b._id);
+
+      if (aSelected === bSelected) {
+        return 0;
+      }
+
+      return aSelected ? -1 : 1;
+    });
+  }, [filteredVolunteers, selectedRecipientIds]);
+
   // Calculate pagination slice
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
+  const displayedVolunteers = sortedFilteredVolunteers.slice(startIndex, endIndex);
 
   return {
     search,

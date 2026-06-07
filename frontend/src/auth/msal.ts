@@ -30,14 +30,15 @@ export async function initMsal(): Promise<AccountInfo | undefined> {
       });
       account = result?.account;
     } catch (e: unknown) {
-      if (
-        typeof e === "object" &&
-        e !== null &&
-        "errorCode" in e &&
-        e.errorCode === "access_denied"
-      ) {
-        console.info("User cancelled Microsoft login");
-        return undefined;
+      if (typeof e === "object" && e !== null && "errorCode" in e) {
+        if (e.errorCode === "access_denied") {
+          console.info("User cancelled Microsoft login");
+          return undefined;
+        }
+        if (e.errorCode === "no_token_request_cache_error") {
+          // Not coming from a Microsoft login redirect — expected on direct navigation
+          return undefined;
+        }
       }
       console.error("MSAL Redirect Error:", e);
       return undefined;

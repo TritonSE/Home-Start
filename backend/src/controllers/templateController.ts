@@ -22,7 +22,7 @@ export const getTemplate: RequestHandler = async (req, res, next) => {
 
 export const getTemplates: RequestHandler = async (req, res, next) => {
   try {
-    const templates = await TemplateModel.find();
+    const templates = await TemplateModel.find().sort({ createdAt: -1 });
     res.status(200).json(templates);
   } catch (err) {
     next(err);
@@ -45,11 +45,6 @@ export const createTemplate: RequestHandler = async (req, res, next) => {
 
     if (type === "email" && !subject) {
       return res.status(400).json({ error: "Email template requires subject" });
-    }
-
-    const template = await TemplateModel.findOne({ title });
-    if (template) {
-      return res.status(409).json({ error: "Template with this title aleady exists" });
     }
 
     const newTemplate = await TemplateModel.create({

@@ -2,11 +2,10 @@
 import { signOut } from "firebase/auth";
 import Image from "next/image";
 import Link from "next/link";
-import { type MouseEvent, useState } from "react";
+import { useState } from "react";
 
 import styles from "./page.module.css";
 
-import { handleEmailClick } from "@/app/communication/page";
 import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
 import icCaretRightAsset from "@/assets/chevron_backward.svg";
 import icMessageAsset from "@/assets/ic_message.svg";
@@ -28,11 +27,6 @@ export default function Dashboard() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const setMode = useTextingFlowStore((s) => s.setMode);
 
-  const handleSendEmailCardClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    void handleEmailClick();
-  };
-
   const CARDS = [
     {
       href: "/communication",
@@ -42,8 +36,10 @@ export default function Dashboard() {
       icon: icMessage,
     },
     {
-      href: "/communication",
-      onClick: handleSendEmailCardClick,
+      href: "/communication?mode=email",
+      onClick: () => {
+        sessionStorage.setItem("pendingMode", "email");
+      },
       majorText: "Send Email",
       minorText: "Send detailed announcements",
       icon: mail,

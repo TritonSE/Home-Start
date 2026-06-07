@@ -45,7 +45,7 @@
   position: absolute;
   z-index: 11;
   top: calc(100% + 8px);
-  left: 0;
+  right: 0;
   width: 155px;
   max-height: 700px;
   overflow: hidden;

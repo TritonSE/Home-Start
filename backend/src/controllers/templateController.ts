@@ -47,11 +47,6 @@ export const createTemplate: RequestHandler = async (req, res, next) => {
       return res.status(400).json({ error: "Email template requires subject" });
     }
 
-    const template = await TemplateModel.findOne({ title });
-    if (template) {
-      return res.status(409).json({ error: "Template with this title aleady exists" });
-    }
-
     const newTemplate = await TemplateModel.create({
       title,
       message,

@@ -33,7 +33,7 @@ const unionIcon = unionIconAsset as string;
 const ITEMS_PER_PAGE = 25;
 const FETCH_LIMIT = 100;
 
-type MessageTypeFilter = "all" | "text" | "email";
+type MessageTypeFilter = "text" | "email";
 
 const formatDate = (value: string) => {
   return new Date(value).toLocaleDateString("en-US", {
@@ -71,7 +71,9 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<Message | undefined>(undefined);
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<MessageTypeFilter>("all");
+  const [typeFilters, setTypeFilters] = useState<Set<MessageTypeFilter>>(
+    () => new Set(["text", "email"]),
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -136,7 +138,7 @@ export default function MessagesPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, typeFilter, startDate, endDate]);
+  }, [search, typeFilters, startDate, endDate]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -152,20 +154,20 @@ export default function MessagesPage() {
 
   const filteredMessages = useMemo(() => {
     return messages.filter((message) => {
-      if (typeFilter !== "all" && message.type !== typeFilter) return false;
+      if (!typeFilters.has(message.type)) return false;
       const messageTime = new Date(message.timestamp).getTime();
       if (startDate && messageTime < startDate.getTime()) return false;
       if (endDate && messageTime > endDate.getTime()) return false;
       return matchesQuery(message, search);
     });
-  }, [endDate, messages, search, startDate, typeFilter]);
+  }, [endDate, messages, search, startDate, typeFilters]);
 
   const displayedMessages = filteredMessages.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
 
-  const typeOptions: { label: string; value: Exclude<MessageTypeFilter, "all"> }[] = [
+  const typeOptions: { label: string; value: MessageTypeFilter }[] = [
     { label: "Text", value: "text" },
     { label: "Email", value: "email" },
   ];
@@ -210,7 +212,10 @@ export default function MessagesPage() {
               </form>
             </div>
 
-            <div className={searchBarStyles.tagsContainer} ref={filterRef}>
+            <div
+              className={`${searchBarStyles.tagsContainer} ${styles.messageFilterPills}`}
+              ref={filterRef}
+            >
               <div className={searchBarStyles.pillWrapper}>
                 <button
                   type="button"
@@ -245,7 +250,7 @@ export default function MessagesPage() {
                   >
                     <div className={searchBarStyles.dropdownItemContainer}>
                       {typeOptions.map((option) => {
-                        const selected = typeFilter === option.value;
+                        const selected = typeFilters.has(option.value);
                         return (
                           <button
                             key={option.value}
@@ -255,11 +260,17 @@ export default function MessagesPage() {
                             }`}
                             role="menuitemcheckbox"
                             aria-checked={selected}
-                            onClick={() =>
-                              setTypeFilter((current) =>
-                                current === option.value ? "all" : option.value,
-                              )
-                            }
+                            onClick={() => {
+                              setTypeFilters((current) => {
+                                const next = new Set(current);
+                                if (next.has(option.value)) {
+                                  next.delete(option.value);
+                                } else {
+                                  next.add(option.value);
+                                }
+                                return next;
+                              });
+                            }}
                           >
                             <span
                               className={`${searchBarStyles.checkBox} ${
@@ -286,8 +297,8 @@ export default function MessagesPage() {
                       <button
                         type="button"
                         className={searchBarStyles.dropdownClearButton}
-                        onClick={() => setTypeFilter("all")}
-                        disabled={typeFilter === "all"}
+                        onClick={() => setTypeFilters(new Set())}
+                        disabled={typeFilters.size === 0}
                       >
                         Clear
                       </button>
@@ -460,6 +471,19 @@ export default function MessagesPage() {
               </div>
             </div>
             <div className={styles.datePeriodButtons}>
+              <button
+                type="button"
+                className={styles.datePeriodClearButton}
+                onClick={() => {
+                  setDraftStartDate(null);
+                  setDraftEndDate(null);
+                  setStartDate(null);
+                  setEndDate(null);
+                  setIsDatePeriodModalOpen(false);
+                }}
+              >
+                Clear Date Range
+              </button>
               <button
                 type="button"
                 className={styles.datePeriodSecondaryButton}

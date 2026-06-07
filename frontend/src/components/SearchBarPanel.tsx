@@ -132,7 +132,10 @@ function TagFilter({
                       className={`${styles.dropdownItem} ${isSelected ? styles.dropdownItemSelected : ""}`}
                       role="menuitem"
                       type="button"
-                      onClick={() => toggleTag(item, cat)}
+                      onClick={() => {
+                        toggleTag(item, cat);
+                        setTagSearch("");
+                      }}
                     >
                       <Image
                         src={isSelected ? bluePlusAltIcon : plusIcon}

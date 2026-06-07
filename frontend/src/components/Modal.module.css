@@ -5,7 +5,7 @@
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 2;
+  z-index: 30;
 }
 
 .modal {
@@ -15,13 +15,16 @@
   gap: 16px;
   position: fixed;
   width: 90%;
+  max-height: 90vh;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   background: #ffffff;
   box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
   border-radius: 5px;
-  z-index: 3;
+  z-index: 31;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .header {
@@ -40,15 +43,12 @@
 
 .title {
   flex: 1;
-  font-family: var(--Font-family-Headings, Viga);
-  font-weight: 400;
+  font-family: "Open Sans";
+  font-weight: 700;
   display: flex;
   align-items: center;
   letter-spacing: 0.5px;
   color: #000000;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .subtitle {
@@ -78,6 +78,9 @@
 }
 
 .body {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
 }

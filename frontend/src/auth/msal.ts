@@ -2,11 +2,13 @@ import { PublicClientApplication } from "@azure/msal-browser";
 
 import type { AccountInfo } from "@azure/msal-browser";
 
+import env from "@/util/validateEnv";
+
 const msal = new PublicClientApplication({
   auth: {
-    clientId: process.env.NEXT_PUBLIC_MS_CLIENT_ID!,
+    clientId: env.NEXT_PUBLIC_MS_CLIENT_ID,
     authority: "https://login.microsoftonline.com/common",
-    redirectUri: process.env.NEXT_PUBLIC_MS_REDIRECT_URI!,
+    redirectUri: env.NEXT_PUBLIC_MS_REDIRECT_URI,
   },
 });
 
@@ -27,8 +29,19 @@ export async function initMsal(): Promise<AccountInfo | undefined> {
         navigateToLoginRequestUrl: false,
       });
       account = result?.account;
-    } catch (e) {
+    } catch (e: unknown) {
+      if (typeof e === "object" && e !== null && "errorCode" in e) {
+        if (e.errorCode === "access_denied") {
+          console.info("User cancelled Microsoft login");
+          return undefined;
+        }
+        if (e.errorCode === "no_token_request_cache_error") {
+          // Not coming from a Microsoft login redirect — expected on direct navigation
+          return undefined;
+        }
+      }
       console.error("MSAL Redirect Error:", e);
+      return undefined;
     }
 
     if (!account) {

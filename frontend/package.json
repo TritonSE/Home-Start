@@ -14,13 +14,14 @@
     "prepare": "cd .. && husky"
   },
   "dependencies": {
-    "@azure/msal-browser": "^5.7.0",
+    "@azure/msal-browser": "^5.10.1",
     "envalid": "^8.1.1",
     "esbuild": "^0.28.0",
     "firebase": "^12.8.0",
     "next": "^16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-imask": "^7.6.1",
     "zustand": "^5.0.11"
   },
   "devDependencies": {

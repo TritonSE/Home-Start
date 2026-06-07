@@ -14,23 +14,37 @@ export type VolunteerAssignment = {
   shiftTagIds: (string | VolunteerTag)[];
 };
 
+export type Address = {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+};
+
 export type Volunteer = {
   _id: string;
   firstName: string;
   lastName: string;
   email: string;
   phoneNumber: string;
-  tags: VolunteerTag[];
-  status: "new" | "returning";
-  // Optional fields populated from backend — dates are ISO strings
-  startDate?: string | null;
-  endDate?: string | null;
-  effectiveDate?: string | null;
+  status?: "new" | "returning";
+  dateCreated?: string | Date;
+  effectiveDate?: string | Date;
   hours?: number;
   wageRate?: number;
-  groupIds?: string[];
+  groupTagIds?: (string | VolunteerTag)[];
+  programTagIds?: (string | VolunteerTag)[];
   additionalNotes?: string;
+  address?: Address;
+  birthday?: string | Date;
+  preferredPronouns?: string;
   mediaConsent?: "yes" | "no";
   faceConsent?: "yes" | "no";
   nameConsent?: "first" | "full" | "no";
+};
+
+export type VolunteerWithTags = Volunteer & {
+  tags: VolunteerTag[];
+  projectTagIds?: VolunteerTag[];
 };

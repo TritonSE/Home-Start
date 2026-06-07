@@ -1,53 +1,74 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { Volunteer, VolunteerTag } from "@/types/volunteer";
+import type { VolunteerTag, VolunteerWithTags } from "@/types/volunteer";
 
 import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
+import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
 import styles from "@/app/page.module.css";
-import PageBar from "@/components/PageBar";
+import sendMessageButtonAsset from "@/assets/send_message_button.svg";
+import sendMessageHoverButtonAsset from "@/assets/send_message_hover_button.svg";
+import Pagination from "@/components/messages/pagination";
+import SuccessToast from "@/components/messages/SuccessToast";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
+import VolunteerProfileModal from "@/components/VolunteerProfileModal";
 import VolunteerTable from "@/components/VolunteerTable";
 
-type PopulatedAssignment = {
-  volunteerId: string;
-  assignmentTagId: VolunteerTag;
-  projectTagId: VolunteerTag;
-  shiftTagIds: VolunteerTag[];
-};
-
-type ProjectProgramMap = {
-  projectTagId: VolunteerTag;
-  programTagId: VolunteerTag;
-};
+const sendMessageButton = sendMessageButtonAsset as string;
+const sendMessageHoverButton = sendMessageHoverButtonAsset as string;
 
 export default function Page() {
+  const router = useRouter();
+  const setMode = useTextingFlowStore((s) => s.setMode);
+  const setRecipientsPool = useTextingFlowStore((s) => s.setRecipientsPool);
+  const setSelectedRecipients = useTextingFlowStore((s) => s.setSelectedRecipients);
+  const clearSelectedRecipients = useTextingFlowStore((s) => s.clearSelectedRecipients);
+
   // Data state
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [volunteers, setVolunteers] = useState<VolunteerWithTags[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
 
-  // Filter states
   const [search, setSearch] = useState("");
   const [selectedProject, setSelectedProject] = useState<Set<string>>(new Set());
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedAssignment, setSelectedAssignment] = useState<Set<string>>(new Set());
   const [selectedProgram, setSelectedProgram] = useState<Set<string>>(new Set());
+  const [dateCreatedStart, setDateCreatedStart] = useState<Date | null>(null);
+  const [dateCreatedEnd, setDateCreatedEnd] = useState<Date | null>(null);
+
+  // Clear selection whenever any filter changes to avoid invisibly selected volunteers
+  useEffect(() => {
+    clearSelectedRecipients();
+  }, [
+    search,
+    selectedProject,
+    selectedStatus,
+    selectedAssignment,
+    selectedProgram,
+    dateCreatedStart,
+    dateCreatedEnd,
+    clearSelectedRecipients,
+  ]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [showImportSuccess, setShowImportSuccess] = useState(false);
-  const [selectedCount, setSelectedCount] = useState(0);
+  const [importSuccessMessage, setImportSuccessMessage] = useState("");
+  const [sendMessageHovered, setSendMessageHovered] = useState(false);
+  const [selectedVolunteer, setSelectedVolunteer] = useState<VolunteerWithTags | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [exportSelectedIds, setExportSelectedIds] = useState<Set<string>>(new Set());
   const [sortOption, setSortOption] = useState<
     "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A"
   >("Newest");
   const itemsPerPage = 100;
 
-  const loadVolunteers = async () => {
+  const loadVolunteers = useCallback(async () => {
     try {
       const [volunteerData, tagData, assignmentData, projectProgramMapData] = await Promise.all([
         fetchVolunteers(),
@@ -55,46 +76,89 @@ export default function Page() {
         fetchVolunteerAssignments(),
         fetchProjectProgramMaps(),
       ]);
+
+      const tagById = new Map<string, VolunteerTag>();
+      for (const t of tagData) tagById.set(t._id, t);
+
       const programByProjectId = new Map<string, VolunteerTag>();
-      for (const map of projectProgramMapData as ProjectProgramMap[]) {
-        programByProjectId.set(map.projectTagId._id, map.programTagId);
+      for (const map of projectProgramMapData) {
+        const projectId =
+          typeof map.projectTagId === "string" ? map.projectTagId : map.projectTagId._id;
+        const programTag =
+          typeof map.programTagId === "string" ? tagById.get(map.programTagId) : map.programTagId;
+        if (projectId && programTag) programByProjectId.set(projectId, programTag);
       }
 
+      const resolveTag = (t?: string | VolunteerTag | null) => {
+        if (!t) return undefined;
+        return typeof t === "string" ? tagById.get(t) : t;
+      };
+
       const volunteersWithTags = volunteerData.map((volunteer) => {
-        const volunteerAssignments = (assignmentData as PopulatedAssignment[]).filter(
+        const volunteerAssignments = assignmentData.filter(
           (assignment) => assignment.volunteerId === volunteer._id,
         );
         const seenTagIds = new Set<string>();
         const volunteerTags: VolunteerTag[] = [];
+        const projectTagIds: VolunteerTag[] = [];
+        const seenProjectTagIds = new Set<string>();
 
         const pushTag = (tag: VolunteerTag | undefined) => {
-          if (!tag || seenTagIds.has(tag._id)) {
-            return;
-          }
-
+          if (!tag || seenTagIds.has(tag._id)) return;
           seenTagIds.add(tag._id);
           volunteerTags.push(tag);
         };
 
-        for (const assignment of volunteerAssignments) {
-          pushTag(assignment.assignmentTagId);
-          pushTag(assignment.projectTagId);
-          pushTag(programByProjectId.get(assignment.projectTagId._id));
+        const pushProjectTag = (tag: VolunteerTag | undefined) => {
+          if (!tag || seenProjectTagIds.has(tag._id)) return;
+          seenProjectTagIds.add(tag._id);
+          projectTagIds.push(tag);
+        };
 
-          for (const shiftTag of assignment.shiftTagIds ?? []) {
-            pushTag(shiftTag);
+        // Add assignment and project tags
+        for (const assignment of volunteerAssignments) {
+          pushTag(resolveTag(assignment.assignmentTagId));
+          const projectTag = resolveTag(assignment.projectTagId);
+          pushTag(projectTag);
+          pushProjectTag(projectTag);
+
+          pushTag(projectTag ? programByProjectId.get(projectTag._id) : undefined);
+
+          for (const shiftTag of assignment.shiftTagIds ?? []) pushTag(resolveTag(shiftTag));
+        }
+
+        // Add directly saved group/program tags so filters use the latest edits.
+        if (Array.isArray(volunteer.groupTagIds) && volunteer.groupTagIds.length > 0) {
+          for (const groupTag of volunteer.groupTagIds) {
+            if (typeof groupTag === "string") {
+              pushTag(tagData.find((tag) => tag._id === groupTag));
+            } else {
+              pushTag(groupTag);
+            }
           }
         }
 
-        return { ...volunteer, tags: volunteerTags };
+        if (Array.isArray(volunteer.programTagIds) && volunteer.programTagIds.length > 0) {
+          for (const programTag of volunteer.programTagIds) {
+            if (typeof programTag === "string") {
+              pushTag(tagData.find((tag) => tag._id === programTag));
+            } else {
+              pushTag(programTag);
+            }
+          }
+        }
+
+        return { ...volunteer, tags: volunteerTags, projectTagIds } satisfies VolunteerWithTags;
       });
 
       setVolunteers(volunteersWithTags);
       setTags(tagData);
+      // Keep the store's recipient pool in sync without wiping the current selection
+      setRecipientsPool(volunteersWithTags);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
+  }, [setRecipientsPool]);
 
   const handleSortOptionChange = (
     option:
@@ -139,21 +203,26 @@ export default function Page() {
     setCurrentPage(1);
   };
 
+  const handleDateCreatedRangeChange = (start: Date | null, end: Date | null) => {
+    setDateCreatedStart(start);
+    setDateCreatedEnd(end);
+    setCurrentPage(1);
+  };
+
   useEffect(() => {
     void loadVolunteers();
-  }, []);
+  }, [loadVolunteers]);
 
-  // Project dropdown should only include projects currently assigned to volunteers.
   const projectTags = [
     ...new Set(
       volunteers
-        .flatMap((volunteer) => volunteer.tags ?? [])
-        .filter((tag) => tag.type === "project")
-        .map((tag) => tag.name),
+        .flatMap((v) => v.tags ?? [])
+        .filter((t) => t.type === "project")
+        .map((t) => t.name),
     ),
   ];
-  const assignmentTags = tags.filter((tag) => tag.type === "assignment").map((tag) => tag.name);
-  const programTags = tags.filter((tag) => tag.type === "program").map((tag) => tag.name);
+  const assignmentTags = tags.filter((t) => t.type === "assignment").map((t) => t.name);
+  const programTags = tags.filter((t) => t.type === "program").map((t) => t.name);
 
   // Apply ALL filters here (search + tags)
   const filteredVolunteers = useMemo(() => {
@@ -184,8 +253,15 @@ export default function Page() {
         if (!hasMatchingProgram) return false;
       }
 
-      // Status filter
       if (selectedStatus && volunteer.status !== selectedStatus) return false;
+
+      if (dateCreatedStart || dateCreatedEnd) {
+        if (!volunteer.dateCreated) return false;
+        const dateCreatedTime = new Date(volunteer.dateCreated).getTime();
+        if (Number.isNaN(dateCreatedTime)) return false;
+        if (dateCreatedStart && dateCreatedTime < dateCreatedStart.getTime()) return false;
+        if (dateCreatedEnd && dateCreatedTime > dateCreatedEnd.getTime()) return false;
+      }
 
       // Search filter (includes first/last/full name, phone, email)
       if (search.trim()) {
@@ -197,19 +273,28 @@ export default function Page() {
         const phoneNumber = (volunteer.phoneNumber ?? "").toLowerCase();
         const email = (volunteer.email ?? "").toLowerCase();
 
-        const matchesSearch =
+        const matches =
           firstName.includes(query) ||
           lastName.includes(query) ||
           fullName.includes(query) ||
           reverseFullName.includes(query) ||
-          phoneNumber.includes(query) ||
-          email.includes(query);
-        if (!matchesSearch) return false;
+          email.includes(query) ||
+          phoneNumber?.includes(query);
+        if (!matches) return false;
       }
 
       return true;
     });
-  }, [volunteers, selectedProject, selectedAssignment, selectedProgram, selectedStatus, search]);
+  }, [
+    volunteers,
+    selectedProject,
+    selectedAssignment,
+    selectedProgram,
+    selectedStatus,
+    dateCreatedStart,
+    dateCreatedEnd,
+    search,
+  ]);
 
   const sortedFilteredVolunteers = useMemo(() => {
     const sorted = [...filteredVolunteers];
@@ -222,65 +307,102 @@ export default function Page() {
       }
     };
 
+    const compareSelectedFirst = (a: VolunteerWithTags, b: VolunteerWithTags) => {
+      const aSelected = exportSelectedIds.has(a._id);
+      const bSelected = exportSelectedIds.has(b._id);
+
+      if (aSelected !== bSelected) {
+        return aSelected ? -1 : 1;
+      }
+
+      return 0;
+    };
+
+    const withSelectedFirst =
+      (compare: (a: VolunteerWithTags, b: VolunteerWithTags) => number) =>
+      (a: VolunteerWithTags, b: VolunteerWithTags) =>
+        compareSelectedFirst(a, b) || compare(a, b);
+
     switch (sortOption) {
       case "Newest":
-        return sorted.sort((a, b) => toTime(b.startDate) - toTime(a.startDate));
+        return sorted.sort(
+          withSelectedFirst((a, b) => toTime(b.dateCreated) - toTime(a.dateCreated)),
+        );
       case "Oldest":
-        return sorted.sort((a, b) => toTime(a.startDate) - toTime(b.startDate));
+        return sorted.sort(
+          withSelectedFirst((a, b) => toTime(a.dateCreated) - toTime(b.dateCreated)),
+        );
       case "First Name A-Z":
-        return sorted.sort((a, b) => a.firstName.localeCompare(b.firstName));
+        return sorted.sort(withSelectedFirst((a, b) => a.firstName.localeCompare(b.firstName)));
       case "First Name Z-A":
-        return sorted.sort((a, b) => b.firstName.localeCompare(a.firstName));
+        return sorted.sort(withSelectedFirst((a, b) => b.firstName.localeCompare(a.firstName)));
       case "Last Name A-Z":
-        return sorted.sort((a, b) => a.lastName.localeCompare(b.lastName));
+        return sorted.sort(withSelectedFirst((a, b) => a.lastName.localeCompare(b.lastName)));
       case "Last Name Z-A":
-        return sorted.sort((a, b) => b.lastName.localeCompare(a.lastName));
+        return sorted.sort(withSelectedFirst((a, b) => b.lastName.localeCompare(a.lastName)));
       default:
-        return sorted;
+        return sorted.sort(compareSelectedFirst);
     }
-  }, [filteredVolunteers, sortOption]);
+  }, [exportSelectedIds, filteredVolunteers, sortOption]);
 
   // Calculate pagination slice
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const displayedVolunteers = sortedFilteredVolunteers.slice(startIndex, endIndex);
+  const selectedVolunteersForMessage = useMemo(
+    () => volunteers.filter((volunteer) => exportSelectedIds.has(volunteer._id)),
+    [exportSelectedIds, volunteers],
+  );
 
-  const handleImportComplete = () => {
-    void loadVolunteers();
-    setShowImportSuccess(true);
+  const handleImportComplete = async () => {
+    await loadVolunteers();
+    setCurrentPage(1);
+    setExportSelectedIds(new Set());
+    setImportSuccessMessage("CSV Successfully Uploaded");
+  };
+
+  const handleSendMessage = useCallback(() => {
+    if (selectedVolunteersForMessage.length > 0) {
+      setSelectedRecipients(selectedVolunteersForMessage);
+    } else {
+      clearSelectedRecipients();
+    }
+
+    setMode("text");
+    void router.push("/communication");
+  }, [
+    clearSelectedRecipients,
+    router,
+    selectedVolunteersForMessage,
+    setMode,
+    setSelectedRecipients,
+  ]);
+  const handleSheetClose = () => {
+    setIsSheetOpen(false);
   };
 
   return (
     <Sidebar>
+      <SuccessToast
+        open={!!importSuccessMessage}
+        message={importSuccessMessage}
+        durationMs={2600}
+        onDone={() => setImportSuccessMessage("")}
+      />
       <div className={styles.page}>
         <main className={styles.main}>
-          {showImportSuccess && (
-            <div className={styles.importSuccessBanner}>
-              <div className={styles.importSuccessContent}>
-                <Image
-                  src={"/ic_success.svg"}
-                  alt="Success"
-                  className={styles.importSuccessIcon}
-                  width={24}
-                  height={24}
-                />
-                <span className={styles.importSuccessText}>CSV Successfully Uploaded</span>
-              </div>
-              <button
-                type="button"
-                className={styles.importSuccessClose}
-                onClick={() => setShowImportSuccess(false)}
-                aria-label="Dismiss success message"
-              ></button>
-            </div>
-          )}
-          <TitleBar onImportComplete={handleImportComplete} />
+          <TitleBar
+            onImportComplete={handleImportComplete}
+            selectedVolunteers={volunteers.filter((v) => exportSelectedIds.has(v._id))}
+            onBack={() => router.push("/dashboard")}
+          />
           <SearchBar
             search={search}
             setSearch={handleSearchChange}
             projectTags={projectTags}
             assignmentTags={assignmentTags}
             programTags={programTags}
+            sortType={sortOption}
             selectedProject={selectedProject}
             setSelectedProject={handleSelectedProjectChange}
             selectedStatus={selectedStatus}
@@ -289,31 +411,88 @@ export default function Page() {
             setSelectedAssignment={handleSelectedAssignmentChange}
             selectedProgram={selectedProgram}
             setSelectedProgram={handleSelectedProgramChange}
-            sortType={sortOption}
+            dateCreatedStart={dateCreatedStart}
+            dateCreatedEnd={dateCreatedEnd}
+            setDateCreatedRange={handleDateCreatedRangeChange}
             onSortOptionChange={handleSortOptionChange}
           />
+
           <div className={styles.tableSection}>
             <VolunteerTable
               volunteers={displayedVolunteers}
               selectableVolunteers={filteredVolunteers}
-              onSelectedCountChange={setSelectedCount}
+              controlledSelectedIds={exportSelectedIds}
+              onControlledToggleOne={(id) => {
+                setExportSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                });
+              }}
+              onControlledToggleAll={(scope) => {
+                setExportSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  const allSelected = scope.every((v) => next.has(v._id));
+                  if (allSelected) {
+                    scope.forEach((v) => next.delete(v._id));
+                  } else {
+                    scope.forEach((v) => next.add(v._id));
+                  }
+                  return next;
+                });
+              }}
+              onVolunteerSelect={(v) => {
+                setSelectedVolunteer(v);
+                setIsSheetOpen(true);
+              }}
             />
             <div className={styles.tableSummaryRow}>
               <span className={styles.tableSummaryLeft}>
-                {selectedCount > 0 ? `${selectedCount} selected` : ""}
+                {selectedVolunteersForMessage.length > 0
+                  ? `${selectedVolunteersForMessage.length} selected`
+                  : ""}
               </span>
               <span className={styles.tableSummaryRight}>
                 Total volunteers: {filteredVolunteers.length}
               </span>
             </div>
           </div>
-          <PageBar
+          <Pagination
             totalItems={filteredVolunteers.length}
             currentPage={currentPage}
             itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-          />
+            setPageIndex={setCurrentPage}
+          ></Pagination>
+
+          <button
+            type="button"
+            className={styles.sendMessageBtn}
+            onClick={handleSendMessage}
+            onMouseEnter={() => setSendMessageHovered(true)}
+            onMouseLeave={() => setSendMessageHovered(false)}
+            aria-label={`Send message${selectedVolunteersForMessage.length > 0 ? ` to ${selectedVolunteersForMessage.length} selected volunteer${selectedVolunteersForMessage.length === 1 ? "" : "s"}` : ""}`}
+          >
+            <Image
+              src={sendMessageHovered ? sendMessageHoverButton : sendMessageButton}
+              alt="Send Message"
+              width={sendMessageHovered ? 185 : 56}
+              height={56}
+            />
+          </button>
         </main>
+        <VolunteerProfileModal
+          volunteer={selectedVolunteer}
+          isOpen={isSheetOpen}
+          onClose={handleSheetClose}
+          onVolunteerDataChanged={() => {
+            void loadVolunteers();
+          }}
+          onVolunteerUpdated={(updatedVolunteer) => {
+            setSelectedVolunteer({ ...updatedVolunteer, tags: selectedVolunteer?.tags ?? [] });
+            void loadVolunteers();
+          }}
+        />
       </div>
     </Sidebar>
   );

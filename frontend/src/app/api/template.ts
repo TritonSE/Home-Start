@@ -1,6 +1,7 @@
 import { del, get, handleAPIError, post, put } from "./requests";
 
 import type { APIResult } from "./requests";
+import type { APIErrorBody } from "./types";
 
 export enum TemplateType {
   TEXT = "text",
@@ -21,11 +22,6 @@ type TemplateResponse = {
   message: string;
   type: string;
   subject?: string;
-};
-
-type APIErrorBody = {
-  error?: string;
-  message?: string;
 };
 
 function isTemplateResponse(value: unknown): value is TemplateResponse {

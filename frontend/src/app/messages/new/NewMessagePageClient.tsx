@@ -9,12 +9,12 @@ import styles from "./page.module.css";
 
 import type { MouseEvent } from "react";
 
+import handleEmailClick from "@/app/communication/page";
 import addPersonIconAsset from "@/assets/add_person_icon.svg";
 import blueChevronLeftAsset from "@/assets/blue_chevron_left.svg";
 import bluePlusAsset from "@/assets/blue_plus_alt.svg";
 import icCaretLeftAsset from "@/assets/ic_caretleft_alt.svg";
 import mdiInformationAsset from "@/assets/mdi_information.svg";
-import { initMsal, signInWithOutlook } from "@/auth/msal";
 import RecipientsPanel from "@/components/messages/RecipientsPanel";
 import Sidebar from "@/components/Sidebar";
 
@@ -91,18 +91,9 @@ function Composer({
 
   const [, setDraftText] = useState(message);
 
-  const sendEmails = async () => {
-    setMode("email");
-    if (await initMsal()) {
-      return;
-    }
-
-    await signInWithOutlook();
-  };
-
   const switchToEmailTab = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    void sendEmails();
+    void handleEmailClick();
   };
 
   useEffect(() => {
@@ -153,14 +144,17 @@ function Composer({
     pill.setAttribute("contenteditable", "false");
     pill.textContent = "First Name";
 
-    const space = document.createTextNode(" ");
-
     const sel = window.getSelection();
     if (!sel) return;
 
     if (sel.rangeCount === 0) {
       editor.appendChild(pill);
-      editor.appendChild(space);
+
+      const endRange = document.createRange();
+      endRange.setStartAfter(pill);
+      endRange.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(endRange);
 
       const next = readPlainTextFromEditor();
       lastSyncedMessageRef.current = next;
@@ -181,9 +175,8 @@ function Composer({
 
     const r = sel.getRangeAt(0);
     r.deleteContents();
-    r.insertNode(space);
     r.insertNode(pill);
-    r.setStartAfter(space);
+    r.setStartAfter(pill);
     r.collapse(true);
     sel.removeAllRanges();
     sel.addRange(r);

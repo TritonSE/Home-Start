@@ -1,40 +1,127 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import type { Volunteer } from "@/types/volunteer";
+import type { VolunteerTag, VolunteerWithTags } from "@/types/volunteer";
 
-import { fetchTags } from "@/app/api/tag";
-import { fetchVolunteers } from "@/app/api/volunteer";
-import { useTextingFlowStore } from "@/app/messages/new/_store/textingFlowStore";
+import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
+import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
 
 type volunteerFilterHookProps = {
   itemsPerPage: number;
+  selectedRecipientIds?: string[];
 };
 
-export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHookProps) {
+type PopulatedAssignment = {
+  volunteerId: string;
+  assignmentTagId: VolunteerTag;
+  projectTagId: VolunteerTag;
+  shiftTagIds: VolunteerTag[];
+};
+
+type ProjectProgramMap = {
+  projectTagId: VolunteerTag;
+  programTagId: VolunteerTag;
+};
+
+export default function volunteerFilterHook({
+  itemsPerPage,
+  selectedRecipientIds = [],
+}: volunteerFilterHookProps) {
   // Data state
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [volunteers, setVolunteers] = useState<VolunteerWithTags[]>([]);
+  const [tags, setTags] = useState<VolunteerTag[]>([]);
+  const statusTags = ["new", "returning"];
+  const projectTags = tags.filter((tag) => tag.type === "project").map((tag) => tag.name);
+  const programTags = tags.filter((tag) => tag.type === "program").map((tag) => tag.name);
+  const assignmentTags = tags.filter((tag) => tag.type === "assignment").map((tag) => tag.name);
 
   // Filter states
   const [search, setSearch] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const setRecipients = useTextingFlowStore((s) => s.setRecipients);
+
+  const [selectedProject, setSelectedProject] = useState<Set<string>>(new Set());
+  const [selectedProgram, setSelectedProgram] = useState<Set<string>>(new Set());
+  const [selectedAssignment, setSelectedAssignment] = useState<Set<string>>(new Set());
+  const [selectedStatus, setSelectedStatus] = useState<Set<string>>(new Set());
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
 
-  const loadVolunteers = async () => {
+  const loadVolunteers = async (): Promise<void> => {
     try {
-      const data = await fetchVolunteers();
-      setVolunteers(data);
-      const existingRecipientIds = useTextingFlowStore.getState().recipientIds;
-      if (!existingRecipientIds || existingRecipientIds.length === 0) {
-        setRecipients(data);
+      const [volunteerData, tagData, assignmentData, projectProgramMapData] = await Promise.all([
+        fetchVolunteers(),
+        fetchTags(),
+        fetchVolunteerAssignments(),
+        fetchProjectProgramMaps(),
+      ]);
+      const programByProjectId = new Map<string, VolunteerTag>();
+      for (const map of projectProgramMapData as ProjectProgramMap[]) {
+        programByProjectId.set(map.projectTagId._id, map.programTagId);
       }
+
+      const volunteersWithTags: VolunteerWithTags[] = volunteerData.map((volunteer) => {
+        const volunteerAssignments = (assignmentData as PopulatedAssignment[]).filter(
+          (assignment) => assignment.volunteerId === volunteer._id,
+        );
+        const seenTagIds = new Set<string>();
+        const volunteerTags: VolunteerTag[] = [];
+
+        const pushTag = (tag: VolunteerTag | undefined) => {
+          if (!tag || seenTagIds.has(tag._id)) {
+            return;
+          }
+
+          seenTagIds.add(tag._id);
+          volunteerTags.push(tag);
+        };
+
+        for (const assignment of volunteerAssignments) {
+          pushTag(assignment.assignmentTagId);
+          pushTag(assignment.projectTagId);
+          pushTag(programByProjectId.get(assignment.projectTagId._id));
+
+          for (const shiftTag of assignment.shiftTagIds ?? []) {
+            pushTag(shiftTag);
+          }
+        }
+
+        return { ...volunteer, tags: volunteerTags };
+      });
+
+      setVolunteers(volunteersWithTags);
+      setTags(tagData);
     } catch (error) {
-      console.error("Error fetching volunteers:", error);
+      console.error("Error fetching data:", error);
     }
+  };
+
+  const handleSelectedProjectChange = (
+    value: Set<string> | ((prev: Set<string>) => Set<string>),
+  ) => {
+    setSelectedProject(value);
+    setCurrentPage(1);
+  };
+
+  const handleSelectedProgramChange = (
+    value: Set<string> | ((prev: Set<string>) => Set<string>),
+  ) => {
+    setSelectedProgram(value);
+    setCurrentPage(1);
+  };
+
+  const handleSelectedAssignmentChange = (
+    value: Set<string> | ((prev: Set<string>) => Set<string>),
+  ) => {
+    setSelectedAssignment(value);
+    setCurrentPage(1);
+  };
+
+  const handleSelectedStatusChange = (
+    value: Set<string> | ((prev: Set<string>) => Set<string>),
+  ) => {
+    setSelectedStatus(value);
+    setCurrentPage(1);
   };
 
   const handleSearchChange = (value: string) => {
@@ -42,65 +129,97 @@ export default function volunteerFilterHook({ itemsPerPage }: volunteerFilterHoo
     setCurrentPage(1);
   };
 
-  const handleSelectedStatusChange = (value: string | null) => {
-    setSelectedStatus(value);
-    setCurrentPage(1);
-  };
-
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [volunteerData] = await Promise.all([fetchVolunteers(), fetchTags()]);
-        setVolunteers(volunteerData);
-        const existingRecipientIds = useTextingFlowStore.getState().recipientIds;
-        if (!existingRecipientIds || existingRecipientIds.length === 0) {
-          setRecipients(volunteerData);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    }
-    void loadData();
+    void loadVolunteers();
   }, []);
 
-  const filteredVolunteers = volunteers.filter((volunteer) => {
-    // Status filter
-    if (selectedStatus && volunteer.status !== selectedStatus) return false;
+  const filteredVolunteers = useMemo(() => {
+    return volunteers.filter((volunteer) => {
+      const volunteerTags = volunteer.tags;
 
-    // Search filter
-    if (search.trim()) {
-      const query = search.trim().toLowerCase();
-      const firstName = volunteer.firstName.toLowerCase();
-      const lastName = volunteer.lastName.toLowerCase();
-      const fullName = `${firstName} ${lastName}`;
-      const reverseFullName = `${lastName} ${firstName}`;
+      // Assignment filter
+      if (selectedAssignment.size > 0) {
+        const hasMatchingAssignment = volunteerTags.some(
+          (tag) => selectedAssignment.has(tag.name) && tag.type === "assignment",
+        );
+        if (!hasMatchingAssignment) return false;
+      }
 
-      const matchesSearch =
-        firstName.includes(query) ||
-        lastName.includes(query) ||
-        fullName.includes(query) ||
-        reverseFullName.includes(query);
-      if (!matchesSearch) return false;
-    }
+      // Status filter
+      if (selectedStatus && selectedStatus.size > 0 && !selectedStatus.has(volunteer.status ?? ""))
+        return false;
 
-    return true;
-  });
+      // Program filter
+      if (selectedProgram.size > 0) {
+        const hasMatchingProgram = volunteerTags.some(
+          (tag) => selectedProgram.has(tag.name) && tag.type === "program",
+        );
+        if (!hasMatchingProgram) return false;
+      }
+
+      // Search filter (includes first/last/full name, phone, email)
+      if (search.trim()) {
+        const query = search.trim().toLowerCase();
+        const firstName = (volunteer.firstName ?? "").toLowerCase();
+        const lastName = (volunteer.lastName ?? "").toLowerCase();
+        const fullName = `${firstName} ${lastName}`;
+        const reverseFullName = `${lastName} ${firstName}`;
+        const phoneNumber = (volunteer.phoneNumber ?? "").toLowerCase();
+        const email = (volunteer.email ?? "").toLowerCase();
+
+        const matchesSearch =
+          firstName.includes(query) ||
+          lastName.includes(query) ||
+          fullName.includes(query) ||
+          reverseFullName.includes(query) ||
+          phoneNumber.includes(query) ||
+          email.includes(query);
+        if (!matchesSearch) return false;
+      }
+
+      return true;
+    });
+  }, [volunteers, selectedAssignment, selectedProgram, selectedStatus, search]);
+
+  const sortedFilteredVolunteers = useMemo(() => {
+    const selectedSet = new Set(selectedRecipientIds);
+
+    return [...filteredVolunteers].sort((a, b) => {
+      const aSelected = selectedSet.has(a._id);
+      const bSelected = selectedSet.has(b._id);
+
+      if (aSelected === bSelected) {
+        return 0;
+      }
+
+      return aSelected ? -1 : 1;
+    });
+  }, [filteredVolunteers, selectedRecipientIds]);
 
   // Calculate pagination slice
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const displayedVolunteers = filteredVolunteers.slice(startIndex, endIndex);
+  const displayedVolunteers = sortedFilteredVolunteers.slice(startIndex, endIndex);
 
   return {
     search,
     handleSearchChange,
-    selectedStatus,
-    handleSelectedStatusChange,
     filteredVolunteers,
-    loadVolunteers,
     displayedVolunteers,
     currentPage,
     itemsPerPage,
     setCurrentPage,
+    projectTags,
+    programTags,
+    assignmentTags,
+    statusTags,
+    selectedProject,
+    handleSelectedProjectChange,
+    selectedProgram,
+    handleSelectedProgramChange,
+    selectedAssignment,
+    handleSelectedAssignmentChange,
+    selectedStatus,
+    handleSelectedStatusChange,
   };
 }

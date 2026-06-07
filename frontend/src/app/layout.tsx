@@ -43,8 +43,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link href="https://fonts.cdnfonts.com/css/uber-move-text" rel="stylesheet"></link>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${openSans.variable} ${viga.variable} ${styles.body}`}
+        suppressHydrationWarning
       >
         <AuthProvider>
           <AuthGate>{children}</AuthGate>

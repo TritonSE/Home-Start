@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { MessageHistoryModal } from "./MessageHistoryModal";
@@ -48,8 +49,8 @@ function MessageRow({ message, onClick }: { message: Message; onClick: () => voi
 }
 
 export function MessageHistory() {
+  const router = useRouter();
   const [selectedMessage, setSelectedMessage] = useState<Message | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState<"sent" | "scheduled">("scheduled");
 
   const [messages, setMessages] = useState<Message[]>([]);
 
@@ -75,32 +76,18 @@ export function MessageHistory() {
     <div className={styles.messageSection}>
       <div className={styles.messageSectionHeader}>
         <p className={styles.sectionTitle}>Message History</p>
-        <p className={styles.sectionSubtitle}>See an overview of the messages to be sent</p>
-      </div>
-      <div className={styles.toggleContainer}>
-        <button
-          className={`${styles.toggleTab} ${activeTab === "sent" ? styles.toggleTabActive : ""}`}
-          onClick={() => setActiveTab("sent")}
-        >
-          Sent
-        </button>
-        <button
-          className={`${styles.toggleTab} ${activeTab === "scheduled" ? styles.toggleTabActive : ""}`}
-          onClick={() => setActiveTab("scheduled")}
-        >
-          Scheduled
-        </button>
+        <p className={styles.sectionSubtitle}>See an overview of sent messages</p>
       </div>
       <div className={styles.messageList}>
         {messages
           .slice(0, 5)
-          .filter((m) => (activeTab === "sent" ? m.status === "sent" : m.status === "pending"))
+          .filter((m) => m.status === "sent")
           .map((msg) => (
             <MessageRow key={msg._id} message={msg} onClick={() => setSelectedMessage(msg)} />
           ))}
       </div>
       <div className={styles.viewHistoryRow}>
-        <Link href="#" className={styles.viewHistoryLink}>
+        <Link href="/messages" className={styles.viewHistoryLink}>
           View Entire History
         </Link>
       </div>
@@ -111,8 +98,15 @@ export function MessageHistory() {
             setSelectedMessage(undefined);
           }}
           onActionButton={() => {
-            // go to edit message flow
-            console.info("Go to edit message flow");
+            // "Use as Template": prefill the create-template flow with this message
+            const params = new URLSearchParams({
+              type: selectedMessage.type,
+              message: selectedMessage.body,
+            });
+            if (selectedMessage.type === "email" && selectedMessage.subject) {
+              params.set("subject", selectedMessage.subject);
+            }
+            void router.push(`/messages/templates/new?${params.toString()}`);
           }}
         />
       )}

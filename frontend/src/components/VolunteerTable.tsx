@@ -3,26 +3,21 @@ import { useEffect, useState } from "react";
 
 import styles from "./VolunteerTable.module.css";
 
-import type { Volunteer, VolunteerTag } from "@/types/volunteer";
+import type { VolunteerTag, VolunteerWithTags } from "@/types/volunteer";
 
-const TAG_COLOR_PALETTE = [
-  { backgroundColor: "#F6E6E9", color: "#A40026" },
-  { backgroundColor: "#F9EFE6", color: "#C46200" },
-  { backgroundColor: "#F9F5EF", color: "#886F42" },
-  { backgroundColor: "#E6F2EC", color: "#007F3F" },
-  { backgroundColor: "#E6F2F3", color: "#007A8A" },
-  { backgroundColor: "#E9ECF1", color: "#1D3A6B" },
-  { backgroundColor: "#EFEBF3", color: "#452861" },
-] as const;
+import { COLOR_OPTIONS } from "@/components/colorOptions";
 
-const getTagPaletteStyle = (tag: VolunteerTag) => {
-  let hash = 0;
+const getStoredTagStyle = (tag: VolunteerTag) => {
+  const backgroundColor =
+    tag.color.startsWith("#") || tag.color.startsWith("rgb") ? tag.color : `#${tag.color}`;
+  const matchingColor = COLOR_OPTIONS.find(
+    (option) => option.backgroundColor.toLowerCase() === backgroundColor.toLowerCase(),
+  );
 
-  for (const character of tag._id || tag.name) {
-    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-  }
-
-  return TAG_COLOR_PALETTE[hash % TAG_COLOR_PALETTE.length];
+  return {
+    backgroundColor,
+    color: matchingColor?.textColor ?? "#000000",
+  };
 };
 
 const getVisibleTags = (tags: VolunteerTag[], type: string, maxVisible: number) => {
@@ -35,17 +30,26 @@ const getVisibleTags = (tags: VolunteerTag[], type: string, maxVisible: number) 
 };
 
 type VolunteerTableProps = {
-  volunteers: Volunteer[];
-  selectableVolunteers?: Volunteer[];
-  onSelectedCountChange?: (count: number) => void;
+  volunteers: VolunteerWithTags[];
+  selectableVolunteers?: VolunteerWithTags[];
+  controlledSelectedIds?: Set<string>;
+  onControlledToggleOne?: (id: string) => void;
+  onControlledToggleAll?: (scope: VolunteerWithTags[]) => void;
+  onVolunteerSelect?: (volunteer: VolunteerWithTags) => void;
 };
 
 export default function VolunteerTable({
   volunteers,
   selectableVolunteers,
-  onSelectedCountChange,
+  controlledSelectedIds,
+  onControlledToggleOne,
+  onControlledToggleAll,
+  onVolunteerSelect,
 }: VolunteerTableProps) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
+  const isControlled = controlledSelectedIds !== undefined;
+  const selectedIds = isControlled ? controlledSelectedIds : internalSelectedIds;
+
   const selectionScope = selectableVolunteers ?? volunteers;
 
   const allSelected =
@@ -54,27 +58,29 @@ export default function VolunteerTable({
   const someSelected = selectionScope.some((volunteer) => selectedIds.has(volunteer._id));
 
   function toggleAll() {
+    if (isControlled) {
+      onControlledToggleAll?.(selectionScope);
+      return;
+    }
     if (allSelected) {
-      setSelectedIds(new Set());
+      setInternalSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(selectionScope.map((volunteer) => volunteer._id)));
+      setInternalSelectedIds(new Set(selectionScope.map((volunteer) => volunteer._id)));
     }
   }
 
-  function deselectAll() {
-    setSelectedIds(new Set());
-  }
-
   useEffect(() => {
-    onSelectedCountChange?.(selectedIds.size);
-  }, [selectedIds, onSelectedCountChange]);
-
-  useEffect(() => {
-    deselectAll();
-  }, [selectionScope]);
+    if (!isControlled) {
+      setInternalSelectedIds(new Set());
+    }
+  }, [selectionScope, isControlled]);
 
   function toggleOne(id: string) {
-    setSelectedIds((prev) => {
+    if (isControlled) {
+      onControlledToggleOne?.(id);
+      return;
+    }
+    setInternalSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -89,15 +95,17 @@ export default function VolunteerTable({
     <div className={styles.tableWrapper}>
       <table className={styles.volunteerTable}>
         <colgroup>
-          <col style={{ minWidth: "60px" }} />
-          <col style={{ minWidth: "200px" }} />
-          <col style={{ minWidth: "200px" }} />
-          <col style={{ minWidth: "304px" }} />
-          <col style={{ minWidth: "240px" }} />
-          <col style={{ minWidth: "107px" }} />
-          <col style={{ minWidth: "304px" }} />
-          <col style={{ minWidth: "304px" }} />
-          <col style={{ minWidth: "304px" }} />
+          {[
+            <col key="checkbox" style={{ width: "40px" }} />,
+            <col key="lastName" style={{ width: "140px" }} />,
+            <col key="firstName" style={{ width: "140px" }} />,
+            <col key="phoneNumber" style={{ width: "200px" }} />,
+            <col key="email" style={{ width: "320px" }} />,
+            <col key="status" style={{ width: "120px" }} />,
+            <col key="program" style={{ width: "340px" }} />,
+            <col key="assignment" style={{ width: "380px" }} />,
+            <col key="project" style={{ width: "300px" }} />,
+          ]}
         </colgroup>
         <thead>
           <tr>
@@ -113,14 +121,25 @@ export default function VolunteerTable({
                 aria-label="Select all volunteers"
               />
             </th>
-            <th>
+            <th className={styles.nameColumn}>
               <div className={styles.headerContent}>
                 <span>Last Name</span>
               </div>
             </th>
-            <th>
+            <th className={styles.nameColumn}>
+              <span className={styles.stickyDivider} aria-hidden="true" />
               <div className={styles.headerContent}>
                 <span>First Name</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Phone Number</span>
+              </div>
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>Email</span>
               </div>
             </th>
             <th>
@@ -143,16 +162,6 @@ export default function VolunteerTable({
                 <span>Project</span>
               </div>
             </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Phone Number</span>
-              </div>
-            </th>
-            <th>
-              <div className={styles.headerContent}>
-                <span>Email</span>
-              </div>
-            </th>
           </tr>
         </thead>
         <tbody>
@@ -160,18 +169,26 @@ export default function VolunteerTable({
             <tr
               key={volunteer._id}
               className={selectedIds.has(volunteer._id) ? styles.selectedRow : ""}
+              onClick={() => onVolunteerSelect?.(volunteer)}
+              style={{ cursor: onVolunteerSelect ? "pointer" : "default" }}
             >
-              <td className={styles.checkboxCell}>
+              <td className={styles.checkboxCell} onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
                   className={styles.checkbox}
                   checked={selectedIds.has(volunteer._id)}
                   onChange={() => toggleOne(volunteer._id)}
+                  onClick={(event) => event.stopPropagation()}
                   aria-label={`Select ${volunteer.firstName} ${volunteer.lastName}`}
                 />
               </td>
-              <td>{volunteer.lastName}</td>
-              <td>{volunteer.firstName}</td>
+              <td className={styles.nameColumn}>{volunteer.lastName}</td>
+              <td className={styles.nameColumn}>
+                <span className={styles.stickyDivider} aria-hidden="true" />
+                {volunteer.firstName}
+              </td>
+              <td>{volunteer.phoneNumber}</td>
+              <td>{volunteer.email}</td>
               <td>
                 <div className={styles.tagsContainer}>
                   <span
@@ -179,7 +196,8 @@ export default function VolunteerTable({
                       volunteer.status === "new" ? styles.pillTagNew : styles.pillTagReturning
                     }
                   >
-                    {volunteer.status.charAt(0).toUpperCase() + volunteer.status.slice(1)}
+                    {(volunteer.status ?? "new").charAt(0).toUpperCase() +
+                      (volunteer.status ?? "new").slice(1)}
                   </span>
                 </div>
               </td>
@@ -196,7 +214,7 @@ export default function VolunteerTable({
                     return (
                       <>
                         {visibleTags.map((tag, index) => {
-                          const tagStyle = getTagPaletteStyle(tag);
+                          const tagStyle = getStoredTagStyle(tag);
                           return (
                             <span
                               key={`col4-${volunteer._id}-${tag.name}-${index}`}
@@ -231,7 +249,7 @@ export default function VolunteerTable({
                     return (
                       <>
                         {visibleTags.map((tag, index) => {
-                          const tagStyle = getTagPaletteStyle(tag);
+                          const tagStyle = getStoredTagStyle(tag);
                           return (
                             <span
                               key={`col2-${volunteer._id}-${tag.name}-${index}`}
@@ -258,7 +276,7 @@ export default function VolunteerTable({
                 <div className={styles.tagsContainerNoWrap}>
                   {(() => {
                     const { visibleTags, hiddenCount } = getVisibleTags(
-                      volunteer.tags ?? [],
+                      volunteer.projectTagIds ?? [],
                       "project",
                       1,
                     );
@@ -266,7 +284,7 @@ export default function VolunteerTable({
                     return (
                       <>
                         {visibleTags.map((tag, index) => {
-                          const tagStyle = getTagPaletteStyle(tag);
+                          const tagStyle = getStoredTagStyle(tag);
                           return (
                             <span
                               key={`col2-${volunteer._id}-${tag.name}-${index}`}
@@ -288,9 +306,6 @@ export default function VolunteerTable({
                   })()}
                 </div>
               </td>
-
-              <td>{volunteer.phoneNumber}</td>
-              <td>{volunteer.email}</td>
             </tr>
           ))}
         </tbody>

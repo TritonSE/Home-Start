@@ -129,14 +129,17 @@ export function TemplateCreate({ onSave, title, message, subject, type }: Templa
     pill.setAttribute("contenteditable", "false");
     pill.textContent = "First Name";
 
-    const space = document.createTextNode(" ");
-
     const sel = window.getSelection();
     if (!sel) return;
 
     if (sel.rangeCount === 0) {
       editor.appendChild(pill);
-      editor.appendChild(space);
+
+      const endRange = document.createRange();
+      endRange.setStartAfter(pill);
+      endRange.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(endRange);
 
       const next = readPlainTextFromEditor();
       lastSyncedMessageRef.current = next;
@@ -156,9 +159,8 @@ export function TemplateCreate({ onSave, title, message, subject, type }: Templa
 
     const r = sel.getRangeAt(0);
     r.deleteContents();
-    r.insertNode(space);
     r.insertNode(pill);
-    r.setStartAfter(space);
+    r.setStartAfter(pill);
     r.collapse(true);
     sel.removeAllRanges();
     sel.addRange(r);

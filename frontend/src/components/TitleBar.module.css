@@ -4,6 +4,20 @@
   width: 100%;
   height: 40px;
   justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.backButton {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
 }
 
 .volunteers {
@@ -24,4 +38,76 @@
   gap: 16px;
   height: 40px;
   width: 269px;
+}
+
+.mobileActions {
+  display: none;
+}
+
+.moreButton {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.mobileMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: max-content;
+  padding: 12px;
+  border: 1px solid #d7d7d7;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 747px) {
+  .titleBar {
+    height: 64px;
+    justify-content: center;
+    border-bottom: 1px solid var(--Lofi-Gray-1, #e8e8e8);
+    background: #ffffff;
+    z-index: 500;
+  }
+
+  .volunteers {
+    width: auto;
+    height: 24px;
+    color: #000;
+    text-align: center;
+    font-family: var(--Font-family-Headings, Viga);
+    font-size: var(--h5-font-size, 24px);
+    font-style: normal;
+    font-weight: 400;
+    line-height: var(--h5-font-size, 24px);
+    letter-spacing: var(--h5-letter-spacing, 1.2px);
+  }
+
+  .importExportButtons {
+    display: none;
+  }
+
+  .mobileActions {
+    display: block;
+    position: absolute;
+    right: 0;
+  }
+
+  .backButton {
+    position: absolute;
+    left: 0;
+    width: 24px;
+    height: 24px;
+  }
 }

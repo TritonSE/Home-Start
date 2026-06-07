@@ -8,6 +8,7 @@ import { verifyToken } from "./middleware/auth";
 import messageRoutes from "./routes/messageRoutes";
 import tagRoutes from "./routes/tagRoutes";
 import templateRoutes from "./routes/templateRoutes";
+import textJobRoutes from "./routes/textJobRoutes";
 import volunteerAssignmentRoutes from "./routes/volunteerAssignmentRoutes";
 import volunteerRoutes from "./routes/volunteerRoutes";
 
@@ -34,8 +35,8 @@ const handleError = (error: unknown, req: Request, res: Response, _next: NextFun
 
 const app = express();
 
-// Provide json body-parser middleware
-app.use(express.json());
+// CSV imports can send large volunteer batches with assignment/tag metadata.
+app.use(express.json({ limit: "5mb" }));
 
 app.use(
   cors({
@@ -51,6 +52,7 @@ app.use("/api/tag", tagRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/template", templateRoutes);
 app.use("/api/message", messageRoutes);
+app.use("/api/text-jobs", textJobRoutes);
 
 app.use(handleError);
 

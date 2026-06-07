@@ -6,6 +6,7 @@
 import { onAuthStateChanged } from "firebase/auth";
 
 import { auth } from "@/firebase/firebase";
+import env from "@/util/validateEnv";
 
 /**
  * A custom type defining which HTTP methods we will handle in this file
@@ -21,7 +22,7 @@ type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
  * in Vite projects.
  */
 // const API_BASE_URL = import.env.VITE_API_BASE_URL;
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+export const API_BASE_URL = env.NEXT_PUBLIC_API_URL;
 
 // Gets firebase auth token
 async function waitForAuth(): Promise<string> {

@@ -28,14 +28,11 @@ export type Volunteer = {
   lastName: string;
   email: string;
   phoneNumber: string;
-  tags: VolunteerTag[];
   status?: "new" | "returning";
-  // Optional fields populated from backend
-  dateCreated?: string | Date | null;
-  effectiveDate?: string | Date | null;
+  dateCreated?: string | Date;
+  effectiveDate?: string | Date;
   hours?: number;
   wageRate?: number;
-  groupIds?: string[];
   groupTagIds?: (string | VolunteerTag)[];
   programTagIds?: (string | VolunteerTag)[];
   additionalNotes?: string;
@@ -45,4 +42,9 @@ export type Volunteer = {
   mediaConsent?: "yes" | "no";
   faceConsent?: "yes" | "no";
   nameConsent?: "first" | "full" | "no";
+};
+
+export type VolunteerWithTags = Volunteer & {
+  tags: VolunteerTag[];
+  projectTagIds?: VolunteerTag[];
 };

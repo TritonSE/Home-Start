@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { Volunteer, VolunteerTag } from "@/types/volunteer";
+import type { VolunteerTag, VolunteerWithTags } from "@/types/volunteer";
 
 import { fetchProjectProgramMaps, fetchTags } from "@/app/api/tag";
 import { fetchVolunteerAssignments, fetchVolunteers } from "@/app/api/volunteer";
@@ -13,6 +13,7 @@ import styles from "@/app/page.module.css";
 import sendMessageButtonAsset from "@/assets/send_message_button.svg";
 import sendMessageHoverButtonAsset from "@/assets/send_message_hover_button.svg";
 import Pagination from "@/components/messages/pagination";
+import SuccessToast from "@/components/messages/SuccessToast";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import TitleBar from "@/components/TitleBar";
@@ -26,16 +27,11 @@ export default function Page() {
   const router = useRouter();
   const setMode = useTextingFlowStore((s) => s.setMode);
   const setRecipientsPool = useTextingFlowStore((s) => s.setRecipientsPool);
-  const toggleRecipient = useTextingFlowStore((s) => s.toggleRecipient);
-  const toggleSelectAll = useTextingFlowStore((s) => s.toggleSelectAll);
+  const setSelectedRecipients = useTextingFlowStore((s) => s.setSelectedRecipients);
   const clearSelectedRecipients = useTextingFlowStore((s) => s.clearSelectedRecipients);
-  const storeSelectedIds = useTextingFlowStore((s) => s.selectedRecipientIds);
-
-  // Derive a Set from the store ids for efficient lookup in the table
-  const controlledSelectedIds = useMemo(() => new Set(storeSelectedIds), [storeSelectedIds]);
 
   // Data state
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [volunteers, setVolunteers] = useState<VolunteerWithTags[]>([]);
   const [tags, setTags] = useState<VolunteerTag[]>([]);
 
   const [search, setSearch] = useState("");
@@ -43,6 +39,8 @@ export default function Page() {
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedAssignment, setSelectedAssignment] = useState<Set<string>>(new Set());
   const [selectedProgram, setSelectedProgram] = useState<Set<string>>(new Set());
+  const [dateCreatedStart, setDateCreatedStart] = useState<Date | null>(null);
+  const [dateCreatedEnd, setDateCreatedEnd] = useState<Date | null>(null);
 
   // Clear selection whenever any filter changes to avoid invisibly selected volunteers
   useEffect(() => {
@@ -53,21 +51,24 @@ export default function Page() {
     selectedStatus,
     selectedAssignment,
     selectedProgram,
+    dateCreatedStart,
+    dateCreatedEnd,
     clearSelectedRecipients,
   ]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [showImportSuccess, setShowImportSuccess] = useState(false);
+  const [importSuccessMessage, setImportSuccessMessage] = useState("");
   const [sendMessageHovered, setSendMessageHovered] = useState(false);
-  const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
+  const [selectedVolunteer, setSelectedVolunteer] = useState<VolunteerWithTags | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [exportSelectedIds, setExportSelectedIds] = useState<Set<string>>(new Set());
   const [sortOption, setSortOption] = useState<
     "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A"
   >("Newest");
   const itemsPerPage = 100;
 
-  const loadVolunteers = async () => {
+  const loadVolunteers = useCallback(async () => {
     try {
       const [volunteerData, tagData, assignmentData, projectProgramMapData] = await Promise.all([
         fetchVolunteers(),
@@ -99,6 +100,8 @@ export default function Page() {
         );
         const seenTagIds = new Set<string>();
         const volunteerTags: VolunteerTag[] = [];
+        const projectTagIds: VolunteerTag[] = [];
+        const seenProjectTagIds = new Set<string>();
 
         const pushTag = (tag: VolunteerTag | undefined) => {
           if (!tag || seenTagIds.has(tag._id)) return;
@@ -106,23 +109,22 @@ export default function Page() {
           volunteerTags.push(tag);
         };
 
+        const pushProjectTag = (tag: VolunteerTag | undefined) => {
+          if (!tag || seenProjectTagIds.has(tag._id)) return;
+          seenProjectTagIds.add(tag._id);
+          projectTagIds.push(tag);
+        };
+
         // Add assignment and project tags
         for (const assignment of volunteerAssignments) {
           pushTag(resolveTag(assignment.assignmentTagId));
-          pushTag(resolveTag(assignment.projectTagId));
+          const projectTag = resolveTag(assignment.projectTagId);
+          pushTag(projectTag);
+          pushProjectTag(projectTag);
 
-          const projTag = resolveTag(assignment.projectTagId);
-          pushTag(projTag ? programByProjectId.get(projTag._id) : undefined);
+          pushTag(projectTag ? programByProjectId.get(projectTag._id) : undefined);
 
           for (const shiftTag of assignment.shiftTagIds ?? []) pushTag(resolveTag(shiftTag));
-        }
-
-        // Add group tags from groupIds
-        if (Array.isArray(volunteer.groupIds) && volunteer.groupIds.length > 0) {
-          for (const groupId of volunteer.groupIds) {
-            const groupTag = tagData.find((tag) => tag._id === groupId);
-            pushTag(groupTag);
-          }
         }
 
         // Add directly saved group/program tags so filters use the latest edits.
@@ -146,7 +148,7 @@ export default function Page() {
           }
         }
 
-        return { ...volunteer, tags: volunteerTags };
+        return { ...volunteer, tags: volunteerTags, projectTagIds } satisfies VolunteerWithTags;
       });
 
       setVolunteers(volunteersWithTags);
@@ -156,7 +158,7 @@ export default function Page() {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
+  }, [setRecipientsPool]);
 
   const handleSortOptionChange = (
     option:
@@ -201,9 +203,15 @@ export default function Page() {
     setCurrentPage(1);
   };
 
+  const handleDateCreatedRangeChange = (start: Date | null, end: Date | null) => {
+    setDateCreatedStart(start);
+    setDateCreatedEnd(end);
+    setCurrentPage(1);
+  };
+
   useEffect(() => {
     void loadVolunteers();
-  }, []);
+  }, [loadVolunteers]);
 
   const projectTags = [
     ...new Set(
@@ -247,6 +255,14 @@ export default function Page() {
 
       if (selectedStatus && volunteer.status !== selectedStatus) return false;
 
+      if (dateCreatedStart || dateCreatedEnd) {
+        if (!volunteer.dateCreated) return false;
+        const dateCreatedTime = new Date(volunteer.dateCreated).getTime();
+        if (Number.isNaN(dateCreatedTime)) return false;
+        if (dateCreatedStart && dateCreatedTime < dateCreatedStart.getTime()) return false;
+        if (dateCreatedEnd && dateCreatedTime > dateCreatedEnd.getTime()) return false;
+      }
+
       // Search filter (includes first/last/full name, phone, email)
       if (search.trim()) {
         const query = search.trim().toLowerCase();
@@ -269,7 +285,16 @@ export default function Page() {
 
       return true;
     });
-  }, [volunteers, selectedProject, selectedAssignment, selectedProgram, selectedStatus, search]);
+  }, [
+    volunteers,
+    selectedProject,
+    selectedAssignment,
+    selectedProgram,
+    selectedStatus,
+    dateCreatedStart,
+    dateCreatedEnd,
+    search,
+  ]);
 
   const sortedFilteredVolunteers = useMemo(() => {
     const sorted = [...filteredVolunteers];
@@ -282,69 +307,95 @@ export default function Page() {
       }
     };
 
+    const compareSelectedFirst = (a: VolunteerWithTags, b: VolunteerWithTags) => {
+      const aSelected = exportSelectedIds.has(a._id);
+      const bSelected = exportSelectedIds.has(b._id);
+
+      if (aSelected !== bSelected) {
+        return aSelected ? -1 : 1;
+      }
+
+      return 0;
+    };
+
+    const withSelectedFirst =
+      (compare: (a: VolunteerWithTags, b: VolunteerWithTags) => number) =>
+      (a: VolunteerWithTags, b: VolunteerWithTags) =>
+        compareSelectedFirst(a, b) || compare(a, b);
+
     switch (sortOption) {
       case "Newest":
-        return sorted.sort((a, b) => toTime(b.dateCreated) - toTime(a.dateCreated));
+        return sorted.sort(
+          withSelectedFirst((a, b) => toTime(b.dateCreated) - toTime(a.dateCreated)),
+        );
       case "Oldest":
-        return sorted.sort((a, b) => toTime(a.dateCreated) - toTime(b.dateCreated));
+        return sorted.sort(
+          withSelectedFirst((a, b) => toTime(a.dateCreated) - toTime(b.dateCreated)),
+        );
       case "First Name A-Z":
-        return sorted.sort((a, b) => a.firstName.localeCompare(b.firstName));
+        return sorted.sort(withSelectedFirst((a, b) => a.firstName.localeCompare(b.firstName)));
       case "First Name Z-A":
-        return sorted.sort((a, b) => b.firstName.localeCompare(a.firstName));
+        return sorted.sort(withSelectedFirst((a, b) => b.firstName.localeCompare(a.firstName)));
       case "Last Name A-Z":
-        return sorted.sort((a, b) => a.lastName.localeCompare(b.lastName));
+        return sorted.sort(withSelectedFirst((a, b) => a.lastName.localeCompare(b.lastName)));
       case "Last Name Z-A":
-        return sorted.sort((a, b) => b.lastName.localeCompare(a.lastName));
+        return sorted.sort(withSelectedFirst((a, b) => b.lastName.localeCompare(a.lastName)));
       default:
-        return sorted;
+        return sorted.sort(compareSelectedFirst);
     }
-  }, [filteredVolunteers, sortOption]);
+  }, [exportSelectedIds, filteredVolunteers, sortOption]);
 
   // Calculate pagination slice
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const displayedVolunteers = sortedFilteredVolunteers.slice(startIndex, endIndex);
+  const selectedVolunteersForMessage = useMemo(
+    () => volunteers.filter((volunteer) => exportSelectedIds.has(volunteer._id)),
+    [exportSelectedIds, volunteers],
+  );
 
-  const handleImportComplete = () => {
-    void loadVolunteers();
-    setShowImportSuccess(true);
+  const handleImportComplete = async () => {
+    await loadVolunteers();
+    setCurrentPage(1);
+    setExportSelectedIds(new Set());
+    setImportSuccessMessage("CSV Successfully Uploaded");
   };
 
   const handleSendMessage = useCallback(() => {
+    if (selectedVolunteersForMessage.length > 0) {
+      setSelectedRecipients(selectedVolunteersForMessage);
+    } else {
+      clearSelectedRecipients();
+    }
+
     setMode("text");
     void router.push("/communication");
-  }, [setMode, router]);
+  }, [
+    clearSelectedRecipients,
+    router,
+    selectedVolunteersForMessage,
+    setMode,
+    setSelectedRecipients,
+  ]);
   const handleSheetClose = () => {
     setIsSheetOpen(false);
   };
 
   return (
     <Sidebar>
+      <SuccessToast
+        open={!!importSuccessMessage}
+        message={importSuccessMessage}
+        durationMs={2600}
+        onDone={() => setImportSuccessMessage("")}
+      />
       <div className={styles.page}>
         <main className={styles.main}>
-          {showImportSuccess && (
-            <div className={styles.importSuccessBanner}>
-              <div className={styles.importSuccessContent}>
-                <Image
-                  src={"/ic_success.svg"}
-                  alt="Success"
-                  className={styles.importSuccessIcon}
-                  width={24}
-                  height={24}
-                />
-                <span className={styles.importSuccessText}>CSV Successfully Uploaded</span>
-              </div>
-              <button
-                type="button"
-                className={styles.importSuccessClose}
-                onClick={() => setShowImportSuccess(false)}
-                aria-label="Dismiss success message"
-              ></button>
-            </div>
-          )}
-
-          <TitleBar onImportComplete={handleImportComplete} />
-
+          <TitleBar
+            onImportComplete={handleImportComplete}
+            selectedVolunteers={volunteers.filter((v) => exportSelectedIds.has(v._id))}
+            onBack={() => router.push("/dashboard")}
+          />
           <SearchBar
             search={search}
             setSearch={handleSearchChange}
@@ -360,6 +411,9 @@ export default function Page() {
             setSelectedAssignment={handleSelectedAssignmentChange}
             selectedProgram={selectedProgram}
             setSelectedProgram={handleSelectedProgramChange}
+            dateCreatedStart={dateCreatedStart}
+            dateCreatedEnd={dateCreatedEnd}
+            setDateCreatedRange={handleDateCreatedRangeChange}
             onSortOptionChange={handleSortOptionChange}
           />
 
@@ -367,9 +421,27 @@ export default function Page() {
             <VolunteerTable
               volunteers={displayedVolunteers}
               selectableVolunteers={filteredVolunteers}
-              controlledSelectedIds={controlledSelectedIds}
-              onControlledToggleOne={toggleRecipient}
-              onControlledToggleAll={(scope) => toggleSelectAll(scope)}
+              controlledSelectedIds={exportSelectedIds}
+              onControlledToggleOne={(id) => {
+                setExportSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                });
+              }}
+              onControlledToggleAll={(scope) => {
+                setExportSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  const allSelected = scope.every((v) => next.has(v._id));
+                  if (allSelected) {
+                    scope.forEach((v) => next.delete(v._id));
+                  } else {
+                    scope.forEach((v) => next.add(v._id));
+                  }
+                  return next;
+                });
+              }}
               onVolunteerSelect={(v) => {
                 setSelectedVolunteer(v);
                 setIsSheetOpen(true);
@@ -377,7 +449,9 @@ export default function Page() {
             />
             <div className={styles.tableSummaryRow}>
               <span className={styles.tableSummaryLeft}>
-                {storeSelectedIds.length > 0 ? `${storeSelectedIds.length} selected` : ""}
+                {selectedVolunteersForMessage.length > 0
+                  ? `${selectedVolunteersForMessage.length} selected`
+                  : ""}
               </span>
               <span className={styles.tableSummaryRight}>
                 Total volunteers: {filteredVolunteers.length}
@@ -397,7 +471,7 @@ export default function Page() {
             onClick={handleSendMessage}
             onMouseEnter={() => setSendMessageHovered(true)}
             onMouseLeave={() => setSendMessageHovered(false)}
-            aria-label={`Send message${storeSelectedIds.length > 0 ? ` to ${storeSelectedIds.length} selected volunteer${storeSelectedIds.length === 1 ? "" : "s"}` : ""}`}
+            aria-label={`Send message${selectedVolunteersForMessage.length > 0 ? ` to ${selectedVolunteersForMessage.length} selected volunteer${selectedVolunteersForMessage.length === 1 ? "" : "s"}` : ""}`}
           >
             <Image
               src={sendMessageHovered ? sendMessageHoverButton : sendMessageButton}
@@ -411,8 +485,11 @@ export default function Page() {
           volunteer={selectedVolunteer}
           isOpen={isSheetOpen}
           onClose={handleSheetClose}
+          onVolunteerDataChanged={() => {
+            void loadVolunteers();
+          }}
           onVolunteerUpdated={(updatedVolunteer) => {
-            setSelectedVolunteer(updatedVolunteer);
+            setSelectedVolunteer({ ...updatedVolunteer, tags: selectedVolunteer?.tags ?? [] });
             void loadVolunteers();
           }}
         />

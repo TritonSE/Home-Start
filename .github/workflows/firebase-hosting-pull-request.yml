@@ -13,32 +13,62 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+          npm run lint-check
+      - name: Deploy backend preview to Vercel
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          FIREBASE_SERVICE: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HOME_START }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "VERCEL_TOKEN is not set."
+            exit 1
+          fi
+          if [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "VERCEL_PROJECT_ID is not set."
+            exit 1
+          fi
+          if [ -z "$VERCEL_ORG_ID" ]; then
+            echo "VERCEL_ORG_ID is not set."
+            exit 1
+          fi
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL is not set."
+            exit 1
+          fi
+          if [ -z "$FIREBASE_SERVICE" ]; then
+            echo "FIREBASE_SERVICE_ACCOUNT_HOME_START is not set."
+            exit 1
+          fi
+          npx -y vercel@latest link --yes --scope "$VERCEL_ORG_ID" --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN"
+          BACKEND_PREVIEW_URL=$(npx -y vercel@latest deploy --yes --scope "$VERCEL_ORG_ID" --project "$VERCEL_PROJECT_ID" --token "$VERCEL_TOKEN" --env DATABASE_URL="$DATABASE_URL" --env FIREBASE_SERVICE_ACCOUNT="$FIREBASE_SERVICE" --env FRONTEND_ORIGIN="*" --env PORT=4000)
+          echo "BACKEND_PREVIEW_URL=$BACKEND_PREVIEW_URL" >> "$GITHUB_ENV"
       - name: Install frontend dependencies
         env:
           NEXT_PUBLIC_FIREBASE: ${{ secrets.NEXT_PUBLIC_FIREBASE }}
+          BACKEND_PREVIEW_URL: ${{ env.BACKEND_PREVIEW_URL }}
         run: |
           if [ -z "$NEXT_PUBLIC_FIREBASE" ]; then
             echo "NEXT_PUBLIC_FIREBASE is not set."
             exit 1
           fi
+          if [ -z "$BACKEND_PREVIEW_URL" ]; then
+            echo "BACKEND_PREVIEW_URL is not set."
+            exit 1
+          fi
           cd frontend
           cat > .env <<EOF
           NEXT_PUBLIC_FIREBASE='$NEXT_PUBLIC_FIREBASE'
-          NEXT_PUBLIC_API_URL=/api
+          NEXT_PUBLIC_API_URL='$BACKEND_PREVIEW_URL'
           EOF
           npm ci 
           npm run build
-      - name: Install backend dependencies
-        env:
-          MONGO_URL: ${{ secrets.MONGO_URL }}
-          FIREBASE_SERVICE: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BACKEND }}
-        run: |
-          cd backend
-          touch .env
-          echo "DATABASE_URL=$MONGO_URL" >> .env
-          echo "BACKEND_FIREBASE_SERVICE_ACCOUNT=$FIREBASE_SERVICE" >> .env
-          npm ci
-          npm run lint-check
       - uses: FirebaseExtended/action-hosting-deploy@v0.9.0
         env:
           BACKEND_FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}

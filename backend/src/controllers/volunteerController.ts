@@ -764,6 +764,14 @@ const statusKeyToEnum = (key: string): "returning" | "new" | undefined => {
   return undefined;
 };
 
+const readCsvText = (data: Record<string, string>, headers: string[]): string => {
+  for (const header of headers) {
+    const value = normalizeCsvText(data[header]);
+    if (value) return value;
+  }
+  return "";
+};
+
 const normalizeCSVData = (data: Record<string, string>): NormalizedVolunteerCSVFormat => {
   return {
     firstName: normalizeCsvText(data["First Name"]),
@@ -779,11 +787,14 @@ const normalizeCSVData = (data: Record<string, string>): NormalizedVolunteerCSVF
       zip: normalizeCsvText(data.Zip),
     },
     birthday: normalizeCsvText(data.Birthday),
-    preferredPronouns: normalizeCsvText(data["NEW Pronouns"]),
-    effectiveDate: normalizeCsvText(data["Effective Date (date record was updated)"]),
-    mediaConsent: normalizeCsvText(data["NEW Media Consent"]),
-    faceConsent: normalizeCsvText(data["NEW Face"]),
-    nameConsent: normalizeCsvText(data["NEW Name Consent"]),
+    preferredPronouns: readCsvText(data, ["NEW Pronouns", "Pronouns"]),
+    effectiveDate: readCsvText(data, [
+      "Effective Date (date record was updated)",
+      "Effective Date",
+    ]),
+    mediaConsent: readCsvText(data, ["NEW Media Consent", "Media Consent"]),
+    faceConsent: readCsvText(data, ["NEW Face", "Face Consent", "Face"]),
+    nameConsent: readCsvText(data, ["NEW Name Consent", "Name Consent"]),
     assignmentName: normalizeCsvText(data.assignment),
     projectName: normalizeCsvText(data.project),
   };
@@ -873,11 +884,11 @@ const normalizeNewFormatRow = (data: Record<string, string>): NewFormatRawRow =>
     zip: normalizeCsvText(data.Zip),
   },
   birthday: normalizeCsvText(data.Birthday),
-  preferredPronouns: normalizeCsvText(data["NEW Pronouns"]),
-  effectiveDate: normalizeCsvText(data["Effective Date (date record was updated)"]),
-  mediaConsent: normalizeCsvText(data["NEW Media Consent"]),
-  faceConsent: normalizeCsvText(data["NEW Face"]),
-  nameConsent: normalizeCsvText(data["NEW Name Consent"]),
+  preferredPronouns: readCsvText(data, ["NEW Pronouns", "Pronouns"]),
+  effectiveDate: readCsvText(data, ["Effective Date (date record was updated)", "Effective Date"]),
+  mediaConsent: readCsvText(data, ["NEW Media Consent", "Media Consent"]),
+  faceConsent: readCsvText(data, ["NEW Face", "Face Consent", "Face"]),
+  nameConsent: readCsvText(data, ["NEW Name Consent", "Name Consent"]),
   programs: parseSemicolonList(normalizeCsvText(data.program ?? "")),
   groups: parseSemicolonList(normalizeCsvText(data.groups ?? "")),
   assignment: normalizeCsvText(data.assignment),

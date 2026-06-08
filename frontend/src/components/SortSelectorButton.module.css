@@ -46,7 +46,7 @@
   z-index: 11;
   top: calc(100% + 8px);
   right: 0;
-  width: 155px;
+  width: 16git 0px;
   max-height: 700px;
   overflow: hidden;
   background: #fbffff;
@@ -87,6 +87,7 @@
   line-height: 20px;
   letter-spacing: 0.8px;
   color: #000000;
+  white-space: nowrap;
 }
 
 .dropdownItemSelected .filterLabel {

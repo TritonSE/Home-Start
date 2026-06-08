@@ -499,7 +499,7 @@
 .title {
   color: #000;
   /* Headers/h5 */
-  font-family: var(--Font-family-Headings, Viga);
+  font-family: var(--font-viga), sans-serif;
   font-size: var(--h5-font-size, 24px);
   font-style: normal;
   font-weight: 400;

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import styles from "./TemplateActionPopup.module.css";
 
@@ -24,11 +24,13 @@ export default function TemplateActionPopup({
 }: TemplateActionPopupProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  if (!open || !templateTitle) {
-    // Ensure confirm delete dialog is always closed when popup is closed
-    if (confirmDelete) {
+  useEffect(() => {
+    if (!open) {
       setConfirmDelete(false);
     }
+  }, [open]);
+
+  if (!open || !templateTitle) {
     return null;
   }
 
@@ -68,7 +70,8 @@ export default function TemplateActionPopup({
           <div className={styles.buttonsDeletePop}>
             <button
               className={styles.cancelDeleteBtn}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setConfirmDelete(false);
                 onClose();
               }}
@@ -77,7 +80,8 @@ export default function TemplateActionPopup({
             </button>
             <button
               className={styles.deleteDeleteBtn}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setConfirmDelete(false);
                 onDelete();
               }}

@@ -154,7 +154,12 @@ export const deleteTemplate = async (templateId: string): Promise<APIResult<stri
   try {
     const response = await del(`/api/template/${templateId}`);
     if (response.ok) {
-      const data: unknown = await response.json();
+      const text = await response.text();
+      if (!text) {
+        return { success: true, data: "Template deleted successfully" };
+      }
+
+      const data: unknown = JSON.parse(text);
       if (!data || typeof data !== "object") {
         return { success: false, error: "Unexpected delete template response format" };
       }

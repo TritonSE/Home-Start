@@ -77,11 +77,15 @@ export default function TemplatePage() {
   };
 
   const handleDeleteTemplateClicked = () => {
-    if (selectedTemplate) {
-      deleteTemplate(selectedTemplate._id)
+    const templateId = selectedTemplate?._id;
+    if (templateId) {
+      setOpenPopup(false);
+      setSelectedTemplate(undefined);
+      setPreviewTemplate(false);
+
+      deleteTemplate(templateId)
         .then((result) => {
           if (result.success) {
-            setOpenPopup(false);
             // reload data
             fetchTemplates();
             setSuccessToast("Template Deleted");
@@ -123,7 +127,14 @@ export default function TemplatePage() {
       />
       <div className={styles.page}>
         <header className={styles.header}>
-          <Image src={icCaretLeft} alt="" width={40} height={40} onClick={handleBackClicked} />
+          <Image
+            src={icCaretLeft}
+            alt=""
+            width={40}
+            height={40}
+            className={styles.backIcon}
+            onClick={handleBackClicked}
+          />
           <h1 className={styles.headerTitle}>Templates</h1>
           {previewTemplate ? (
             <span style={{ height: "40px", width: "40px" }}></span>

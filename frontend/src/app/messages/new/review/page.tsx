@@ -9,6 +9,7 @@ import { useTextingFlowStore } from "../_store/textingFlowStore";
 import styles from "./page.module.css";
 
 import { createMessageHistory, sendEmails } from "@/app/api/messages";
+import { API_BASE_URL } from "@/app/api/requests";
 import { createTextJob } from "@/app/api/textJobs";
 import { fetchVolunteers } from "@/app/api/volunteer";
 import backIconAsset from "@/assets/back.svg";
@@ -158,7 +159,7 @@ export default function ReviewAndSendPage() {
         type: "text",
         subject: null,
         body: message,
-        status: "pending",
+        status: "sent",
       });
 
       if (!historyResult.success) {
@@ -166,10 +167,10 @@ export default function ReviewAndSendPage() {
         return;
       }
 
-      const shortcutBase =
-        process.env.NEXT_PUBLIC_SHORTCUT_API_URL ??
-        process.env.NEXT_PUBLIC_API_URL ??
-        "http://localhost:4000";
+      const shortcutBase = (process.env.NEXT_PUBLIC_SHORTCUT_API_URL ?? API_BASE_URL).replace(
+        /\/+$/,
+        "",
+      );
       const apiUrl = `${shortcutBase}/api/text-jobs/${jobResult.data.jobId}`;
       setShortcutUrl(
         `shortcuts://run-shortcut?name=${encodeURIComponent("Send Website Messages")}&input=text&text=${encodeURIComponent(apiUrl)}`,

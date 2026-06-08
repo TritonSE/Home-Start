@@ -20,6 +20,7 @@ import type {
   VolunteerWithTags,
 } from "../types/volunteer";
 
+import { API_BASE_URL } from "@/app/api/requests";
 import { createTag, searchTags } from "@/app/api/tag";
 import {
   fetchVolunteerAssignmentsByVolunteerId,
@@ -602,8 +603,7 @@ export default function VolunteerProfileModal({
         }
       });
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
-      const response = await fetch(`${apiUrl}/api/volunteer/${volunteer._id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/volunteer/${volunteer._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

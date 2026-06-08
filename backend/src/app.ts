@@ -44,6 +44,8 @@ app.use(
   }),
 );
 
+app.use("/api/text-jobs", textJobRoutes);
+
 app.use(verifyToken);
 
 app.use("/api/volunteer", volunteerRoutes);
@@ -52,7 +54,6 @@ app.use("/api/tag", tagRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/template", templateRoutes);
 app.use("/api/message", messageRoutes);
-app.use("/api/text-jobs", textJobRoutes);
 
 app.use(handleError);
 

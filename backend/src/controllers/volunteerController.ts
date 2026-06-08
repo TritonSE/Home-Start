@@ -2,7 +2,7 @@ import { PassThrough } from "node:stream";
 
 import csvParser from "csv-parser";
 import { validationResult } from "express-validator";
-import createError from "http-errors";
+import createHttpError from "http-errors";
 
 import { getAutoTagColor } from "../../../shared/colorOptions";
 import TagModel from "../models/tagModel";
@@ -128,7 +128,7 @@ export const getVolunteer: RequestHandler = async (req, res, next) => {
       .populate("programTagIds");
 
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw createHttpError(404, "Could not find volunteer");
     }
 
     res.status(200).json(volunteer);
@@ -157,7 +157,7 @@ export const getVolunteerByEmail: RequestHandler = async (req, res, next) => {
   try {
     const volunteer = await VolunteerModel.findOne({ email });
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw createHttpError(404, "Could not find volunteer");
     }
     res.status(200).json(volunteer);
   } catch (err) {
@@ -175,7 +175,7 @@ export const getVolunteerPhoneNumber: RequestHandler = async (req, res, next) =>
   try {
     const volunteer = await VolunteerModel.findOne({ phoneNumber });
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw createHttpError(404, "Could not find volunteer");
     }
     res.status(200).json(volunteer);
   } catch (err) {
@@ -283,7 +283,7 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
     validationErrorParser(errors);
     const volunteer = await VolunteerModel.findOne({ email });
     if (volunteer) {
-      throw createError(409, "Volunteer with this email already exists");
+      throw createHttpError(409, "Volunteer with this email already exists");
     }
     const newVolunteer = await VolunteerModel.create({
       firstName,
@@ -399,7 +399,7 @@ export const updateVolunteer: RequestHandler = async (req, res, next) => {
       .populate("programTagIds");
 
     if (!volunteer) {
-      return res.status(404).json({ error: "Could not find volunteer" });
+      return next(createHttpError(404, "Could not find volunteer"));
     }
 
     res.status(200).json(volunteer);
@@ -427,7 +427,7 @@ export const updateVolunteerContact: RequestHandler = async (req, res, next) => 
     });
 
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw createHttpError(404, "Could not find volunteer");
     }
 
     res.status(200).json(volunteer);
@@ -442,9 +442,9 @@ export const deleteVolunteer: RequestHandler = async (req, res, next) => {
   try {
     const volunteer = await VolunteerModel.findByIdAndDelete(volunteerId);
     if (!volunteer) {
-      throw createError(404, "Could not find volunteer");
+      throw createHttpError(404, "Could not find volunteer");
     }
-    res.status(200).json({ message: "Volunteer deleted successfully" });
+    res.status(200).send();
   } catch (err) {
     next(err);
   }
@@ -667,7 +667,7 @@ export const uploadVolunteerBatch: RequestHandler<
         const volunteer = volunteerByKey.get(makeVolunteerImportKey(entry.volunteer));
 
         if (!volunteer) {
-          throw createError(400, `Could not resolve volunteer for ${entry.volunteer.email}`);
+          throw createHttpError(400, `Could not resolve volunteer for ${entry.volunteer.email}`);
         }
 
         const assignmentTag = tagByKey.get(`assignment:${entry.assignmentTag}`);
@@ -895,7 +895,7 @@ const aggregateMultiRowVolunteers = (rows: NewFormatRawRow[]): VolunteerCreation
 
   for (const row of rows) {
     if (!row.externalId) {
-      throw createError(400, `Row is missing an ID: "${row.firstName} ${row.lastName}"`);
+      throw createHttpError(400, `Row is missing an ID: "${row.firstName} ${row.lastName}"`);
     }
 
     if (!byId.has(row.externalId)) {
@@ -912,7 +912,7 @@ const aggregateMultiRowVolunteers = (rows: NewFormatRawRow[]): VolunteerCreation
         (row.firstName && block.base.firstName && row.firstName !== block.base.firstName) ||
         (row.lastName && block.base.lastName && row.lastName !== block.base.lastName)
       ) {
-        throw createError(
+        throw createHttpError(
           400,
           `Conflicting personal data for volunteer ID "${row.externalId}": rows have different names or contact info`,
         );
@@ -932,7 +932,7 @@ const aggregateMultiRowVolunteers = (rows: NewFormatRawRow[]): VolunteerCreation
 
   for (const [externalId, block] of byId) {
     if (!block.base) {
-      throw createError(
+      throw createHttpError(
         400,
         `No personal data (email/phone) found for volunteer ID "${externalId}"`,
       );
@@ -1003,7 +1003,7 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
         if (!valid) {
           console.info("Invalid volunteer data:", data);
           bufferStream.destroy();
-          reject(createError(400, `Invalid volunteer data: ${JSON.stringify(data)}`));
+          reject(createHttpError(400, `Invalid volunteer data: ${JSON.stringify(data)}`));
           return;
         }
 
@@ -1016,7 +1016,7 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
             for (const v of aggregated) {
               if (!validateVolunteer(v)) {
                 reject(
-                  createError(
+                  createHttpError(
                     400,
                     `Invalid volunteer data for ID "${v.email}": missing required fields`,
                   ),
@@ -1041,7 +1041,7 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
 export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
   try {
     if (req.file === undefined) {
-      throw createError(400, "No CSV file attached");
+      throw createHttpError(400, "No CSV file attached");
     }
 
     const parsedVolunteers = await parseVolunteersHelper(req.file.buffer);
@@ -1051,7 +1051,7 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
 
     const errors = validationResult(mockReq);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return next(createHttpError(400, { errors: errors.array() }));
     }
 
     const uniqueVolunteers = [
@@ -1120,6 +1120,58 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
   }
 };
 
+export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
+  try {
+    if (req.file === undefined) {
+      throw createHttpError(400, "No CSV file attached");
+    }
+
+    const volunteerCreationBodies = await parseVolunteersHelper(req.file.buffer);
+
+    const bulkOps = volunteerCreationBodies.map((body) => ({
+      updateOne: {
+        filter: {
+          $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
+        },
+        update: {
+          $set: normalizeVolunteerForBulkWrite(body),
+          // Mongo operator to set a field to the current date
+          $currentDate: { updated: true as const },
+        },
+        upsert: true,
+      },
+    }));
+    // Continue writing others even if one fails
+    const createdVolunteers = await VolunteerModel.bulkWrite(bulkOps, { ordered: false });
+
+    res.status(200).json({
+      message: "Volunteers created successfully",
+      created: createdVolunteers.upsertedCount,
+      updated: createdVolunteers.modifiedCount,
+    });
+  } catch (err) {
+    if ((err as MongoBulkWriteError)?.name === "MongoBulkWriteError") {
+      const typedErr = err as MongoBulkWriteError;
+      const failedBodies = [];
+      const writeErrors: WriteError[] = Array.isArray(typedErr.writeErrors)
+        ? (typedErr.writeErrors as WriteError[])
+        : [typedErr.writeErrors as WriteError];
+      for (const writeError of writeErrors) {
+        const body = (writeError.err?.op as UpdateVolunteerOp)?.u?.$set;
+        failedBodies.push(body);
+      }
+      res.status(500).json({
+        message: "Error creating volunteers",
+        created: typedErr.result.upsertedCount,
+        updated: typedErr.result.modifiedCount,
+        failed: failedBodies,
+      });
+      return;
+    }
+    next(err);
+  }
+};
+
 export const getSelectedVolunteers: RequestHandler = async (req, res, next) => {
   const { events, statuses } = req.body as { events: string[]; statuses: string[] };
   try {
@@ -1137,7 +1189,7 @@ export const getSelectedVolunteers: RequestHandler = async (req, res, next) => {
       const tagEvents = tagEventsMap.map((tag) => tag._id);
 
       if (tagEvents.length !== events.length) {
-        return res.status(400).json({ error: "One or more event tags not found" });
+        return next(createHttpError(400, "One or more event tags not found"));
       }
 
       volunteerFilter.programTagIds = { $in: tagEvents };

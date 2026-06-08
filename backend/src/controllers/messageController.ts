@@ -187,14 +187,14 @@ export const sendEmails = async (req: Request, res: Response, next: NextFunction
       !subject ||
       !message
     ) {
-      res.status(400).json({ error: "graphToken, recipients, subject, and message are required" });
-      return;
+      return next(
+        createHttpError(400, "graphToken, recipients, subject, and message are required"),
+      );
     }
 
     const date = sendDate ? new Date(sendDate) : undefined;
     if (date && Number.isNaN(date.getTime())) {
-      res.status(400).json({ error: "sendDate must be a proper date" });
-      return;
+      return next(createHttpError(400, "sendDate must be a proper date"));
     }
 
     const { results, failures } = await sendBatchEmails(

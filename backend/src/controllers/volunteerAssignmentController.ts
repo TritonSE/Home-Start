@@ -132,7 +132,7 @@ export const deleteVolunteerAssignment: RequestHandler = async (req, res, next) 
       throw createError(404, "Assignment not found");
     }
 
-    res.status(200).json({ message: "Assignment deleted successfully" });
+    res.status(200).send();
   } catch (err) {
     next(err);
   }

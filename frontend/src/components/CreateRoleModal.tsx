@@ -46,6 +46,7 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
   const [assignmentColorIndex, setAssignmentColorIndex] = useState(0);
   const [projectColorIndex, setProjectColorIndex] = useState(0);
   const [, setTags] = useState<VolunteerTag[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isFirstPage = step === 1;
   const inputValue = isFirstPage ? assignmentName : projectName;
@@ -62,6 +63,7 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
     assignmentNameTrimmed.toLowerCase() === projectNameTrimmed.toLowerCase();
 
   const handleClose = () => {
+    if (isSubmitting) return;
     setStep(1);
     setAssignmentName("");
     setProjectName("");
@@ -138,6 +140,8 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
 
   const handleSubmit = () => {
     void (async () => {
+      if (isSubmitting) return;
+
       if (!volunteer) {
         console.warn("No volunteer provided for CreateRoleModal.handleSubmit");
         return;
@@ -148,6 +152,7 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
         return;
       }
 
+      setIsSubmitting(true);
       try {
         // Resolve sequentially to avoid race conditions creating tags with conflicting names.
         const assignmentTag = await getAssignmentTag(assignmentColorIndex);
@@ -175,6 +180,8 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
         onClose();
       } catch (err) {
         console.error("Failed to create volunteer assignment:", err);
+      } finally {
+        setIsSubmitting(false);
       }
     })();
   };
@@ -198,7 +205,12 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
       <div className={styles.modal}>
         <div className={styles.header}>
           <p className={styles.title}>{"Create Role"}</p>
-          <button className={styles.close} onClick={handleClose} aria-label="Close">
+          <button
+            className={styles.close}
+            onClick={handleClose}
+            aria-label="Close"
+            disabled={isSubmitting}
+          >
             <Image src={icCloseLarge} alt="" width={24} height={24} />
           </button>
         </div>
@@ -253,6 +265,7 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder={isFirstPage ? "Create or add assignment..." : "Create or add project..."}
+              disabled={isSubmitting}
             />
           </form>
         </div>
@@ -271,6 +284,7 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
                 }}
                 onClick={() => setSelectedColorIndex(index)}
                 aria-label={`Select ${option.name} color`}
+                disabled={isSubmitting}
               >
                 {isSelected ? (
                   <CheckIcon color={option.textColor} />
@@ -287,7 +301,12 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
         <div className={styles.actions}>
           {isFirstPage ? (
             <>
-              <button className={styles.secondary} onClick={handleClose} type="button">
+              <button
+                className={styles.secondary}
+                onClick={handleClose}
+                type="button"
+                disabled={isSubmitting}
+              >
                 Cancel
               </button>
 
@@ -295,14 +314,19 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
                 className={styles.primary}
                 onClick={() => setStep(2)}
                 type="button"
-                disabled={isAssignmentNameEmpty}
+                disabled={isAssignmentNameEmpty || isSubmitting}
               >
                 Next
               </button>
             </>
           ) : (
             <>
-              <button className={styles.secondary} onClick={() => setStep(1)} type="button">
+              <button
+                className={styles.secondary}
+                onClick={() => setStep(1)}
+                type="button"
+                disabled={isSubmitting}
+              >
                 Back
               </button>
 
@@ -310,9 +334,9 @@ export default function CreateRoleModal({ onClose, volunteer, onCreated }: Props
                 className={styles.primary}
                 type="button"
                 onClick={handleSubmit}
-                disabled={isProjectNameEmpty || hasSameAssignmentAndProjectName}
+                disabled={isProjectNameEmpty || hasSameAssignmentAndProjectName || isSubmitting}
               >
-                Create Role
+                {isSubmitting ? "Creating..." : "Create Role"}
               </button>
             </>
           )}

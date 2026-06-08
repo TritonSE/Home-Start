@@ -79,6 +79,16 @@ const formatBirthdayLabel = (value: string): string => {
   });
 };
 
+const formatStoredBirthdayLabel = (value: string | Date | undefined): string => {
+  if (!value) return "";
+  if (value instanceof Date) {
+    return formatBirthdayLabel(formatBirthdayValue(value));
+  }
+
+  const dateOnly = value.split("T")[0];
+  return formatBirthdayLabel(dateOnly);
+};
+
 const TAG_COLOR_PALETTE = [
   { backgroundColor: "#F6E6E9", color: "#A40026" },
   { backgroundColor: "#F9EFE6", color: "#C46200" },
@@ -294,9 +304,7 @@ function ViewContent({
         </div>
         <div className={styles.infoField}>
           <span className={styles.fieldLabel}>Birthday</span>
-          <span className={styles.fieldValue}>
-            {volunteer.birthday ? new Date(volunteer.birthday).toLocaleDateString() : ""}
-          </span>
+          <span className={styles.fieldValue}>{formatStoredBirthdayLabel(volunteer.birthday)}</span>
         </div>
         <div className={styles.infoField}>
           <span className={styles.fieldLabel}>Pref Pronouns</span>
@@ -837,7 +845,9 @@ export default function VolunteerProfileModal({
         <div className={styles.heading}>
           <div className={styles.topper} />
           <div className={styles.headerRow}>
-            <h5 className={styles.modalHeader}>View Volunteer</h5>
+            <h5 className={styles.modalHeader}>
+              {activeTab === "edit" ? "Edit Volunteer" : "View Volunteer"}
+            </h5>
             <button
               className={styles.closeButton}
               onClick={() => requestExit("close")}

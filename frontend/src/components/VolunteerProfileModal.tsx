@@ -99,21 +99,20 @@ const TAG_COLOR_PALETTE = [
   { backgroundColor: "#EFEBF3", color: "#452861" },
 ] as const;
 
-const getTagPaletteStyle = (tag: VolunteerTag) => {
-  let hash = 0;
-
-  for (const character of tag._id || tag.name) {
-    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-  }
-
-  return TAG_COLOR_PALETTE[hash % TAG_COLOR_PALETTE.length];
-};
-
 const getTextColorForBackground = (backgroundColor: string): string => {
   const found = TAG_COLOR_PALETTE.find(
     (pair) => pair.backgroundColor.toLowerCase() === backgroundColor.toLowerCase(),
   );
   return found?.color ?? "#000000";
+};
+
+const getStoredTagStyle = (tag: VolunteerTag) => {
+  const backgroundColor =
+    tag.color.startsWith("#") || tag.color.startsWith("rgb") ? tag.color : `#${tag.color}`;
+  return {
+    backgroundColor,
+    color: getTextColorForBackground(backgroundColor),
+  };
 };
 
 const toTagId = (tag: string | VolunteerTag): string => (typeof tag === "string" ? tag : tag._id);
@@ -214,9 +213,7 @@ function ViewContent({
     }
 
     return resolvedTags.map((tag) => {
-      const backgroundColor =
-        tag.color.startsWith("#") || tag.color.startsWith("rgb") ? tag.color : `#${tag.color}`;
-      const textColor = getTextColorForBackground(backgroundColor);
+      const tagStyle = getStoredTagStyle(tag);
       const isRemoved = prefix === "groups" && removedGroupIds.has(tag._id);
       if (isRemoved) return null;
 
@@ -225,8 +222,8 @@ function ViewContent({
           key={`${prefix.slice(0, -1)}-tag-${tag._id}`}
           className={styles.pillTag}
           style={{
-            backgroundColor,
-            color: textColor,
+            backgroundColor: tagStyle.backgroundColor,
+            color: tagStyle.color,
           }}
         >
           {tag.name}
@@ -427,16 +424,19 @@ export default function VolunteerProfileModal({
   const [removedProgramIds, setRemovedProgramIds] = useState<Set<string>>(new Set());
   const [addedGroupTags, setAddedGroupTags] = useState<VolunteerTag[]>([]);
   const [addedProgramTags, setAddedProgramTags] = useState<VolunteerTag[]>([]);
+  const [editedTagById, setEditedTagById] = useState<Record<string, VolunteerTag>>({});
   const [groupSearchQuery, setGroupSearchQuery] = useState("");
   const [programSearchQuery, setProgramSearchQuery] = useState("");
   const [mockGroupResults, setMockGroupResults] = useState<VolunteerTag[]>([]);
   const [mockProgramResults, setMockProgramResults] = useState<VolunteerTag[]>([]);
-  const resolvedGroupTags = (
-    Array.isArray(volunteer?.groupTagIds) ? volunteer.groupTagIds : []
-  ).filter((tag): tag is VolunteerTag => typeof tag === "object" && tag !== null);
+  const resolvedGroupTags = (Array.isArray(volunteer?.groupTagIds) ? volunteer.groupTagIds : [])
+    .filter((tag): tag is VolunteerTag => typeof tag === "object" && tag !== null)
+    .map((tag) => editedTagById[tag._id] ?? tag);
   const resolvedProgramTags = (
     Array.isArray(volunteer?.programTagIds) ? volunteer.programTagIds : []
-  ).filter((tag): tag is VolunteerTag => typeof tag === "object" && tag !== null);
+  )
+    .filter((tag): tag is VolunteerTag => typeof tag === "object" && tag !== null)
+    .map((tag) => editedTagById[tag._id] ?? tag);
 
   const loadVolunteerAssignments = async (volunteerId: string) => {
     try {
@@ -529,9 +529,10 @@ export default function VolunteerProfileModal({
     if (!volunteer || !isOpen) return;
     setActiveTab("view");
     resetForm(volunteer);
+    setEditedTagById({});
 
     void loadVolunteerAssignments(volunteer._id);
-  }, [volunteer, isOpen]);
+  }, [volunteer?._id, isOpen]);
 
   useEffect(() => {
     setSuccessMessage(null);
@@ -778,7 +779,26 @@ export default function VolunteerProfileModal({
     triggerSuccessNotification("Successfully Created Role");
   };
 
-  const handleTagChanged = (action: "updated" | "deleted") => {
+  const handleTagChanged = (action: "updated" | "deleted", updatedTag?: VolunteerTag) => {
+    if (updatedTag && action === "updated") {
+      setEditedTagById((prev) => ({ ...prev, [updatedTag._id]: updatedTag }));
+      setAddedGroupTags((prev) =>
+        prev.map((tag) => (tag._id === updatedTag._id ? updatedTag : tag)),
+      );
+      setAddedProgramTags((prev) =>
+        prev.map((tag) => (tag._id === updatedTag._id ? updatedTag : tag)),
+      );
+    } else if (updatedTag && action === "deleted") {
+      setEditedTagById((prev) => {
+        const next = { ...prev };
+        delete next[updatedTag._id];
+        return next;
+      });
+      setRemovedGroupIds((prev) => new Set(prev).add(updatedTag._id));
+      setRemovedProgramIds((prev) => new Set(prev).add(updatedTag._id));
+      setAddedGroupTags((prev) => prev.filter((tag) => tag._id !== updatedTag._id));
+      setAddedProgramTags((prev) => prev.filter((tag) => tag._id !== updatedTag._id));
+    }
     handleAssignmentChanged();
     triggerSuccessNotification(
       action === "deleted" ? "Successfully Deleted Tag" : "Successfully Updated Tag",
@@ -1121,11 +1141,12 @@ export default function VolunteerProfileModal({
                         {resolvedGroupTags.map((tagObj) => {
                           const isRemoved = removedGroupIds.has(tagObj._id);
                           if (isRemoved) return null;
-                          const tagStyle = getTagPaletteStyle(tagObj);
+                          const tagStyle = getStoredTagStyle(tagObj);
                           return (
                             <div
                               key={`group-tag-edit-${tagObj._id}`}
                               className={styles.pillTagWithClose}
+                              onClick={() => handleOpenEditTagModal(tagObj)}
                               style={{
                                 backgroundColor: tagStyle.backgroundColor,
                                 color: tagStyle.color,
@@ -1134,7 +1155,8 @@ export default function VolunteerProfileModal({
                               {tagObj.name}
                               <button
                                 className={styles.tagCloseButton}
-                                onClick={() => {
+                                onClick={(event) => {
+                                  event.stopPropagation();
                                   const newRemoved = new Set(removedGroupIds);
                                   newRemoved.add(tagObj._id);
                                   setRemovedGroupIds(newRemoved);
@@ -1161,11 +1183,12 @@ export default function VolunteerProfileModal({
                           );
                         })}
                         {addedGroupTags.map((tagObj) => {
-                          const tagStyle = getTagPaletteStyle(tagObj);
+                          const tagStyle = getStoredTagStyle(tagObj);
                           return (
                             <div
                               key={`added-group-tag-${tagObj._id}`}
                               className={styles.pillTagWithClose}
+                              onClick={() => handleOpenEditTagModal(tagObj)}
                               style={{
                                 backgroundColor: tagStyle.backgroundColor,
                                 color: tagStyle.color,
@@ -1174,7 +1197,8 @@ export default function VolunteerProfileModal({
                               {tagObj.name}
                               <button
                                 className={styles.tagCloseButton}
-                                onClick={() => {
+                                onClick={(event) => {
+                                  event.stopPropagation();
                                   setAddedGroupTags((prev) =>
                                     prev.filter((t) => t._id !== tagObj._id),
                                   );
@@ -1238,11 +1262,12 @@ export default function VolunteerProfileModal({
                         {resolvedProgramTags.map((tagObj) => {
                           const isRemoved = removedProgramIds.has(tagObj._id);
                           if (isRemoved) return null;
-                          const tagStyle = getTagPaletteStyle(tagObj);
+                          const tagStyle = getStoredTagStyle(tagObj);
                           return (
                             <div
                               key={`program-tag-edit-${tagObj._id}`}
                               className={styles.pillTagWithClose}
+                              onClick={() => handleOpenEditTagModal(tagObj)}
                               style={{
                                 backgroundColor: tagStyle.backgroundColor,
                                 color: tagStyle.color,
@@ -1251,7 +1276,8 @@ export default function VolunteerProfileModal({
                               {tagObj.name}
                               <button
                                 className={styles.tagCloseButton}
-                                onClick={() => {
+                                onClick={(event) => {
+                                  event.stopPropagation();
                                   const newRemoved = new Set(removedProgramIds);
                                   newRemoved.add(tagObj._id);
                                   setRemovedProgramIds(newRemoved);
@@ -1278,11 +1304,12 @@ export default function VolunteerProfileModal({
                           );
                         })}
                         {addedProgramTags.map((tagObj) => {
-                          const tagStyle = getTagPaletteStyle(tagObj);
+                          const tagStyle = getStoredTagStyle(tagObj);
                           return (
                             <div
                               key={`added-program-tag-${tagObj._id}`}
                               className={styles.pillTagWithClose}
+                              onClick={() => handleOpenEditTagModal(tagObj)}
                               style={{
                                 backgroundColor: tagStyle.backgroundColor,
                                 color: tagStyle.color,
@@ -1291,7 +1318,8 @@ export default function VolunteerProfileModal({
                               {tagObj.name}
                               <button
                                 className={styles.tagCloseButton}
-                                onClick={() => {
+                                onClick={(event) => {
+                                  event.stopPropagation();
                                   setAddedProgramTags((prev) =>
                                     prev.filter((t) => t._id !== tagObj._id),
                                   );

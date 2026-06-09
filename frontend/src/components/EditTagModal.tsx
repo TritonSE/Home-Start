@@ -16,7 +16,7 @@ const icCloseLarge = icCloseLargeAsset as string;
 type Props = {
   onClose: () => void;
   tag: VolunteerTag;
-  onChanged?: (action: "updated" | "deleted") => void;
+  onChanged?: (action: "updated" | "deleted", tag?: VolunteerTag) => void;
 };
 
 function CheckIcon({ color }: { color: string }) {
@@ -60,8 +60,8 @@ export default function EditTagModal({ onClose, tag, onChanged }: Props) {
     try {
       const newName = tagName.trim();
       const color = COLOR_OPTIONS[selectedColorIndex]?.backgroundColor ?? tag.color;
-      await updateTag(tag._id, { name: newName, color });
-      onChanged?.("updated");
+      const updatedTag = await updateTag(tag._id, { name: newName, color });
+      onChanged?.("updated", updatedTag);
       onClose();
     } catch (err) {
       console.error("Failed to update tag:", err);
@@ -77,7 +77,7 @@ export default function EditTagModal({ onClose, tag, onChanged }: Props) {
   const handleConfirmDelete = async () => {
     try {
       await deleteTag(tag._id);
-      onChanged?.("deleted");
+      onChanged?.("deleted", tag);
       onClose();
       if (!onChanged) {
         window.location.reload();

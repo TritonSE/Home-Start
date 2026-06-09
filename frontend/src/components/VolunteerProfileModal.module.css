@@ -821,6 +821,7 @@
   line-height: 16px;
   font-family: "Open Sans", sans-serif;
   font-weight: 500;
+  cursor: pointer;
 }
 
 .pillTagWithClose {
@@ -840,6 +841,7 @@
   line-height: 16px;
   font-family: "Open Sans", sans-serif;
   font-weight: 500;
+  cursor: pointer;
 }
 
 .tagCloseButton {

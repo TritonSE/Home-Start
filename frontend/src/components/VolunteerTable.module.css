@@ -1,13 +1,13 @@
 .volunteerTable {
   --col-checkbox: 40px;
-  --col-name: 140px;
+  --col-name: 120px;
 
   border: none;
   border-collapse: collapse;
   border-spacing: 0;
   width: 100%;
   margin: 0;
-  min-width: 1110px;
+  min-width: 1180px;
   table-layout: fixed;
 }
 
@@ -52,6 +52,9 @@
   font-family: var(--font-open-sans);
   background-color: #ffffff;
   font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* START: Sticky first 3 columns (remove this block if design does not want anchored columns) */

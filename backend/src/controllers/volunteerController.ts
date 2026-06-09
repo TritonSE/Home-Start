@@ -238,13 +238,13 @@ type NormalizedVolunteerCSVFormat = {
 
 type VolunteerImportKey = string;
 type VolunteerImportIdentity = {
-  email: string;
-  phoneNumber: string;
+  email?: string | null;
+  phoneNumber?: string | null;
 };
 
 const makeVolunteerImportKey = (body: VolunteerImportIdentity): VolunteerImportKey => {
-  const email = body.email.trim().toLowerCase();
-  const phoneNumber = body.phoneNumber.trim();
+  const email = (body.email ?? "").trim().toLowerCase();
+  const phoneNumber = (body.phoneNumber ?? "").trim();
   return email ? `email:${email}` : `phone:${phoneNumber}`;
 };
 
@@ -281,9 +281,14 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
   } = req.body as CreateVolunteerBody;
   try {
     validationErrorParser(errors);
-    const volunteer = await VolunteerModel.findOne({ email });
+    const duplicateFilters = [
+      ...(email ? [{ email: email.trim().toLowerCase() }] : []),
+      ...(phoneNumber ? [{ phoneNumber: phoneNumber.trim() }] : []),
+    ];
+    const volunteer =
+      duplicateFilters.length > 0 ? await VolunteerModel.findOne({ $or: duplicateFilters }) : null;
     if (volunteer) {
-      throw createHttpError(409, "Volunteer with this email already exists");
+      throw createHttpError(409, "Volunteer with this email or phone number already exists");
     }
     const newVolunteer = await VolunteerModel.create({
       firstName,
@@ -744,13 +749,16 @@ export const uploadVolunteerBatch: RequestHandler<
 
 const validateVolunteer = (volunteer: unknown) => {
   const typedVolunteer = volunteer as CreateVolunteerBody;
-  if (!typedVolunteer?.firstName || !typedVolunteer?.lastName) {
+  const hasName = Boolean(typedVolunteer?.firstName || typedVolunteer?.lastName);
+  const hasValidEmail = Boolean(typedVolunteer?.email && EMAIL_REGEX.test(typedVolunteer.email));
+  const hasValidPhoneNumber = Boolean(
+    typedVolunteer?.phoneNumber && PHONE_NUMBER_REGEX.test(typedVolunteer.phoneNumber),
+  );
+
+  if (!hasName) {
     return false;
   }
-  if (!typedVolunteer?.email || !EMAIL_REGEX.test(typedVolunteer.email)) {
-    return false;
-  }
-  if (!typedVolunteer?.phoneNumber || !PHONE_NUMBER_REGEX.test(typedVolunteer.phoneNumber)) {
+  if (!hasValidEmail && !hasValidPhoneNumber) {
     return false;
   }
   return true;
@@ -1034,7 +1042,7 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
                 reject(
                   createHttpError(
                     400,
-                    `Invalid volunteer data for ID "${v.email}": missing required fields`,
+                    `Invalid volunteer data for ID "${v.email || v.phoneNumber}": missing required name or contact fields`,
                   ),
                 );
                 return;
@@ -1074,11 +1082,14 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
       ...new Map(parsedVolunteers.map((v) => [makeVolunteerImportKey(v), v])).values(),
     ];
 
-    const emails = uniqueVolunteers.map((v) => v.email);
-    const phoneNumbers = uniqueVolunteers.map((v) => v.phoneNumber);
-    const existing = await VolunteerModel.find({
-      $or: [{ email: { $in: emails } }, { phoneNumber: { $in: phoneNumbers } }],
-    });
+    const emails = uniqueVolunteers.map((v) => v.email).filter(Boolean);
+    const phoneNumbers = uniqueVolunteers.map((v) => v.phoneNumber).filter(Boolean);
+    const existingFilters = [
+      ...(emails.length > 0 ? [{ email: { $in: emails } }] : []),
+      ...(phoneNumbers.length > 0 ? [{ phoneNumber: { $in: phoneNumbers } }] : []),
+    ];
+    const existing =
+      existingFilters.length > 0 ? await VolunteerModel.find({ $or: existingFilters }) : [];
 
     const existingSet = new Set<VolunteerImportKey>();
     existing.forEach((volunteer) => {
@@ -1147,7 +1158,7 @@ export const createVolunteersCsv: RequestHandler = async (req, res, next) => {
     const bulkOps = volunteerCreationBodies.map((body) => ({
       updateOne: {
         filter: {
-          $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
+          ...makeVolunteerImportFilter(body),
         },
         update: {
           $set: normalizeVolunteerForBulkWrite(body),
@@ -1267,8 +1278,8 @@ const escapeCsvField = (value: string): string => {
 
 const CSV_COLUMNS: CsvColumn[] = [
   { header: "Constituent ID", toCell: (ctx) => String(ctx.volunteerId), isDetailColumn: true },
-  { header: "First Name", toCell: (ctx) => ctx.volunteer.firstName, isDetailColumn: true },
-  { header: "Last Name", toCell: (ctx) => ctx.volunteer.lastName, isDetailColumn: true },
+  { header: "First Name", toCell: (ctx) => ctx.volunteer.firstName ?? "", isDetailColumn: true },
+  { header: "Last Name", toCell: (ctx) => ctx.volunteer.lastName ?? "", isDetailColumn: true },
   { header: "Program", toCell: (ctx) => ctx.programNames.join("; ") },
   { header: "Groups", toCell: (ctx) => ctx.groupNames.join("; ") },
   { header: "Assignment", toCell: (ctx) => ctx.assignmentName, isDetailColumn: true },
@@ -1281,8 +1292,8 @@ const CSV_COLUMNS: CsvColumn[] = [
   { header: "State", toCell: (ctx) => ctx.volunteer.address?.state ?? "" },
   { header: "Zip", toCell: (ctx) => ctx.volunteer.address?.zip ?? "" },
   { header: "Birthday", toCell: (ctx) => fmtDate(ctx.volunteer.birthday) },
-  { header: "Cell", toCell: (ctx) => ctx.volunteer.phoneNumber },
-  { header: "Email", toCell: (ctx) => ctx.volunteer.email },
+  { header: "Cell", toCell: (ctx) => ctx.volunteer.phoneNumber ?? "" },
+  { header: "Email", toCell: (ctx) => ctx.volunteer.email ?? "" },
   { header: "Pronouns", toCell: (ctx) => ctx.volunteer.preferredPronouns ?? "" },
   { header: "Media Consent", toCell: (ctx) => ctx.volunteer.mediaConsent ?? "" },
   { header: "Name Consent", toCell: (ctx) => ctx.volunteer.nameConsent ?? "" },

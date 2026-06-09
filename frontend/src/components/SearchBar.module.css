@@ -41,6 +41,10 @@
   display: none;
 }
 
+.filterIcon {
+  cursor: pointer;
+}
+
 .mobileSelectedFilters {
   display: none;
 }

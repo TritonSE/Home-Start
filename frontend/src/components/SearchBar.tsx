@@ -459,7 +459,7 @@ export default function SearchBar({
             setIsMobileFilterOpen(true);
           }}
         >
-          <Image src={filterIcon} alt="" width={20} height={20} />
+          <Image src={filterIcon} alt="" className={styles.filterIcon} width={20} height={20} />
         </button>
       </div>
 

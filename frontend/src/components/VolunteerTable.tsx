@@ -102,9 +102,9 @@ export default function VolunteerTable({
             <col key="phoneNumber" style={{ width: "200px" }} />,
             <col key="email" style={{ width: "320px" }} />,
             <col key="status" style={{ width: "120px" }} />,
-            <col key="program" style={{ width: "340px" }} />,
-            <col key="assignment" style={{ width: "380px" }} />,
-            <col key="project" style={{ width: "300px" }} />,
+            <col key="program" style={{ width: "150px" }} />,
+            <col key="assignment" style={{ width: "150px" }} />,
+            <col key="project" style={{ width: "150px" }} />,
           ]}
         </colgroup>
         <thead>

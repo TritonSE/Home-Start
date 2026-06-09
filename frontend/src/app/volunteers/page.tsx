@@ -152,6 +152,10 @@ export default function Page() {
       });
 
       setVolunteers(volunteersWithTags);
+      setSelectedVolunteer((current) => {
+        if (!current) return current;
+        return volunteersWithTags.find((volunteer) => volunteer._id === current._id) ?? current;
+      });
       setTags(tagData);
       // Keep the store's recipient pool in sync without wiping the current selection
       setRecipientsPool(volunteersWithTags);

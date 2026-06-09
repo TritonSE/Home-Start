@@ -417,11 +417,17 @@ export default function SearchBarPanel({
             />
           </form>
         </div>
-        <button className={styles.filterButton} onClick={() => setShowSidePanel((prev) => !prev)}>
+        <button
+          type="button"
+          className={styles.filterButton}
+          style={{ cursor: "pointer" }}
+          onClick={() => setShowSidePanel((prev) => !prev)}
+        >
           <Image
             src={filterIcon}
             alt="Filter icon"
             className={styles.filterIcon}
+            style={{ cursor: "pointer" }}
             width={20}
             height={20}
           />

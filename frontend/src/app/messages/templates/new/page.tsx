@@ -49,7 +49,14 @@ function CreateTemplateContent() {
     <Sidebar>
       <div className={styles.page}>
         <header className={styles.header}>
-          <Image src={icCaretLeft} alt="" width={40} height={40} onClick={() => router.back()} />
+          <Image
+            src={icCaretLeft}
+            alt=""
+            width={40}
+            height={40}
+            className={styles.backIcon}
+            onClick={() => router.back()}
+          />
           <h1 className={styles.headerTitle}>Create Template</h1>
           <span style={{ height: "40px" }}></span>
         </header>

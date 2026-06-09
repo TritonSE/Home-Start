@@ -39,6 +39,10 @@
   letter-spacing: var(--h5-letter-spacing, 1.2px);
 }
 
+.backIcon {
+  cursor: pointer;
+}
+
 .plusCircle {
   border-radius: 50%;
   height: 40px;

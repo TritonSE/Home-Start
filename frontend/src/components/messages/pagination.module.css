@@ -127,6 +127,10 @@
   border: 1px solid var(--Border-default, #e8e8e8);
 }
 
+.border:disabled {
+  opacity: 0.6;
+}
+
 .rightPagination {
   display: flex;
   align-items: center;

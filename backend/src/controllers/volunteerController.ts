@@ -765,8 +765,12 @@ const statusKeyToEnum = (key: string): "returning" | "new" | undefined => {
 };
 
 const readCsvText = (data: Record<string, string>, headers: string[]): string => {
+  const normalizedData = new Map(
+    Object.entries(data).map(([key, value]) => [key.trim().toLowerCase(), value]),
+  );
+
   for (const header of headers) {
-    const value = normalizeCsvText(data[header]);
+    const value = normalizeCsvText(normalizedData.get(header.trim().toLowerCase()));
     if (value) return value;
   }
   return "";
@@ -774,19 +778,19 @@ const readCsvText = (data: Record<string, string>, headers: string[]): string =>
 
 const normalizeCSVData = (data: Record<string, string>): NormalizedVolunteerCSVFormat => {
   return {
-    firstName: normalizeCsvText(data["First Name"]),
-    lastName: normalizeCsvText(data["Last Name"]),
-    email: normalizeCsvText(data.Email),
-    phoneNumber: normalizeCsvText(data.Cell),
-    status: statusKeyToEnum(data.Status ?? ""),
+    firstName: readCsvText(data, ["First Name"]),
+    lastName: readCsvText(data, ["Last Name"]),
+    email: readCsvText(data, ["Email"]),
+    phoneNumber: readCsvText(data, ["Cell"]),
+    status: statusKeyToEnum(readCsvText(data, ["Status"])),
     address: {
-      line1: normalizeCsvText(data.Address1),
-      line2: normalizeCsvText(data.Address2),
-      city: normalizeCsvText(data.City),
-      state: normalizeCsvText(data.State),
-      zip: normalizeCsvText(data.Zip),
+      line1: readCsvText(data, ["Address1"]),
+      line2: readCsvText(data, ["Address2"]),
+      city: readCsvText(data, ["City"]),
+      state: readCsvText(data, ["State"]),
+      zip: readCsvText(data, ["Zip"]),
     },
-    birthday: normalizeCsvText(data.Birthday),
+    birthday: readCsvText(data, ["Birthday"]),
     preferredPronouns: readCsvText(data, ["NEW Pronouns", "Pronouns"]),
     effectiveDate: readCsvText(data, [
       "Effective Date (date record was updated)",
@@ -795,8 +799,8 @@ const normalizeCSVData = (data: Record<string, string>): NormalizedVolunteerCSVF
     mediaConsent: readCsvText(data, ["NEW Media Consent", "Media Consent"]),
     faceConsent: readCsvText(data, ["NEW Face", "Face Consent", "Face"]),
     nameConsent: readCsvText(data, ["NEW Name Consent", "Name Consent"]),
-    assignmentName: normalizeCsvText(data.assignment),
-    projectName: normalizeCsvText(data.project),
+    assignmentName: readCsvText(data, ["Assignment"]),
+    projectName: readCsvText(data, ["Project"]),
   };
 };
 
@@ -861,7 +865,8 @@ type NewFormatRawRow = {
   shift: string;
 };
 
-const isNewCsvFormat = (headers: string[]): boolean => headers.includes("constituent id");
+const isNewCsvFormat = (headers: string[]): boolean =>
+  headers.some((header) => header.trim().toLowerCase() === "constituent id");
 
 const parseSemicolonList = (value: string): string[] =>
   value
@@ -870,30 +875,30 @@ const parseSemicolonList = (value: string): string[] =>
     .filter(Boolean);
 
 const normalizeNewFormatRow = (data: Record<string, string>): NewFormatRawRow => ({
-  externalId: normalizeCsvText(data["constituent id"]),
-  firstName: normalizeCsvText(data["First Name"]),
-  lastName: normalizeCsvText(data["Last Name"]),
-  email: normalizeCsvText(data.Email),
-  phoneNumber: normalizeCsvText(data.Cell),
-  status: statusKeyToEnum(data.Status ?? ""),
+  externalId: readCsvText(data, ["Constituent ID"]),
+  firstName: readCsvText(data, ["First Name"]),
+  lastName: readCsvText(data, ["Last Name"]),
+  email: readCsvText(data, ["Email"]),
+  phoneNumber: readCsvText(data, ["Cell"]),
+  status: statusKeyToEnum(readCsvText(data, ["Status"])),
   address: {
-    line1: normalizeCsvText(data.Address1),
-    line2: normalizeCsvText(data.Address2),
-    city: normalizeCsvText(data.City),
-    state: normalizeCsvText(data.State),
-    zip: normalizeCsvText(data.Zip),
+    line1: readCsvText(data, ["Address1"]),
+    line2: readCsvText(data, ["Address2"]),
+    city: readCsvText(data, ["City"]),
+    state: readCsvText(data, ["State"]),
+    zip: readCsvText(data, ["Zip"]),
   },
-  birthday: normalizeCsvText(data.Birthday),
+  birthday: readCsvText(data, ["Birthday"]),
   preferredPronouns: readCsvText(data, ["NEW Pronouns", "Pronouns"]),
   effectiveDate: readCsvText(data, ["Effective Date (date record was updated)", "Effective Date"]),
   mediaConsent: readCsvText(data, ["NEW Media Consent", "Media Consent"]),
   faceConsent: readCsvText(data, ["NEW Face", "Face Consent", "Face"]),
   nameConsent: readCsvText(data, ["NEW Name Consent", "Name Consent"]),
-  programs: parseSemicolonList(normalizeCsvText(data.program ?? "")),
-  groups: parseSemicolonList(normalizeCsvText(data.groups ?? "")),
-  assignment: normalizeCsvText(data.assignment),
-  project: normalizeCsvText(data.project),
-  shift: normalizeCsvText(data.shift ?? ""),
+  programs: parseSemicolonList(readCsvText(data, ["Program"])),
+  groups: parseSemicolonList(readCsvText(data, ["Groups"])),
+  assignment: readCsvText(data, ["Assignment"]),
+  project: readCsvText(data, ["Project"]),
+  shift: readCsvText(data, ["Shift"]),
 });
 
 const aggregateMultiRowVolunteers = (rows: NewFormatRawRow[]): VolunteerCreationBody[] => {
@@ -1261,14 +1266,14 @@ const escapeCsvField = (value: string): string => {
 };
 
 const CSV_COLUMNS: CsvColumn[] = [
-  { header: "constituent id", toCell: (ctx) => String(ctx.volunteerId), isDetailColumn: true },
+  { header: "Constituent ID", toCell: (ctx) => String(ctx.volunteerId), isDetailColumn: true },
   { header: "First Name", toCell: (ctx) => ctx.volunteer.firstName, isDetailColumn: true },
   { header: "Last Name", toCell: (ctx) => ctx.volunteer.lastName, isDetailColumn: true },
-  { header: "program", toCell: (ctx) => ctx.programNames.join("; ") },
-  { header: "groups", toCell: (ctx) => ctx.groupNames.join("; ") },
-  { header: "assignment", toCell: (ctx) => ctx.assignmentName, isDetailColumn: true },
-  { header: "project", toCell: (ctx) => ctx.projectName, isDetailColumn: true },
-  { header: "shift", toCell: (ctx) => ctx.shiftName, isDetailColumn: true },
+  { header: "Program", toCell: (ctx) => ctx.programNames.join("; ") },
+  { header: "Groups", toCell: (ctx) => ctx.groupNames.join("; ") },
+  { header: "Assignment", toCell: (ctx) => ctx.assignmentName, isDetailColumn: true },
+  { header: "Project", toCell: (ctx) => ctx.projectName, isDetailColumn: true },
+  { header: "Shift", toCell: (ctx) => ctx.shiftName, isDetailColumn: true },
   { header: "Status", toCell: (ctx) => ctx.volunteer.status ?? "" },
   { header: "Address1", toCell: (ctx) => ctx.volunteer.address?.line1 ?? "" },
   { header: "Address2", toCell: (ctx) => ctx.volunteer.address?.line2 ?? "" },
@@ -1278,12 +1283,12 @@ const CSV_COLUMNS: CsvColumn[] = [
   { header: "Birthday", toCell: (ctx) => fmtDate(ctx.volunteer.birthday) },
   { header: "Cell", toCell: (ctx) => ctx.volunteer.phoneNumber },
   { header: "Email", toCell: (ctx) => ctx.volunteer.email },
-  { header: "NEW Pronouns", toCell: (ctx) => ctx.volunteer.preferredPronouns ?? "" },
-  { header: "NEW Media Consent", toCell: (ctx) => ctx.volunteer.mediaConsent ?? "" },
-  { header: "NEW Name Consent", toCell: (ctx) => ctx.volunteer.nameConsent ?? "" },
-  { header: "NEW Face", toCell: (ctx) => ctx.volunteer.faceConsent ?? "" },
+  { header: "Pronouns", toCell: (ctx) => ctx.volunteer.preferredPronouns ?? "" },
+  { header: "Media Consent", toCell: (ctx) => ctx.volunteer.mediaConsent ?? "" },
+  { header: "Name Consent", toCell: (ctx) => ctx.volunteer.nameConsent ?? "" },
+  { header: "Face Consent", toCell: (ctx) => ctx.volunteer.faceConsent ?? "" },
   {
-    header: "Effective Date (date record was updated)",
+    header: "Effective Date",
     toCell: (ctx) => fmtDate(ctx.volunteer.effectiveDate),
   },
 ];

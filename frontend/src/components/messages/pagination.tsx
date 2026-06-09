@@ -22,11 +22,15 @@ export default function Pagination({
   setPageIndex,
 }: PaginationProps) {
   const numOfPages = Math.ceil(totalItems / itemsPerPage);
-  const isFirstPage = currentPage === 1;
-  const isLastPage = currentPage === numOfPages;
+  const hasPages = numOfPages > 0;
+  const displayedCurrentPage = hasPages ? currentPage : 0;
+  const isFirstPage = !hasPages || currentPage === 1;
+  const isLastPage = !hasPages || currentPage === numOfPages;
   const [text, setText] = useState("");
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!hasPages) return;
+
     if (e.key === "Enter") {
       const target = e.target as HTMLInputElement;
       const pageIndex = Math.max(1, Math.min(Number(target.value), numOfPages));
@@ -70,7 +74,8 @@ export default function Pagination({
             value={text}
             onKeyDown={handleKeyDown}
             onChange={(browserText) => setText(browserText.target.value)}
-            placeholder={String(currentPage)}
+            placeholder={String(displayedCurrentPage)}
+            disabled={!hasPages}
           />
           <div className={styles.tripleDots}>...</div>
           <div className={styles.number}>{numOfPages}</div>

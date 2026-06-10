@@ -23,6 +23,10 @@ const FIRST_NAME_TOKEN = "{{First Name}}";
 const backIcon = backIconAsset as string;
 const groupsIcon = groupsIconAsset as string;
 
+const hasContactValue = (value: string | undefined) => Boolean(value?.trim());
+const createSuccessMessage = (count: number) =>
+  `Your message has successfully\nbeen sent to ${count} volunteers.`;
+
 export default function ReviewAndSendPage() {
   const router = useRouter();
 
@@ -70,14 +74,17 @@ export default function ReviewAndSendPage() {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [shortcutUrl, setShortcutUrl] = useState<string | null>(null);
+  const [sentRecipientCount, setSentRecipientCount] = useState<number | null>(null);
 
   useEffect(() => {
     setShortcutUrl(null);
+    setSentRecipientCount(null);
   }, [selectedRecipientIds]);
 
   const successMessage = useMemo(() => {
-    return `Your message has successfully\nbeen sent to ${recipientsCount} volunteers.`;
-  }, [recipientsCount]);
+    const count = sentRecipientCount ?? recipientsCount;
+    return createSuccessMessage(count);
+  }, [recipientsCount, sentRecipientCount]);
 
   const handleSend = async () => {
     if (!canSend || sending) return;
@@ -96,9 +103,16 @@ export default function ReviewAndSendPage() {
         }
 
         const allVolunteers = await fetchVolunteers();
-        const recipients = allVolunteers.filter((v) => selectedRecipientIds.includes(v._id));
+        const recipients = allVolunteers
+          .filter((v) => selectedRecipientIds.includes(v._id))
+          .filter((v) => hasContactValue(v.email))
+          .map((v) => ({
+            ...v,
+            firstName: v.firstName ?? "",
+            lastName: v.lastName ?? "",
+          }));
         if (recipients.length === 0) {
-          setSendError("Could not find recipient data. Please re-select your recipients.");
+          setSendError("None of the selected recipients have an email address.");
           return;
         }
 
@@ -116,7 +130,7 @@ export default function ReviewAndSendPage() {
         }
 
         const historyResult = await createMessageHistory({
-          recipients: selectedRecipientIds,
+          recipients: recipients.map((recipient) => recipient._id),
           type: "email",
           subject,
           body: message,
@@ -128,23 +142,26 @@ export default function ReviewAndSendPage() {
           return;
         }
 
-        sessionStorage.setItem("success-toast", successMessage);
+        setSentRecipientCount(recipients.length);
+        sessionStorage.setItem("success-toast", createSuccessMessage(recipients.length));
         resetDraft();
         router.replace("/communication");
         return;
       }
 
       const allVolunteers = await fetchVolunteers();
-      const recipients = allVolunteers.filter((v) => selectedRecipientIds.includes(v._id));
+      const recipients = allVolunteers
+        .filter((v) => selectedRecipientIds.includes(v._id))
+        .filter((v) => hasContactValue(v.phoneNumber));
       if (recipients.length === 0) {
-        setSendError("Could not find recipient data. Please re-select your recipients.");
+        setSendError("None of the selected recipients have a phone number.");
         return;
       }
 
       const jobResult = await createTextJob({
         message,
         recipients: recipients.map((recipient) => ({
-          firstName: recipient.firstName,
+          firstName: recipient.firstName ?? "",
           phoneNumber: recipient.phoneNumber,
         })),
       });
@@ -155,7 +172,7 @@ export default function ReviewAndSendPage() {
       }
 
       const historyResult = await createMessageHistory({
-        recipients: selectedRecipientIds,
+        recipients: recipients.map((recipient) => recipient._id),
         type: "text",
         subject: null,
         body: message,
@@ -167,6 +184,7 @@ export default function ReviewAndSendPage() {
         return;
       }
 
+      setSentRecipientCount(recipients.length);
       const shortcutBase = (process.env.NEXT_PUBLIC_SHORTCUT_API_URL ?? API_BASE_URL).replace(
         /\/+$/,
         "",

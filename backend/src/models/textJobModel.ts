@@ -4,7 +4,7 @@ import type { InferSchemaType } from "mongoose";
 
 const recipientSchema = new Schema(
   {
-    firstName: { type: String, required: true },
+    firstName: { type: String, default: "" },
     phoneNumber: { type: String, required: true },
   },
   { _id: false },

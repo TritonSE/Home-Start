@@ -45,6 +45,7 @@ type VolunteerParseCsvDTO = {
   total: number;
   missingTags?: { name: string; type: string }[];
   volunteerInfo: {
+    externalId: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -76,6 +77,7 @@ const normalizeVolunteer = (volunteer: unknown): Volunteer => {
 
   return {
     _id: String(source._id ?? ""),
+    externalId: String(source.externalId ?? ""),
     firstName: String(source.firstName ?? ""),
     lastName: String(source.lastName ?? ""),
     email: String(source.email ?? ""),
@@ -236,6 +238,7 @@ export type VolunteerCsvParseResult = {
   missingTags: { name: string; type: "assignment" | "project" | "shift" | "program" | "group" }[];
 
   volunteerInfo: {
+    externalId: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -343,6 +346,7 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
           );
         })
         .map((item) => ({
+          externalId: item.externalId,
           firstName: item.firstName,
           lastName: item.lastName,
           email: item.email,
@@ -381,6 +385,7 @@ export async function parseVolunteersCsv(csv: File): Promise<VolunteerCsvParseRe
 }
 
 type VolunteerCreationBody = {
+  externalId: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -406,11 +411,7 @@ export type UploadVolunteerBatchResponse = { ok: true } | { ok: false; error: st
 
 const MAX_ROWS_PER_BATCH_REQUEST = 75;
 
-const getVolunteerImportKey = (volunteer: VolunteerCreationBody) => {
-  const email = volunteer.email.trim().toLowerCase();
-  if (email) return `email:${email}`;
-  return `phone:${volunteer.phoneNumber.trim()}`;
-};
+const getVolunteerImportKey = (volunteer: VolunteerCreationBody) => volunteer.externalId.trim();
 
 const chunkVolunteerBatch = (data: VolunteerCreationBody[]): VolunteerCreationBody[][] => {
   const groupedByVolunteer = new Map<string, VolunteerCreationBody[]>();

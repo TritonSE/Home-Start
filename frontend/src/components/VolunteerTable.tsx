@@ -97,6 +97,7 @@ export default function VolunteerTable({
         <colgroup>
           {[
             <col key="checkbox" style={{ width: "40px" }} />,
+            <col key="id" style={{ width: "100px" }} />,
             <col key="lastName" style={{ width: "140px" }} />,
             <col key="firstName" style={{ width: "140px" }} />,
             <col key="phoneNumber" style={{ width: "200px" }} />,
@@ -120,6 +121,11 @@ export default function VolunteerTable({
                 onChange={toggleAll}
                 aria-label="Select all volunteers"
               />
+            </th>
+            <th>
+              <div className={styles.headerContent}>
+                <span>ID</span>
+              </div>
             </th>
             <th className={styles.nameColumn}>
               <div className={styles.headerContent}>
@@ -182,6 +188,7 @@ export default function VolunteerTable({
                   aria-label={`Select ${volunteer.firstName} ${volunteer.lastName}`}
                 />
               </td>
+              <td>{volunteer.externalId}</td>
               <td className={styles.nameColumn}>{volunteer.lastName}</td>
               <td className={styles.nameColumn}>
                 <span className={styles.stickyDivider} aria-hidden="true" />

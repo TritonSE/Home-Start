@@ -24,6 +24,7 @@ export type Address = {
 
 export type Volunteer = {
   _id: string;
+  externalId: string;
   firstName: string;
   lastName: string;
   email: string;

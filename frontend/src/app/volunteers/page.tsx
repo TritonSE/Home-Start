@@ -64,7 +64,7 @@ export default function Page() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [exportSelectedIds, setExportSelectedIds] = useState<Set<string>>(new Set());
   const [sortOption, setSortOption] = useState<
-    "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A"
+    "Newest" | "Oldest" | "First Name A-Z" | "First Name Z-A" | "Last Name A-Z" | "Last Name Z-A" | "ID"
   >("Newest");
   const itemsPerPage = 100;
 
@@ -171,7 +171,8 @@ export default function Page() {
       | "First Name A-Z"
       | "First Name Z-A"
       | "Last Name A-Z"
-      | "Last Name Z-A",
+      | "Last Name Z-A"
+      | "ID"
   ) => {
     setSortOption(option);
   };
@@ -344,6 +345,9 @@ export default function Page() {
         return sorted.sort(withSelectedFirst((a, b) => a.lastName.localeCompare(b.lastName)));
       case "Last Name Z-A":
         return sorted.sort(withSelectedFirst((a, b) => b.lastName.localeCompare(a.lastName)));
+      case "ID":
+        return sorted.sort(withSelectedFirst((a, b) => Number(a.externalId) - Number(b.externalId)))
+      
       default:
         return sorted.sort(compareSelectedFirst);
     }

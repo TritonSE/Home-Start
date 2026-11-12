@@ -26,6 +26,19 @@ const volunteerTypeTagsValidator = () => body("volunteerTypeTags").optional().is
 const eventsValidator = () => body("events").optional().isArray();
 const additionalNotesValidator = () => body("additionalNotes").optional().isString();
 
+const makeExternalIdValidator = (path: string, required: boolean) => {
+  const chain = body(path);
+  return (required ? chain.exists().withMessage(`${path} is required`).bail() : chain.optional())
+    .isString()
+    .withMessage(`${path} must be a string`)
+    .bail()
+    .trim()
+    .notEmpty()
+    .withMessage(`${path} must not be empty`);
+};
+
+const externalIdValidator = () => makeExternalIdValidator("externalId", false);
+
 const isValidEmail = (value: string) => {
   const atIndex = value.indexOf("@");
   const lastAtIndex = value.lastIndexOf("@");
@@ -54,9 +67,6 @@ const hasValidNameAndContact = (volunteer: unknown, requireName: boolean) => {
 
   if (requireName && !firstName && !lastName) {
     throw new Error("volunteer must have at least a first name or last name");
-  }
-  if (!email && !digitsOnly) {
-    throw new Error("volunteer must have at least an email or phone number");
   }
   if (email && !isValidEmail(email)) {
     throw new Error("email must be a valid email address");
@@ -87,12 +97,17 @@ const batchUploadVolunteersValidator = () =>
 const batchVolunteerNameAndContactValidator = () =>
   body("volunteers.*").custom((volunteer: unknown) => hasValidNameAndContact(volunteer, true));
 
+const batchVolunteerExternalIdValidator = () =>
+  makeExternalIdValidator("volunteers.*.externalId", true);
+
 export const batchCreateVolunteerValidator = [
   batchUploadVolunteersValidator(),
+  batchVolunteerExternalIdValidator(),
   batchVolunteerNameAndContactValidator(),
 ];
 
 export const createVolunteerValidator = [
+  makeExternalIdValidator("externalId", true),
   nameAndContactValidator(),
   tagsValidator(),
   statusValidator(),
@@ -103,6 +118,7 @@ export const createVolunteerValidator = [
 
 export const updateVolunteerValidator = [
   makeParamIDValidator(),
+  externalIdValidator(),
   nameAndContactValidator(),
   tagsValidator(),
   statusValidator(),

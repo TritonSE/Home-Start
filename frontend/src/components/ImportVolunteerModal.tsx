@@ -33,6 +33,7 @@ type Step = "upload" | "review";
 
 type ParsedVolunteerChange = {
   status: "New" | "Updated";
+  externalId: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -101,7 +102,8 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
       const wouldCreateSet = new Set(result.data.wouldCreate);
 
       const changes: ParsedVolunteerChange[] = result.data.volunteerInfo.map((v) => ({
-        status: wouldCreateSet.has(v.email) ? "New" : "Updated",
+        status: wouldCreateSet.has(v.externalId.trim()) ? "New" : "Updated",
+        externalId: v.externalId,
         firstName: v.firstName,
         lastName: v.lastName,
         email: v.email,
@@ -141,7 +143,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
           return a.projectName.localeCompare(b.projectName);
         });
 
-      const uniqueVolunteers = [...new Map(changes.map((c) => [c.email, c])).values()];
+      const uniqueVolunteers = [...new Map(changes.map((c) => [c.externalId, c])).values()];
 
       const data: ParsedCSVResult = {
         newCount: result.data.wouldCreateCount,
@@ -203,6 +205,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
     try {
       const result = await uploadVolunteerBatch(
         pendingBatch.map((v) => ({
+          externalId: v.externalId,
           firstName: v.firstName,
           lastName: v.lastName,
           email: v.email,
@@ -420,10 +423,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                       {csvParsedInfo?.uniqueVolunteers
                         ?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
                         .map((change, i, arr) => (
-                          <div
-                            key={`${change.email || change.phoneNumber}-${(currentPage - 1) * ITEMS_PER_PAGE + i}`}
-                            className={styles.detailItem}
-                          >
+                          <div key={change.externalId} className={styles.detailItem}>
                             <div className={styles.detailHeader}>
                               <span
                                 className={`${styles.detailBadge} ${change.status === "New" ? styles.detailBadgeNew : styles.detailBadgeUpdated}`}
@@ -433,6 +433,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                               <span className={styles.detailName}>
                                 {change.firstName} {change.lastName}
                               </span>
+                              <span className={styles.detailExternalId}>#{change.externalId}</span>
                             </div>
                             <div className={styles.detailMeta}>Email: {change.email}</div>
                             <div className={styles.detailMeta}>Phone: {change.phoneNumber}</div>
@@ -514,7 +515,7 @@ export default function ImportVolunteerModal({ onClose, onComplete }: ImportVolu
                           )}
                           {assignment.volunteers.map((v, vi) => (
                             <div
-                              key={`${projectKey}-${assignment.assignmentName ?? "__none__"}-${v.email || v.phoneNumber}-${vi}`}
+                              key={`${projectKey}-${assignment.assignmentName ?? "__none__"}-${v.externalId}-${vi}`}
                               className={styles.volunteerRow}
                             >
                               <span

@@ -36,7 +36,8 @@ type SearchBarProps = {
     | "First Name A-Z"
     | "First Name Z-A"
     | "Last Name A-Z"
-    | "Last Name Z-A";
+    | "Last Name Z-A"
+    | "ID";
   onSortOptionChange: (
     option:
       | "Newest"
@@ -44,7 +45,8 @@ type SearchBarProps = {
       | "First Name A-Z"
       | "First Name Z-A"
       | "Last Name A-Z"
-      | "Last Name Z-A",
+      | "Last Name Z-A"
+      | "ID",
   ) => void;
 
   selectedProject?: Set<string>;

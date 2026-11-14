@@ -16,9 +16,11 @@ import type { MongoBulkWriteError, WriteError } from "mongodb";
 import type { Types } from "mongoose";
 import type { Buffer } from "node:buffer";
 
+/* silence no-unused-vars
 // eslint-disable-next-line regexp/no-super-linear-backtracking
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_NUMBER_REGEX = /^\+?1?\d{10}$|^\(?\d{3}\)?[-\s.]?\d{3}[-\s.]?\d{4}$/;
+*/
 
 type ProjectProgramPair = {
   projectName: string;
@@ -184,6 +186,7 @@ export const getVolunteerPhoneNumber: RequestHandler = async (req, res, next) =>
 };
 
 type CreateVolunteerBody = {
+  externalId: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -214,6 +217,7 @@ type VolunteerAddressInfo = {
   zip: string;
 };
 
+/* Legacy Parsing
 type NormalizedVolunteerCSVFormat = {
   firstName: string;
   lastName: string;
@@ -235,26 +239,19 @@ type NormalizedVolunteerCSVFormat = {
   assignmentName: string;
   projectName: string;
 };
+*/
 
 type VolunteerImportKey = string;
 type VolunteerImportIdentity = {
-  email?: string | null;
-  phoneNumber?: string | null;
+  externalId?: string | null;
 };
 
 const makeVolunteerImportKey = (body: VolunteerImportIdentity): VolunteerImportKey => {
-  const email = (body.email ?? "").trim().toLowerCase();
-  const phoneNumber = (body.phoneNumber ?? "").trim();
-  return email ? `email:${email}` : `phone:${phoneNumber}`;
+  return `externalId:${(body.externalId ?? "").trim()}`;
 };
 
-const makeVolunteerImportFilter = (body: CreateVolunteerBody) => {
-  const email = body.email.trim().toLowerCase();
-  if (email) {
-    return { email };
-  }
-
-  return { phoneNumber: body.phoneNumber.trim() };
+const makeVolunteerImportFilter = (body: Pick<CreateVolunteerBody, "externalId">) => {
+  return { externalId: body.externalId.trim() };
 };
 
 const toDate = (value: string | undefined): Date | undefined => {
@@ -266,6 +263,7 @@ const toDate = (value: string | undefined): Date | undefined => {
 export const createVolunteer: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);
   const {
+    externalId,
     firstName,
     lastName,
     email,
@@ -281,16 +279,12 @@ export const createVolunteer: RequestHandler = async (req, res, next) => {
   } = req.body as CreateVolunteerBody;
   try {
     validationErrorParser(errors);
-    const duplicateFilters = [
-      ...(email ? [{ email: email.trim().toLowerCase() }] : []),
-      ...(phoneNumber ? [{ phoneNumber: phoneNumber.trim() }] : []),
-    ];
-    const volunteer =
-      duplicateFilters.length > 0 ? await VolunteerModel.findOne({ $or: duplicateFilters }) : null;
+    const volunteer = await VolunteerModel.findOne(makeVolunteerImportFilter({ externalId }));
     if (volunteer) {
-      throw createHttpError(409, "Volunteer with this email or phone number already exists");
+      throw createHttpError(409, "Volunteer with this external ID already exists");
     }
     const newVolunteer = await VolunteerModel.create({
+      externalId: externalId.trim(),
       firstName,
       lastName,
       email,
@@ -463,6 +457,7 @@ type UpdateVolunteerOp = {
 
 const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
   const {
+    externalId,
     firstName,
     lastName,
     email,
@@ -481,6 +476,7 @@ const normalizeVolunteerForBulkWrite = (body: CreateVolunteerBody) => {
   const effectiveDateDate = toDate(effectiveDate);
 
   return {
+    externalId,
     firstName,
     lastName,
     email,
@@ -625,10 +621,7 @@ export const uploadVolunteerBatch: RequestHandler<
       const [allTags, savedVolunteers] = await Promise.all([
         TagModel.find({ name: { $in: [...uniqueNames] } }),
         VolunteerModel.find({
-          $or: uniqueVolunteers.flatMap((volunteer) => [
-            { email: volunteer.email },
-            { phoneNumber: volunteer.phoneNumber },
-          ]),
+          externalId: { $in: uniqueVolunteers.map((volunteer) => volunteer.externalId.trim()) },
         }),
       ]);
 
@@ -672,7 +665,10 @@ export const uploadVolunteerBatch: RequestHandler<
         const volunteer = volunteerByKey.get(makeVolunteerImportKey(entry.volunteer));
 
         if (!volunteer) {
-          throw createHttpError(400, `Could not resolve volunteer for ${entry.volunteer.email}`);
+          throw createHttpError(
+            400,
+            `Could not resolve volunteer with ID "${entry.volunteer.externalId}"`,
+          );
         }
 
         const assignmentTag = tagByKey.get(`assignment:${entry.assignmentTag}`);
@@ -749,19 +745,11 @@ export const uploadVolunteerBatch: RequestHandler<
 
 const validateVolunteer = (volunteer: unknown) => {
   const typedVolunteer = volunteer as CreateVolunteerBody;
+  const hasExternalId = Boolean(typedVolunteer?.externalId?.trim());
   const hasName = Boolean(typedVolunteer?.firstName || typedVolunteer?.lastName);
-  const hasValidEmail = Boolean(typedVolunteer?.email && EMAIL_REGEX.test(typedVolunteer.email));
-  const hasValidPhoneNumber = Boolean(
-    typedVolunteer?.phoneNumber && PHONE_NUMBER_REGEX.test(typedVolunteer.phoneNumber),
-  );
 
-  if (!hasName) {
-    return false;
-  }
-  if (!hasValidEmail && !hasValidPhoneNumber) {
-    return false;
-  }
-  return true;
+  // Email/phone format is checked by batchCreateVolunteerValidator in parseVolunteersCsv
+  return hasExternalId && hasName;
 };
 
 const statusKeyToEnum = (key: string): "returning" | "new" | undefined => {
@@ -784,6 +772,7 @@ const readCsvText = (data: Record<string, string>, headers: string[]): string =>
   return "";
 };
 
+/* LEGACY PARSING
 const normalizeCSVData = (data: Record<string, string>): NormalizedVolunteerCSVFormat => {
   return {
     firstName: readCsvText(data, ["First Name"]),
@@ -811,6 +800,7 @@ const normalizeCSVData = (data: Record<string, string>): NormalizedVolunteerCSVF
     projectName: readCsvText(data, ["Project"]),
   };
 };
+*/
 
 const toConsentYesNo = (value: string): "yes" | "no" | undefined => {
   const v = value.trim().toLowerCase();
@@ -833,6 +823,7 @@ const normalizePhoneNumber = (value: string): string => {
   return digits;
 };
 
+/* Legacy Parsing
 const parseCreationBody = (data: NormalizedVolunteerCSVFormat): VolunteerCreationBody => {
   return {
     firstName: data.firstName,
@@ -850,7 +841,7 @@ const parseCreationBody = (data: NormalizedVolunteerCSVFormat): VolunteerCreatio
     assignmentName: data.assignmentName || undefined,
     projectName: data.projectName || undefined,
   };
-};
+};*/
 
 type NewFormatRawRow = {
   externalId: string;
@@ -927,7 +918,7 @@ const aggregateMultiRowVolunteers = (rows: NewFormatRawRow[]): VolunteerCreation
     }
     const block = byId.get(row.externalId)!;
 
-    if (row.email || row.phoneNumber) {
+    if (row.externalId) {
       if (block.base === null) {
         block.base = row;
       } else if (
@@ -956,13 +947,11 @@ const aggregateMultiRowVolunteers = (rows: NewFormatRawRow[]): VolunteerCreation
 
   for (const [externalId, block] of byId) {
     if (!block.base) {
-      throw createHttpError(
-        400,
-        `No personal data (email/phone) found for volunteer ID "${externalId}"`,
-      );
+      throw createHttpError(400, `No volunteer data found for ID "${externalId}"`);
     }
 
     const baseFields: VolunteerCreationBody = {
+      externalId: block.base.externalId,
       firstName: block.base.firstName,
       lastName: block.base.lastName,
       email: block.base.email,
@@ -1009,17 +998,20 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
       .pipe(csvParser())
       .on("headers", (headers: string[]) => {
         detectedNewFormat = isNewCsvFormat(headers);
+
+        if (!detectedNewFormat) {
+          bufferStream.destroy();
+          reject(createHttpError(400, `Invalid volunteer data: Missing 'constituent id' headers`));
+        }
       })
       .on("data", (data: Record<string, string>) => {
-        if (data.Count === "0") {
+        if (!detectedNewFormat || data.Count === "0") {
           return;
         }
 
-        if (detectedNewFormat) {
-          newFormatRawRows.push(normalizeNewFormatRow(data));
-          return;
-        }
+        newFormatRawRows.push(normalizeNewFormatRow(data));
 
+        /* Legacy Parsing
         const normalized = normalizeCSVData(data);
         const creationBody = parseCreationBody(normalized);
         const valid = validateVolunteer(creationBody);
@@ -1032,27 +1024,26 @@ const parseVolunteersHelper = async (fileBuffer: Buffer) => {
         }
 
         parsedVolunteers.push(creationBody);
+        */
       })
       .on("end", () => {
-        if (detectedNewFormat) {
-          try {
-            const aggregated = aggregateMultiRowVolunteers(newFormatRawRows);
-            for (const v of aggregated) {
-              if (!validateVolunteer(v)) {
-                reject(
-                  createHttpError(
-                    400,
-                    `Invalid volunteer data for ID "${v.email || v.phoneNumber}": missing required name or contact fields`,
-                  ),
-                );
-                return;
-              }
+        try {
+          const aggregated = aggregateMultiRowVolunteers(newFormatRawRows);
+          for (const v of aggregated) {
+            if (!validateVolunteer(v)) {
+              reject(
+                createHttpError(
+                  400,
+                  `Invalid volunteer data for ID "${v.externalId}": missing first or last name`,
+                ),
+              );
+              return;
             }
-            parsedVolunteers.push(...aggregated);
-          } catch (err) {
-            reject(err);
-            return;
           }
+          parsedVolunteers.push(...aggregated);
+        } catch (err) {
+          reject(err);
+          return;
         }
         resolve();
       })
@@ -1082,14 +1073,11 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
       ...new Map(parsedVolunteers.map((v) => [makeVolunteerImportKey(v), v])).values(),
     ];
 
-    const emails = uniqueVolunteers.map((v) => v.email).filter(Boolean);
-    const phoneNumbers = uniqueVolunteers.map((v) => v.phoneNumber).filter(Boolean);
-    const existingFilters = [
-      ...(emails.length > 0 ? [{ email: { $in: emails } }] : []),
-      ...(phoneNumbers.length > 0 ? [{ phoneNumber: { $in: phoneNumbers } }] : []),
-    ];
+    const externalIds = uniqueVolunteers.map((v) => v.externalId.trim());
     const existing =
-      existingFilters.length > 0 ? await VolunteerModel.find({ $or: existingFilters }) : [];
+      externalIds.length > 0
+        ? await VolunteerModel.find({ externalId: { $in: externalIds } }, "externalId")
+        : [];
 
     const existingSet = new Set<VolunteerImportKey>();
     existing.forEach((volunteer) => {
@@ -1098,11 +1086,11 @@ export const parseVolunteersCsv: RequestHandler = async (req, res, next) => {
 
     const wouldCreate = uniqueVolunteers
       .filter((v) => !existingSet.has(makeVolunteerImportKey(v)))
-      .map((v) => v.email);
+      .map((v) => v.externalId.trim());
 
     const wouldUpdate = uniqueVolunteers
       .filter((v) => existingSet.has(makeVolunteerImportKey(v)))
-      .map((v) => v.email);
+      .map((v) => v.externalId.trim());
 
     const referencedTags: {
       name: string;
@@ -1277,7 +1265,11 @@ const escapeCsvField = (value: string): string => {
 };
 
 const CSV_COLUMNS: CsvColumn[] = [
-  { header: "Constituent ID", toCell: (ctx) => String(ctx.volunteerId), isDetailColumn: true },
+  {
+    header: "Constituent ID",
+    toCell: (ctx) => ctx.volunteer.externalId ?? "",
+    isDetailColumn: true,
+  },
   { header: "First Name", toCell: (ctx) => ctx.volunteer.firstName ?? "", isDetailColumn: true },
   { header: "Last Name", toCell: (ctx) => ctx.volunteer.lastName ?? "", isDetailColumn: true },
   { header: "Program", toCell: (ctx) => ctx.programNames.join("; ") },

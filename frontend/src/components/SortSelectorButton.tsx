@@ -10,7 +10,8 @@ type SortOption =
   | "First Name A-Z"
   | "First Name Z-A"
   | "Last Name A-Z"
-  | "Last Name Z-A";
+  | "Last Name Z-A"
+  | "ID";
 
 type SortSelectorButtonProps = {
   sortType: SortOption;
@@ -24,6 +25,7 @@ const SORT_OPTIONS: SortOption[] = [
   "First Name Z-A",
   "Last Name A-Z",
   "Last Name Z-A",
+  "ID",
 ];
 
 export default function SortSelectionButton({

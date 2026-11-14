@@ -14,6 +14,7 @@ const addressSchema = new Schema(
 );
 
 const volunteerSchema = new Schema({
+  externalId: { type: String, unique: true, sparse: true },
   firstName: { type: String },
   lastName: { type: String },
   email: { type: String },

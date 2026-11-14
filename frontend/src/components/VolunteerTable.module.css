@@ -1,6 +1,7 @@
 .volunteerTable {
   --col-checkbox: 40px;
-  --col-name: 120px;
+  --col-id: 100px;
+  --col-name: 140px;
 
   border: none;
   border-collapse: collapse;
@@ -57,7 +58,7 @@
   white-space: nowrap;
 }
 
-/* START: Sticky first 3 columns (remove this block if design does not want anchored columns) */
+/* START: Sticky first 4 columns (remove this block if design does not want anchored columns) */
 
 .volunteerTable th:nth-child(1),
 .volunteerTable td:nth-child(1) {
@@ -68,23 +69,31 @@
   max-width: var(--col-checkbox);
 }
 
+/* ID */
 .volunteerTable th:nth-child(2),
 .volunteerTable td:nth-child(2) {
   position: sticky;
   left: var(--col-checkbox);
-  width: var(--col-name);
-  min-width: var(--col-name);
-  max-width: var(--col-name);
+  width: var(--col-id);
+  min-width: var(--col-id);
+  max-width: var(--col-id);
+  box-sizing: border-box;
   z-index: 4;
 }
 
+/* Last name */
 .volunteerTable th:nth-child(3),
 .volunteerTable td:nth-child(3) {
   position: sticky;
-  left: calc(var(--col-checkbox) + var(--col-name));
-  width: var(--col-name);
-  min-width: var(--col-name);
-  max-width: var(--col-name);
+  left: calc(var(--col-checkbox) + var(--col-id));
+  z-index: 4;
+}
+
+/* First name */
+.volunteerTable th:nth-child(4),
+.volunteerTable td:nth-child(4) {
+  position: sticky;
+  left: calc(var(--col-checkbox) + var(--col-id) + var(--col-name));
   z-index: 5;
   overflow: visible;
 }
@@ -104,15 +113,16 @@
   z-index: 6;
 }
 
-.volunteerTable th:nth-child(2) {
+.volunteerTable th:nth-child(2),
+.volunteerTable th:nth-child(3) {
   z-index: 7;
 }
 
-.volunteerTable th:nth-child(3) {
+.volunteerTable th:nth-child(4) {
   z-index: 8;
 }
 
-.volunteerTable th:nth-child(-n + 3) {
+.volunteerTable th:nth-child(-n + 4) {
   background-color: #ecf3f3;
 }
 
@@ -120,14 +130,14 @@
   z-index: 3;
 }
 
-.volunteerTable td:nth-child(-n + 3) {
+.volunteerTable td:nth-child(-n + 4) {
   background-color: #ffffff;
 }
 
-.volunteerTable tbody tr:hover td:nth-child(-n + 3) {
+.volunteerTable tbody tr:hover td:nth-child(-n + 4) {
   background-color: #e8e8e8;
 }
-/*END: Sticky first 3 columns */
+/*END: Sticky first 4 columns */
 
 .volunteerTable th.nameColumn,
 .volunteerTable td.nameColumn {
@@ -138,14 +148,14 @@
   white-space: nowrap;
 }
 
-.volunteerTable th.nameColumn:nth-child(2),
-.volunteerTable td.nameColumn:nth-child(2) {
+.volunteerTable th.nameColumn:nth-child(3),
+.volunteerTable td.nameColumn:nth-child(3) {
   padding-left: 16px;
   padding-right: 0;
 }
 
-.volunteerTable th.nameColumn:nth-child(3),
-.volunteerTable td.nameColumn:nth-child(3) {
+.volunteerTable th.nameColumn:nth-child(4),
+.volunteerTable td.nameColumn:nth-child(4) {
   padding-left: 8px;
   padding-right: 8px;
 }
@@ -292,8 +302,8 @@
   background-color: #eef4fb !important;
 }
 
-/* Sticky first 3 columns support: remove with the sticky block above if needed */
-.selectedRow td:nth-child(-n + 3) {
+/* Sticky first 4 columns support: remove with the sticky block above if needed */
+.selectedRow td:nth-child(-n + 4) {
   background-color: #eef4fb !important;
 }
 
@@ -305,24 +315,29 @@
   .volunteerTable th:nth-child(2),
   .volunteerTable td:nth-child(2),
   .volunteerTable th:nth-child(3),
-  .volunteerTable td:nth-child(3) {
+  .volunteerTable td:nth-child(3),
+  .volunteerTable th:nth-child(4),
+  .volunteerTable td:nth-child(4) {
     position: static;
     left: auto;
     z-index: auto;
   }
 
   .volunteerTable th:nth-child(2),
-  .volunteerTable th:nth-child(3) {
+  .volunteerTable th:nth-child(3),
+  .volunteerTable th:nth-child(4) {
     background-color: #ecf3f3;
   }
 
   .volunteerTable td:nth-child(2),
-  .volunteerTable td:nth-child(3) {
+  .volunteerTable td:nth-child(3),
+  .volunteerTable td:nth-child(4) {
     background-color: inherit;
   }
 
   .volunteerTable tbody tr:hover td:nth-child(2),
-  .volunteerTable tbody tr:hover td:nth-child(3) {
+  .volunteerTable tbody tr:hover td:nth-child(3),
+  .volunteerTable tbody tr:hover td:nth-child(4) {
     background-color: inherit;
   }
 

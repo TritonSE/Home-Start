@@ -324,6 +324,11 @@
   color: #141414;
 }
 
+.detailExternalId {
+  font-size: 14px;
+  color: #888888;
+}
+
 .detailMeta {
   font-size: 14px;
   color: #494949;

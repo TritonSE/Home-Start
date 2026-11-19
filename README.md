@@ -1,7 +1,7 @@
 # Home-Start
 
 The frontend is made with Next.js, and the backend is with Node.js using a MongoDB database. Ask engineering manager about access to the Mongo database, and design lead for access to the figma.
-Contact Navyaa if you have any issues with setup.
+Contact Rohaan if you have any issues with setup.
 
 ## Frontend
 
